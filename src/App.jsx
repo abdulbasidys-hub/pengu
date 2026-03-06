@@ -1382,7 +1382,9 @@ const PfpCultApp = () => {
 Image 1: The base pedgy character — a cute cartoon pedgyin. This is the OUTPUT character. DO NOT change its body shape, pose, or pedgyin identity, I REPEAT, YOU CANT CHANGE ITS POSE DRAWING STYLE OR SHAPE OR TRY TO IMPROVE IT. LEACE IT AS IT IS.
 Image 2: A source image uploaded by the user. Extract the style, clothing, accessories, colors, vibe, and aesthetic from this source image.
 Apply everything extracted from Image 2 onto the pedgy in Image 1. Dress it up. Give it the same accessories. Recreate the energy. Make it feel like the pedgy joined that world.
-The result should still look like pedgy, just styled after the source image.`;
+The result should still look like pedgy, just styled after the source image.
+NOTE: do not try to change the eyes or mouth of the pedgy to match the source image, but if a person is wearing a glass or somthing covering/on the face then you can put on the accessory.  
+`;
 
       const contentParts = [
         { text: promptText },
