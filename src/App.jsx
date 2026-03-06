@@ -74,7 +74,7 @@ const ASSETS = {
   }
 };
 
-const SOCIALS = { twitter: "https://x.com/it_mascot", community: "https://x.com/i/communities/2013482060254499136" };
+const SOCIALS = { twitter: "", community: "https:x.com/" };
 
 const TUNES_PLAYLIST = [
   { file: "GET_IT_STARTED.mp3", title: "WADDLE WADDLE", duration: "1:37", artist: "Pengu Crew" },
@@ -265,7 +265,6 @@ const StartMenu = ({ isOpen, onClose, onOpenApp }) => {
         <div>
           <div className="px-2 py-1 text-sky-500 font-bold text-[10px] uppercase">🧊 Programs</div>
           {[
-            { id: 'terminal', icon: Terminal, label: 'Terminal' },
             { id: 'pfpcult', icon: Camera, label: 'PFP Cult' },
             { id: 'mergeit', icon: Joystick, label: 'Slide Pengu' },      
             { id: 'paint', icon: Paintbrush, label: 'Paint Pengu' },
@@ -1677,7 +1676,6 @@ export default function UltimateOS() {
       {/* Desktop Icons */}
       <div className="absolute top-0 left-0 p-4 z-20 h-[calc(100vh-40px)] w-full pointer-events-none flex flex-col flex-wrap content-start items-start gap-4 overflow-hidden">
         {[
-          { id: 'terminal', emoji: '💻', label: 'Terminal' },
           { id: 'pfpcult', emoji: '📸', label: 'PFP Cult' },
           { id: 'mergeit', emoji: '🧊', label: 'Slide Pengu' },
           { id: 'paint', emoji: '🎨', label: 'Paint Pengu' },
