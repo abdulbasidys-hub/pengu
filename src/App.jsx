@@ -63,14 +63,7 @@ const ASSETS = {
     meme_06: "memes/1.jpg", meme_07: "memes/2.jpg", meme_08: "memes/3.jpg", meme_09: "memes/4.jpg",
     meme_10: "memes/5.jpg", meme_11: "memes/6.jpg", meme_12: "memes/7.jpg", meme_13: "memes/8.jpg",
     meme_14: "memes/9.jpg", meme_15: "memes/10.jpg", meme_16: "memes/11.jpg", meme_17: "memes/12.jpg",
-    meme_18: "memes/13.jpg", meme_19: "memes/14.jpg", meme_20: "memes/15.jpg", meme_21: "memes/16.jpg",
-    meme_22: "memes/17.jpg", meme_23: "memes/18.jpg", meme_24: "memes/19.jpg", meme_25: "memes/20.jpg",
-    meme_26: "memes/21.jpg", meme_27: "memes/22.jpg", meme_28: "memes/23.jpg", code_33: "memes/28.jpg",
-    meme_34: "memes/29.jpg", meme_35: "memes/30.jpg", meme_36: "memes/31.jpg", meme_37: "memes/32.jpg",
-    meme_38: "memes/33.jpg", meme_39: "memes/34.jpg", meme_40: "memes/35.jpg", meme_41: "memes/40.jpg",
-    meme_42: "memes/41.jpg", meme_43: "memes/42.jpg", meme_44: "memes/43.jpg", meme_45: "memes/44.jpg",
-    meme_46: "memes/45.jpg", meme_47: "memes/46.jpg", meme_48: "memes/47.jpg", meme_49: "memes/48.jpg",
-    meme_50: "memes/49.jpg",
+    meme_18: "memes/13.jpg", meme_19: "memes/14.jpg", 
   }
 };
 
