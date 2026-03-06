@@ -41,7 +41,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const appId = 'pedgy-os';
 
-const CA_ADDRESS = "coming soon..";
+const CA_ADDRESS = "EG6zP6zWJjcNz563nAjcmNQYhkwbqVbDFpRsWx11pump";
 const ACCESS_THRESHOLD = 500000;
 
 const RPC_ENDPOINTS = [
@@ -74,7 +74,7 @@ const ASSETS = {
   }
 };
 
-const SOCIALS = { twitter: "", community: "https:x.com/" };
+const SOCIALS = { twitter: "https://x.com/TobiasJochike/status/2030033323234578604", community: "https://twitter.com/i/communities/2030032700128768033" };
 
 const TUNES_PLAYLIST = [
   { file: "GET_IT_STARTED.mp3", title: "WADDLE WADDLE", duration: "1:37", artist: "pedgy Crew" },
