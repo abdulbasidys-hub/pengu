@@ -482,7 +482,7 @@ EMOTIONAL MODES:
         style={{background:'rgba(3,105,161,0.9)', border:'2px solid #7DD3FC'}}>
         <div className="flex items-center gap-2">
           <div className="w-1 h-1 bg-sky-300 rounded-full animate-pulse" />
-          <span className="text-[9px] font-black text-sky-100 uppercase tracking-[0.2em] select-none">Talk to Pengu</span>
+          <span className="text-[9px] font-black text-sky-100 uppercase tracking-[0.2em] select-none">Talk to Pedgy</span>
         </div>
         <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 rotate-45" style={{background:'rgba(3,105,161,0.9)', borderRight:'2px solid #7DD3FC', borderBottom:'2px solid #7DD3FC'}} />
       </div>
