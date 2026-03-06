@@ -41,7 +41,7 @@ const auth = getAuth(app);
 const db = getFirestore(app);
 const appId = 'pengu-os';
 
-const CA_ADDRESS = "D3KHkVNhwZXnHziMApzdxyjGbu1vEC5sEhHYzuU6pump";
+const CA_ADDRESS = "coming soon..";
 const ACCESS_THRESHOLD = 500000;
 
 const RPC_ENDPOINTS = [
