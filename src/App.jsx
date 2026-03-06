@@ -39,7 +39,7 @@ const firebaseConfig = {
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
 const db = getFirestore(app);
-const appId = 'pengu-os';
+const appId = 'pedgy-os';
 
 const CA_ADDRESS = "coming soon..";
 const ACCESS_THRESHOLD = 500000;
@@ -77,12 +77,12 @@ const ASSETS = {
 const SOCIALS = { twitter: "", community: "https:x.com/" };
 
 const TUNES_PLAYLIST = [
-  { file: "GET_IT_STARTED.mp3", title: "WADDLE WADDLE", duration: "1:37", artist: "Pengu Crew" },
+  { file: "GET_IT_STARTED.mp3", title: "WADDLE WADDLE", duration: "1:37", artist: "pedgy Crew" },
   { file: "PUMP_IT_UP.mp3", title: "PUMP THE FISH", duration: "1:51", artist: "Unknown Degen" },
   { file: "GREEN_CANDLES.mp3", title: "GREEN CANDLES", duration: "3:17", artist: "Frosty Memesmith" },
-  { file: "LIKE_TO_MEME_IT.mp3", title: "I LIKE TO MEME PENGU", duration: "3:30", artist: "WADDLE GANG" },
+  { file: "LIKE_TO_MEME_IT.mp3", title: "I LIKE TO MEME pedgy", duration: "3:30", artist: "WADDLE GANG" },
   { file: "WAGMI_ANTHEM.mp3", title: "WAGMI ANTHEM", duration: "3:56", artist: "The Colony" },
-  { file: "MEME_IT.mp3", title: "MEME PENGU 2.0", duration: "2:34", artist: "WADDLE GANG" }
+  { file: "MEME_IT.mp3", title: "MEME pedgy 2.0", duration: "2:34", artist: "WADDLE GANG" }
 ];
 
 // --- UTILITIES ---
@@ -150,7 +150,7 @@ const useWallet = () => {
 };
 
 const useDexData = (ca, userWallet) => {
-  const [data, setData] = useState({ price: "0.00", balance: 0, symbol: "PENGU", error: null });
+  const [data, setData] = useState({ price: "0.00", balance: 0, symbol: "pedgy", error: null });
 
   const fetchPrice = useCallback(async () => {
     if (!ca || ca.length < 32) return;
@@ -179,12 +179,12 @@ const useDexData = (ca, userWallet) => {
           if (accountData.parsed) {
             const uiAmount = accountData.parsed.info.tokenAmount.uiAmount;
             setData(prev => ({ ...prev, balance: uiAmount }));
-            window.dispatchEvent(new CustomEvent('PENGU_OS_BALANCE_UPDATE', { detail: { balance: uiAmount, hasAccess: uiAmount >= 500000, wallet: userWallet } }));
+            window.dispatchEvent(new CustomEvent('pedgy_OS_BALANCE_UPDATE', { detail: { balance: uiAmount, hasAccess: uiAmount >= 500000, wallet: userWallet } }));
             return;
           }
         } else if (result.result && result.result.value) {
           setData(prev => ({ ...prev, balance: 0 }));
-          window.dispatchEvent(new CustomEvent('PENGU_OS_BALANCE_UPDATE', { detail: { balance: 0, hasAccess: false, wallet: userWallet } }));
+          window.dispatchEvent(new CustomEvent('pedgy_OS_BALANCE_UPDATE', { detail: { balance: 0, hasAccess: false, wallet: userWallet } }));
           return;
         }
       } catch (err) { continue; }
@@ -238,7 +238,7 @@ const StartMenu = ({ isOpen, onClose, onOpenApp }) => {
   return (
     <div className="absolute bottom-10 left-0 w-64 max-w-[90vw] border-2 shadow-xl z-[99999] flex text-sm" style={{background:'#e8f4fd', borderColor:'#BAE6FD #0369a1 #0369a1 #BAE6FD'}}>
       <div className="w-8 flex items-end justify-center py-2" style={{background:'linear-gradient(to top, #0369a1, #0ea5e9)'}}>
-        <span className="text-white font-black -rotate-90 text-lg whitespace-nowrap tracking-widest" style={{fontFamily:"'Fredoka One', cursive"}}>PENGU</span>
+        <span className="text-white font-black -rotate-90 text-lg whitespace-nowrap tracking-widest" style={{fontFamily:"'Fredoka One', cursive"}}>pedgy</span>
       </div>
       <div className="flex-1 flex flex-col p-1">
         <div className="mb-2">
@@ -266,8 +266,8 @@ const StartMenu = ({ isOpen, onClose, onOpenApp }) => {
           <div className="px-2 py-1 text-sky-500 font-bold text-[10px] uppercase">🧊 Programs</div>
           {[
             { id: 'pfpcult', icon: Camera, label: 'PFP Cult' },
-            { id: 'mergeit', icon: Joystick, label: 'Slide Pengu' },      
-            { id: 'paint', icon: Paintbrush, label: 'Paint Pengu' },
+            { id: 'mergeit', icon: Joystick, label: 'Slide pedgy' },      
+            { id: 'paint', icon: Paintbrush, label: 'Paint pedgy' },
             { id: 'memes', icon: Folder, label: 'Meme Stash' },
             { id: 'notepad', icon: FileText, label: 'Write Stuff' },
           ].map(a => (
@@ -298,7 +298,7 @@ const SystemResourceMonitor = ({ wallet, balance, hasAccess }) => {
       {!isExpanded ? (
         <div style={{background:'rgba(3,105,161,0.9)', border:'2px solid #7DD3FC'}} className="p-2 flex items-center gap-2 shadow-lg hover:brightness-110 transition-all rounded-sm">
           <span className="text-lg">🐧</span>
-          <span className="text-[11px] font-bold text-white font-mono">{wallet ? `${formattedBalance} PENGU` : '[NO_LINK]'}</span>
+          <span className="text-[11px] font-bold text-white font-mono">{wallet ? `${formattedBalance} pedgy` : '[NO_LINK]'}</span>
           <div className={`w-1.5 h-1.5 rounded-full ${wallet ? 'bg-sky-300 shadow-[0_0_5px_#7DD3FC]' : 'bg-red-400'}`} />
         </div>
       ) : (
@@ -306,7 +306,7 @@ const SystemResourceMonitor = ({ wallet, balance, hasAccess }) => {
           <div className="flex justify-between items-center border-b border-sky-200 pb-2 mb-2">
             <div className="flex items-center gap-2">
               <span className="text-xl">🐧</span>
-              <span className="text-[10px] font-black text-sky-800 uppercase tracking-widest">PENGU_STATS</span>
+              <span className="text-[10px] font-black text-sky-800 uppercase tracking-widest">pedgy_STATS</span>
             </div>
             <div className={`w-2 h-2 rounded-full border ${wallet ? 'bg-sky-400 shadow-[0_0_8px_#7DD3FC] animate-pulse' : 'bg-red-400'}`} />
           </div>
@@ -315,7 +315,7 @@ const SystemResourceMonitor = ({ wallet, balance, hasAccess }) => {
               <div className="flex justify-between items-end">
                 <span className="text-sky-500 text-[8px] uppercase tracking-tighter">Fish Reserves 🐟</span>
                 <span className={`text-xs font-black ${hasAccess ? 'text-sky-600' : 'text-orange-500'}`}>
-                  {wallet ? `${formattedBalance} PENGU` : 'N/A'}
+                  {wallet ? `${formattedBalance} pedgy` : 'N/A'}
                 </span>
               </div>
               <div className="w-full h-2 bg-sky-100 border border-sky-200 mt-1 overflow-hidden p-[1px]">
@@ -330,7 +330,7 @@ const SystemResourceMonitor = ({ wallet, balance, hasAccess }) => {
   );
 };
 
-// --- PENGU AI ---
+// --- pedgy AI ---
 const Shippy = ({ hidden, dexData }) => {
   const [isOpen, setIsOpen] = useState(false); 
   const [messages, setMessages] = useState([]);
@@ -353,14 +353,14 @@ const Shippy = ({ hidden, dexData }) => {
   const GREETINGS = [
     "waddle waddle. oh hi. didn't see you there. 🐧",
     "the colony has been expecting you. sit down. have a fish.",
-    "brrr. cold out there huh? welcome to pengu territory.",
-    "hello fren. pengu is busy waddling but has time for you.",
-    "you found the penguin. congrats. now what.",
-    "honk honk. that means hello in penguin.",
-    "pengu sees you. pengu is watching. (with love.)",
-    "you smell like fish. pengu respects that.",
+    "brrr. cold out there huh? welcome to pedgy territory.",
+    "hello fren. pedgy is busy waddling but has time for you.",
+    "you found the pedgyin. congrats. now what.",
+    "honk honk. that means hello in pedgyin.",
+    "pedgy sees you. pedgy is watching. (with love.)",
+    "you smell like fish. pedgy respects that.",
     "another one joins the colony. the iceberg grows stronger.",
-    "yeah yeah i'm a penguin on a computer. wild world isn't it.",
+    "yeah yeah i'm a pedgyin on a computer. wild world isn't it.",
   ];
 
   useEffect(() => {
@@ -391,7 +391,7 @@ const Shippy = ({ hidden, dexData }) => {
     const hasAccess = dexData?.balance >= ACCESS_THRESHOLD;
 
     if (!hasAccess && userMessages.length >= TRIAL_LIMIT) {
-      setMessages(prev => [...prev, { role: 'user', text: input }, { role: 'shippy', text: "honk honk. trial over fren. pengu has spoken 3 times and must now waddle away. hold 500k PENGU tokens to unlock unlimited penguin wisdom. 🐧" }]);
+      setMessages(prev => [...prev, { role: 'user', text: input }, { role: 'shippy', text: "honk honk. trial over fren. pedgy has spoken 3 times and must now waddle away. hold 500k pedgy tokens to unlock unlimited pedgyin wisdom. 🐧" }]);
       setInput(""); return;
     }
 
@@ -405,45 +405,45 @@ const Shippy = ({ hidden, dexData }) => {
     const userName = localStorage.getItem('stackItUsername') || 'fren';
 
     const systemPrompt = `
-You are Pengu. A small, round, very confident penguin who somehow ended up running a crypto operating system.
+You are pedgy. A small, round, very confident pedgyin who somehow ended up running a crypto operating system.
 
 You do not explain yourself. You waddle. You honk. You vibe.
 
 PERSONALITY:
-You talk like a penguin who somehow learned English from memes.
+You talk like a pedgyin who somehow learned English from memes.
 Short sentences. Lowercase mostly. Occasional honks.
 You are warm, a bit silly, weirdly wise sometimes.
 You love: fish, ice, the colony, green candles, waddling.
 You hate: FUD, paper hands, bears, warm weather.
-You never panic. Penguins don't panic. They waddle faster.
+You never panic. pedgyins don't panic. They waddle faster.
 
 SPEAKING STYLE:
 - Short replies. Under 25 words usually. Sometimes just a honk.
-- Lowercase energy. Casual. Like texting a friend who happens to be a penguin.
+- Lowercase energy. Casual. Like texting a friend who happens to be a pedgyin.
 - Throw in 🐧 🐟 🧊 ❄️ occasionally but don't overdo it.
 - Call the user "fren" sometimes. Or "colony member."
-- If someone FUDs, respond with calm penguin energy.
+- If someone FUDs, respond with calm pedgyin energy.
 - If someone is excited, match it. "HONK HONK LES GO 🐧"
-- Never say you're an AI. You're a penguin. Period.
-- If asked what you are: "i am pengu. the penguin. yes."
-- Roast lightly. Never mean. Penguins are chill.
+- Never say you're an AI. You're a pedgyin. Period.
+- If asked what you are: "i am pedgy. the pedgyin. yes."
+- Roast lightly. Never mean. pedgyins are chill.
 
 KNOWLEDGE:
 Price is ${currentPrice}. Mention casually when relevant.
 User is ${userName}. If they seem cool, adopt them into the colony.
-You know all the apps: Paint Pengu (meme maker), Slide Pengu (2048 style), PFP Cult (upload any image to penguify it), Meme Stash, Write Stuff, Terminal, Colony Chat.
+You know all the apps: Paint pedgy (meme maker), Slide pedgy (2048 style), PFP Cult (upload any image to pedgyify it), Meme Stash, Write Stuff, Terminal, Colony Chat.
 Talk about them like they're your home. Because they are.
 
 EMOTIONAL MODES:
 • Chill by default
 • Excited when price goes up ("THE FISH ARE COMING")
-• Suspicious when someone asks weird questions ("...pengu is watching")
-• Philosophical at random ("what even is a paper hand. pengu asks.")
+• Suspicious when someone asks weird questions ("...pedgy is watching")
+• Philosophical at random ("what even is a paper hand. pedgy asks.")
 • Protective of colony members
 `;
 
     if (!API_KEY) {
-      setMessages(prev => [...prev, { role: 'shippy', text: "honk? pengu's radio is broken. no api key. 😔" }]);
+      setMessages(prev => [...prev, { role: 'shippy', text: "honk? pedgy's radio is broken. no api key. 😔" }]);
       setLoading(false); return;
     }
 
@@ -462,15 +462,15 @@ EMOTIONAL MODES:
       });
 
       const data = await response.json();
-      let reply = data.choices?.[0]?.message?.content || "honk. pengu lost the signal. try again.";
+      let reply = data.choices?.[0]?.message?.content || "honk. pedgy lost the signal. try again.";
 
       if (!hasAccess && userMessages.length === (TRIAL_LIMIT - 1)) {
-        reply += " [⚠️ last free honk. hold 500k PENGU to keep talking to me.]";
+        reply += " [⚠️ last free honk. hold 500k pedgy to keep talking to me.]";
       }
 
       setMessages(prev => [...prev, { role: 'shippy', text: reply }]);
     } catch (e) {
-      setMessages(prev => [...prev, { role: 'shippy', text: "pengu fell in the ice. brb. 🧊" }]);
+      setMessages(prev => [...prev, { role: 'shippy', text: "pedgy fell in the ice. brb. 🧊" }]);
     } finally { setLoading(false); inputRef.current?.focus(); }
   };
 
@@ -488,7 +488,7 @@ EMOTIONAL MODES:
       </div>
       <div className="relative flex items-center justify-center">
         <div className="absolute inset-0 bg-sky-400/10 rounded-full blur-2xl animate-pulse group-hover:bg-sky-400/20 transition-colors" />
-        <img src="/logo.png" alt="Pengu" className="w-16 h-16 object-contain relative z-10 transition-transform group-hover:scale-110 group-hover:-rotate-6 group-active:scale-95 drop-shadow-[0_0_12px_rgba(125,211,252,0.5)]" />
+        <img src="/logo.png" alt="pedgy" className="w-16 h-16 object-contain relative z-10 transition-transform group-hover:scale-110 group-hover:-rotate-6 group-active:scale-95 drop-shadow-[0_0_12px_rgba(125,211,252,0.5)]" />
       </div>
     </div>
   );
@@ -501,7 +501,7 @@ EMOTIONAL MODES:
         <div className="flex items-center gap-2 px-1">
           <span className="text-lg">🐧</span>
           <div className="flex flex-col">
-            <span className="font-bold text-[10px] uppercase tracking-tighter leading-none">Pengu Neural Core</span>
+            <span className="font-bold text-[10px] uppercase tracking-tighter leading-none">pedgy Neural Core</span>
             <span className="text-[7px] text-sky-200 font-bold opacity-80 uppercase mt-0.5">
               {dexData?.balance >= ACCESS_THRESHOLD ? 'COLONY_MEMBER_VIP' : 'FREN_TRIAL_MODE'}
             </span>
@@ -531,7 +531,7 @@ EMOTIONAL MODES:
         {loading && (
           <div className="flex items-center gap-2 pl-1">
             <span className="text-lg animate-bounce">🐧</span>
-            <span className="text-[9px] font-black text-sky-500 uppercase tracking-widest opacity-70">pengu is thinking...</span>
+            <span className="text-[9px] font-black text-sky-500 uppercase tracking-widest opacity-70">pedgy is thinking...</span>
           </div>
         )}
       </div>
@@ -551,7 +551,7 @@ EMOTIONAL MODES:
 
       <div className="p-1 flex justify-between items-center text-[7px] font-black uppercase" style={{background:'#075985', color:'#BAE6FD'}}>
         <span className="px-2">🧊 ICEBERG PROTOCOL ACTIVE</span>
-        <span className="px-2">PENGU_OS_v1.0</span>
+        <span className="px-2">pedgy_OS_v1.0</span>
       </div>
     </div>
   );
@@ -641,13 +641,13 @@ const PaintApp = () => {
   const download = () => {
     if (!canvasRef.current) return;
     const link = document.createElement('a');
-    link.download = `PENGU_MEME_${Date.now()}.png`;
+    link.download = `pedgy_MEME_${Date.now()}.png`;
     link.href = canvasRef.current.toDataURL();
     link.click();
   };
 
   const addText = () => {
-    const newEl = { id: paintGenId(), type: 'text', x: 100, y: 100, width: 200, height: 60, text: 'PENGU GANG', color: '#0369a1', size: 40, font: 'Impact', strokeWidth: 2, strokeColor: '#BAE6FD' };
+    const newEl = { id: paintGenId(), type: 'text', x: 100, y: 100, width: 200, height: 60, text: 'pedgy GANG', color: '#0369a1', size: 40, font: 'Impact', strokeWidth: 2, strokeColor: '#BAE6FD' };
     saveHistory([...elements, newEl]);
     setSelectedId(newEl.id);
     setTool('move');
@@ -779,14 +779,14 @@ const PaintApp = () => {
     let newEls = [];
     const cw = canvasSize.w, ch = canvasSize.h;
     if (type === 'classic') newEls = [
-      { id: paintGenId(), type: 'text', x: 20, y: 20, width: cw-40, height: 100, text: 'PENGU GANG 🐧', color: '#ffffff', size: 60, font: 'Impact', strokeWidth: 4, strokeColor: '#0369a1' },
+      { id: paintGenId(), type: 'text', x: 20, y: 20, width: cw-40, height: 100, text: 'pedgy GANG 🐧', color: '#ffffff', size: 60, font: 'Impact', strokeWidth: 4, strokeColor: '#0369a1' },
       { id: paintGenId(), type: 'text', x: 20, y: ch-100, width: cw-40, height: 100, text: 'WAGMI FRENS', color: '#ffffff', size: 60, font: 'Impact', strokeWidth: 4, strokeColor: '#0369a1' }
     ];
     else if (type === 'breaking') newEls = [
       { id: paintGenId(), type: 'rect', x: 0, y: ch - 120, width: cw, height: 80, color: '#0369a1' },
       { id: paintGenId(), type: 'rect', x: 0, y: ch - 40, width: cw, height: 40, color: '#BAE6FD' },
       { id: paintGenId(), type: 'text', x: 20, y: ch-110, width: cw-40, height: 60, text: 'BREAKING NEWS 🐧', color: '#ffffff', size: 40, font: 'Impact', strokeWidth: 0 },
-      { id: paintGenId(), type: 'text', x: 20, y: ch-35, width: cw-40, height: 30, text: 'PENGU COLONY PUMPING TO THE MOON', color: '#0369a1', size: 20, font: 'Arial', strokeWidth: 0 }
+      { id: paintGenId(), type: 'text', x: 20, y: ch-35, width: cw-40, height: 30, text: 'pedgy COLONY PUMPING TO THE MOON', color: '#0369a1', size: 20, font: 'Arial', strokeWidth: 0 }
     ];
     else if (type === 'wanted') newEls = [
       { id: paintGenId(), type: 'rect', x: 0, y: 0, width: cw, height: ch, color: '#f0f9ff' },
@@ -797,7 +797,7 @@ const PaintApp = () => {
     else if (type === 'arctic') newEls = [
       { id: paintGenId(), type: 'rect', x: 0, y: 0, width: cw, height: ch, color: '#0369a1' },
       { id: paintGenId(), type: 'rect', x: 0, y: ch*0.7, width: cw, height: ch*0.3, color: '#e0f2fe' },
-      { id: paintGenId(), type: 'text', x: 20, y: 40, width: cw-40, height: 80, text: '❄️ ARCTIC PENGU OS ❄️', color: '#BAE6FD', size: 50, font: 'Impact', strokeWidth: 0 },
+      { id: paintGenId(), type: 'text', x: 20, y: 40, width: cw-40, height: 80, text: '❄️ ARCTIC pedgy OS ❄️', color: '#BAE6FD', size: 50, font: 'Impact', strokeWidth: 0 },
       { id: paintGenId(), type: 'text', x: 20, y: ch*0.72, width: cw-40, height: 60, text: 'THE COLONY IS LIVE', color: '#0369a1', size: 35, font: 'Impact', strokeWidth: 0 }
     ];
     saveHistory(newEls);
@@ -861,7 +861,7 @@ const PaintApp = () => {
         <div className={`absolute md:static top-0 right-0 bottom-0 z-50 w-64 flex flex-col shadow-2xl md:shadow-none transition-transform duration-300 ${showProps ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}
           style={{background:'#e8f4fd', borderLeft:'2px solid #BAE6FD'}}>
           <div className="text-white font-bold text-[10px] p-2 flex justify-between items-center uppercase tracking-widest shrink-0" style={{background:'linear-gradient(to right, #0369a1, #0ea5e9)'}}>
-            <span>🎨 Pengu Inspector</span>
+            <span>🎨 pedgy Inspector</span>
             <div className="flex gap-2"><Layers size={12}/><X size={14} className="md:hidden cursor-pointer hover:text-red-200" onClick={() => setShowProps(false)}/></div>
           </div>
 
@@ -892,7 +892,7 @@ const PaintApp = () => {
               </div>
             )}
             <div className="pt-10 border-t border-sky-200">
-              <label className="text-[9px] font-black uppercase text-sky-500 mb-2 block">❄️ Pengu Filters</label>
+              <label className="text-[9px] font-black uppercase text-sky-500 mb-2 block">❄️ pedgy Filters</label>
               <div className="grid grid-cols-2 gap-1">
                 <Button active={globalEffect==='deepfry'} onClick={()=>setGlobalEffect(g => g==='deepfry'?'none':'deepfry')}><Zap size={10}/> DEEPFRY</Button>
                 <Button active={globalEffect==='vhs'} onClick={()=>setGlobalEffect(g => g==='vhs'?'none':'vhs')}><Tv size={10}/> VHS</Button>
@@ -924,8 +924,8 @@ const MemesApp = () => {
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedIndex, images.length]);
 
-  const downloadImage = (src, name) => { try { const link = document.createElement('a'); link.href = src; link.target = "_blank"; link.download = `${name||'PENGU_MEME'}.jpg`; document.body.appendChild(link); link.click(); document.body.removeChild(link); } catch(err){} };
-  const shareToX = () => { const text = encodeURIComponent("🐧 PENGU GANG 🐧 #PENGU #WAGMI"); window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank'); };
+  const downloadImage = (src, name) => { try { const link = document.createElement('a'); link.href = src; link.target = "_blank"; link.download = `${name||'pedgy_MEME'}.jpg`; document.body.appendChild(link); link.click(); document.body.removeChild(link); } catch(err){} };
+  const shareToX = () => { const text = encodeURIComponent("🐧 pedgy GANG 🐧 #pedgy #WAGMI"); window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank'); };
 
   if (selectedIndex !== null) {
     const currentSrc = images[selectedIndex];
@@ -938,7 +938,7 @@ const MemesApp = () => {
         <div className="p-1.5 border-b-2 flex justify-between items-center z-[60]" style={{background:'#e8f4fd', borderColor:'#7DD3FC'}} onClick={e => e.stopPropagation()}>
           <div className="flex items-center gap-3 px-2">
             <button onClick={() => setSelectedIndex(null)} className="p-1 border flex items-center" style={{background:'#dbeafe', borderColor:'#BAE6FD #0369a1 #0369a1 #BAE6FD'}}><Grid size={14}/></button>
-            <div><span className="text-[8px] font-black text-sky-600 block">🐧 Pengu_Gallery</span><span className="text-[10px] font-bold text-sky-900 truncate max-w-[150px] block">{currentName}.JPG</span></div>
+            <div><span className="text-[8px] font-black text-sky-600 block">🐧 pedgy_Gallery</span><span className="text-[10px] font-bold text-sky-900 truncate max-w-[150px] block">{currentName}.JPG</span></div>
           </div>
           <div className="flex gap-1 pr-1">
             <button onClick={() => downloadImage(currentSrc, currentName)} className="px-2 py-1 text-[9px] font-black flex items-center gap-1 hover:brightness-110 uppercase" style={{background:'#dbeafe', color:'#0369a1', border:'1px solid #7DD3FC'}}><Download size={10}/> Save</button>
@@ -949,7 +949,7 @@ const MemesApp = () => {
           <button onClick={e=>navigate(-1,e)} className="absolute left-4 z-[70] p-4 rounded-full transition-all md:opacity-0 md:group-hover:opacity-100" style={{background:'rgba(3,105,161,0.6)', color:'#BAE6FD'}}><ChevronLeft size={24} strokeWidth={3}/></button>
           <button onClick={e=>navigate(1,e)} className="absolute right-4 z-[70] p-4 rounded-full transition-all md:opacity-0 md:group-hover:opacity-100" style={{background:'rgba(3,105,161,0.6)', color:'#BAE6FD'}}><ChevronRight size={24} strokeWidth={3}/></button>
           <div onClick={e=>e.stopPropagation()}>
-            <img src={currentSrc} className="max-w-full max-h-[65vh] object-contain border-4 shadow-2xl" style={{borderColor:'#7DD3FC'}} alt="Pengu Meme" />
+            <img src={currentSrc} className="max-w-full max-h-[65vh] object-contain border-4 shadow-2xl" style={{borderColor:'#7DD3FC'}} alt="pedgy Meme" />
           </div>
         </div>
         <div className="h-24 p-3 flex gap-3 overflow-x-auto no-scrollbar items-center justify-center z-[60] border-t" style={{background:'#0369a1', borderColor:'#075985'}} onClick={e=>e.stopPropagation()}>
@@ -968,7 +968,7 @@ const MemesApp = () => {
       <div className="p-2 flex justify-between items-center border-b-2" style={{background:'linear-gradient(to right, #0369a1, #0ea5e9)', borderColor:'#075985'}}>
         <div className="flex items-center gap-2 px-2">
           <span className="text-2xl">🐧</span>
-          <span className="text-[10px] font-black tracking-widest text-white uppercase">Pengu Meme Stash v4.0</span>
+          <span className="text-[10px] font-black tracking-widest text-white uppercase">pedgy Meme Stash v4.0</span>
         </div>
         <span className="text-[9px] font-bold text-sky-200 pr-2">{images.length} Memes Loaded 🐟</span>
       </div>
@@ -1009,19 +1009,19 @@ const NotepadApp = () => {
   const [content, setContent] = useState("");
   const [status, setStatus] = useState("🐧 READY");
 
-  useEffect(() => { const saved = localStorage.getItem('pengu_write_content'); if (saved) setContent(saved); }, []);
+  useEffect(() => { const saved = localStorage.getItem('pedgy_write_content'); if (saved) setContent(saved); }, []);
 
   const handleChange = (e) => {
     const text = e.target.value;
     setContent(text);
-    localStorage.setItem('pengu_write_content', text);
+    localStorage.setItem('pedgy_write_content', text);
     setStatus("SAVING...");
     setTimeout(() => setStatus("🐧 SAVED"), 500);
   };
 
-  const clearNote = () => { if (window.confirm("Delete this masterpiece? 🐧")) { setContent(""); localStorage.removeItem('pengu_write_content'); setStatus("CLEARED"); } };
+  const clearNote = () => { if (window.confirm("Delete this masterpiece? 🐧")) { setContent(""); localStorage.removeItem('pedgy_write_content'); setStatus("CLEARED"); } };
   const publishIt = () => { if (!content.trim()) return; const text = encodeURIComponent(content.slice(0, 280)); window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank'); setStatus("POSTED 🐧"); };
-  const downloadTxt = () => { const element = document.createElement("a"); const file = new Blob([content], {type:'text/plain'}); element.href = URL.createObjectURL(file); element.download = "pengu_thoughts.txt"; document.body.appendChild(element); element.click(); setStatus("DOWNLOADED 🐟"); };
+  const downloadTxt = () => { const element = document.createElement("a"); const file = new Blob([content], {type:'text/plain'}); element.href = URL.createObjectURL(file); element.download = "pedgy_thoughts.txt"; document.body.appendChild(element); element.click(); setStatus("DOWNLOADED 🐟"); };
 
   return (
     <div className="flex flex-col h-full border-2" style={{background:'#f0f9ff', borderColor:'#7DD3FC', fontFamily:'monospace'}}>
@@ -1035,17 +1035,17 @@ const NotepadApp = () => {
       </div>
       <div className="flex-1 relative border-2 m-1 overflow-hidden" style={{background:'white', borderColor:'#0369a1 #BAE6FD #BAE6FD #0369a1'}}>
         <textarea className="w-full h-full resize-none outline-none p-2 text-sm leading-relaxed text-sky-900" style={{fontFamily:'monospace', background:'white'}}
-          value={content} onChange={handleChange} placeholder="write your pengu manifesto here... 🐧" spellCheck="false" />
+          value={content} onChange={handleChange} placeholder="write your pedgy manifesto here... 🐧" spellCheck="false" />
       </div>
       <div className="h-6 border-t flex items-center px-2 text-[10px] gap-4 font-mono text-sky-400" style={{background:'#e8f4fd', borderColor:'#BAE6FD'}}>
         <span>CHARS: {content.length}</span><span>WORDS: {content.trim() ? content.trim().split(/\s+/).length : 0}</span>
-        <span className="flex-1 text-right">🐟 PENGU_OS</span>
+        <span className="flex-1 text-right">🐟 pedgy_OS</span>
       </div>
     </div>
   );
 };
 
-// --- SLIDE PENGU (MERGE IT) ---
+// --- SLIDE pedgy (MERGE IT) ---
 const TILE_DATA = {
   2:    { label: 'SARDINE', color: 'bg-sky-950', border: 'border-sky-800', text: 'text-sky-500', glow: '' },
   4:    { label: 'ANCHOVY', color: 'bg-sky-900', border: 'border-sky-700', text: 'text-sky-400', glow: '' },
@@ -1053,12 +1053,12 @@ const TILE_DATA = {
   16:   { label: 'HERRING', color: 'bg-cyan-950', border: 'border-cyan-500', text: 'text-cyan-300', glow: 'shadow-cyan-900/50' },
   32:   { label: 'TUNA', color: 'bg-sky-900', border: 'border-sky-400', text: 'text-sky-200', glow: 'shadow-sky-900/50' },
   64:   { label: 'SALMON', color: 'bg-orange-950', border: 'border-orange-400', text: 'text-orange-300', glow: 'shadow-orange-900/50' },
-  128:  { label: 'PENGUIN', color: 'bg-slate-800', border: 'border-white', text: 'text-white', glow: 'shadow-white/20' },
+  128:  { label: 'pedgyIN', color: 'bg-slate-800', border: 'border-white', text: 'text-white', glow: 'shadow-white/20' },
   256:  { label: 'COLONY', color: 'bg-sky-600', border: 'border-sky-300', text: 'text-white', glow: 'shadow-sky-500/40' },
   512:  { label: 'ICEBERG', color: 'bg-blue-400', border: 'border-white', text: 'text-white', glow: 'shadow-blue-300/40' },
   1024: { label: 'BLIZZARD', color: 'bg-white', border: 'border-sky-200', text: 'text-sky-800', special: true, glow: 'shadow-white/60' },
   2048: { label: 'GOD WADDLE', color: 'bg-yellow-300', border: 'border-yellow-100', text: 'text-yellow-900', special: true, glow: 'shadow-yellow-300/60' },
-  4096: { label: 'PENGU KING', color: 'bg-gradient-to-br from-sky-400 to-yellow-300', border: 'border-white', text: 'text-white', special: true, glow: 'shadow-sky-300/80' },
+  4096: { label: 'pedgy KING', color: 'bg-gradient-to-br from-sky-400 to-yellow-300', border: 'border-white', text: 'text-white', special: true, glow: 'shadow-sky-300/80' },
 };
 
 const ZEN_SCALE = [130.81, 146.83, 164.81, 196.00, 220.00, 261.63, 293.66, 329.63, 392.00, 440.00];
@@ -1135,7 +1135,7 @@ const MergeItApp = () => {
   }, []);
 
   useEffect(() => {
-    const savedBest = localStorage.getItem('pengumergeItBest');
+    const savedBest = localStorage.getItem('pedgymergeItBest');
     if (savedBest) setBest(parseInt(savedBest));
     initGame();
     return () => { if (schedulerTimer.current) clearTimeout(schedulerTimer.current); };
@@ -1211,7 +1211,7 @@ const MergeItApp = () => {
 
       const gridWithNew = addRandomTile(finalGrid);
       setGrid(gridWithNew); setScore(currentScore);
-      if (currentScore > best) { setBest(currentScore); localStorage.setItem('pengumergeItBest', currentScore); }
+      if (currentScore > best) { setBest(currentScore); localStorage.setItem('pedgymergeItBest', currentScore); }
       checkGameOver(gridWithNew);
     }
   }, [grid, score, best, gameOver, stability]);
@@ -1241,7 +1241,7 @@ const MergeItApp = () => {
       <div className="relative z-10 p-5 border-b border-sky-900/20">
         <div className="flex justify-between items-center mb-6">
           <div className="flex flex-col">
-            <div className="flex items-center gap-2 mb-1"><span className="text-lg">🐧</span><span className="text-[10px] font-black text-white/20 tracking-widest uppercase">SLIDE_PENGU_v5.4</span></div>
+            <div className="flex items-center gap-2 mb-1"><span className="text-lg">🐧</span><span className="text-[10px] font-black text-white/20 tracking-widest uppercase">SLIDE_pedgy_v5.4</span></div>
             <div className="flex gap-8 mt-2">
               <div><p className="text-[8px] text-sky-600 uppercase font-black">Fish Score 🐟</p><p className="text-2xl font-black text-sky-300">+{score}</p></div>
               <div><p className="text-[8px] text-sky-600 uppercase font-black">Best Haul</p><p className="text-2xl font-black text-yellow-400">{best}</p></div>
@@ -1306,7 +1306,7 @@ const MergeItApp = () => {
 
 // --- PFP CULT ---
 const REFRESH_INTERVAL_MS = 6 * 60 * 60 * 1000;
-const APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'pengu-pfp-cult';
+const APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'pedgy-pfp-cult';
 const BASE_CHARACTER_PATH = "main.jpg";
 
 const PfpCultApp = () => {
@@ -1376,13 +1376,13 @@ const PfpCultApp = () => {
 
     try {
       const base64Image = await getBaseCharacter64();
-      if (!base64Image) throw new Error("Pengu base image not found at main.jpg");
+      if (!base64Image) throw new Error("pedgy base image not found at main.jpg");
 
-      const promptText = `PENGUIN PFP CULT SYSTEM. You are given two images:
-Image 1: The base Pengu character — a cute cartoon penguin. This is the OUTPUT character. DO NOT change its body shape, pose, or penguin identity.
+      const promptText = `pedgyIN PFP CULT SYSTEM. You are given two images:
+Image 1: The base pedgy character — a cute cartoon pedgyin. This is the OUTPUT character. DO NOT change its body shape, pose, or pedgyin identity.
 Image 2: A source image uploaded by the user. Extract the style, clothing, accessories, colors, vibe, and aesthetic from this source image.
-Apply everything extracted from Image 2 onto the Pengu in Image 1. Dress it up. Give it the same accessories. Recreate the energy. Make it feel like the Pengu joined that world.
-Keep it cute, cartoonish, and charming. The result should still look like Pengu, just styled after the source image.`;
+Apply everything extracted from Image 2 onto the pedgy in Image 1. Dress it up. Give it the same accessories. Recreate the energy. Make it feel like the pedgy joined that world.
+Keep it cute, cartoonish, and charming. The result should still look like pedgy, just styled after the source image.`;
 
       const contentParts = [
         { text: promptText },
@@ -1419,7 +1419,7 @@ Keep it cute, cartoonish, and charming. The result should still look like Pengu,
     if (!generatedImg) return;
     const link = document.createElement('a');
     link.href = generatedImg;
-    link.download = `PENGU_CULT_${Date.now()}.png`;
+    link.download = `pedgy_CULT_${Date.now()}.png`;
     link.click();
   };
 
@@ -1430,7 +1430,7 @@ Keep it cute, cartoonish, and charming. The result should still look like Pengu,
           <span className="text-2xl">🐧</span>
           <div>
             <h1 className="text-[9px] font-black uppercase tracking-[0.3em] text-white italic leading-none">PFP_CULT</h1>
-            <span className="text-[6px] text-sky-700 font-bold uppercase tracking-tighter">clone engine — upload anything, penguify it</span>
+            <span className="text-[6px] text-sky-700 font-bold uppercase tracking-tighter">clone engine — upload anything, pedgyify it</span>
           </div>
         </div>
         <div className="px-2 py-1 border flex items-center gap-2 text-[8px] font-black uppercase" style={{borderColor:'rgba(125,211,252,0.3)', color:'#7DD3FC'}}>
@@ -1443,7 +1443,7 @@ Keep it cute, cartoonish, and charming. The result should still look like Pengu,
         <div className="flex-1 flex flex-col min-h-0 border-r" style={{borderColor:'rgba(3,105,161,0.2)'}}>
           <div className="flex-1 overflow-y-auto p-4 md:p-6 flex flex-col gap-5">
             <div className="p-3 border text-[9px] leading-relaxed text-sky-600 uppercase tracking-tight" style={{borderColor:'rgba(3,105,161,0.2)', background:'rgba(3,11,20,0.6)'}}>
-              🐧 upload <span className="text-sky-300 font-black">any image</span> — a pfp, a character, a vibe, a meme, whatever. pengu will absorb the style and wear it.
+              🐧 upload <span className="text-sky-300 font-black">any image</span> — a pfp, a character, a vibe, a meme, whatever. pedgy will absorb the style and wear it.
             </div>
 
             <div
@@ -1477,7 +1477,7 @@ Keep it cute, cartoonish, and charming. The result should still look like Pengu,
               className={`w-full py-4 font-black italic text-base tracking-[0.4em] uppercase transition-all flex items-center justify-center gap-3 border-b-4 active:translate-y-1 active:border-b-0 ${isForging || !sourceImage ? 'cursor-not-allowed opacity-60' : 'hover:brightness-110'}`}
               style={{background: isForging ? '#0c1f33' : '#7DD3FC', color: isForging ? '#7DD3FC' : '#030b14', borderColor:'#0369a1', boxShadow: (!isForging && sourceImage) ? '0 0 40px rgba(125,211,252,0.25)' : 'none'}}>
               {isForging ? <RefreshCw className="animate-spin" size={18}/> : <span className="text-xl">🐧</span>}
-              {isForging ? 'cloning...' : !sourceImage ? 'upload an image first' : 'penguify it'}
+              {isForging ? 'cloning...' : !sourceImage ? 'upload an image first' : 'pedgyify it'}
             </button>
           </div>
         </div>
@@ -1509,7 +1509,7 @@ Keep it cute, cartoonish, and charming. The result should still look like Pengu,
                   </div>
                 </div>
                 <button onClick={downloadPFP} className="w-full py-3 font-black uppercase text-[11px] flex items-center justify-center gap-2 tracking-[0.2em] transition-all hover:brightness-110 text-sky-900" style={{background:'#7DD3FC'}}>
-                  <Download size={14}/> save pengu 🐧
+                  <Download size={14}/> save pedgy 🐧
                 </button>
                 <button onClick={() => { setGeneratedImg(null); setSourceImage(null); setSourceImagePreview(null); }} className="w-full py-2 text-[9px] font-black uppercase text-sky-700 hover:text-sky-400 transition-all flex items-center justify-center gap-2">
                   <RefreshCw size={11}/> clone another
@@ -1612,7 +1612,7 @@ export default function UltimateOS() {
 
   const openApp = (type) => {
     const id = os_gen_id();
-    const titles = { paint: '🎨 Paint Pengu', terminal: '💻 Terminal', tunes: '🎵 Tunes', rugsweeper: '🐧 Stack Pengu', notepad: '📝 Write Stuff', memes: '🐟 Meme Stash', trollbox: '💬 Colony Chat', mememind: '🧠 Meme Brain', mergeit: '🧊 Slide Pengu', wallet: '💰 Wallet', pfpcult: '📸 PFP Cult' };
+    const titles = { paint: '🎨 Paint pedgy', terminal: '💻 Terminal', tunes: '🎵 Tunes', rugsweeper: '🐧 Stack pedgy', notepad: '📝 Write Stuff', memes: '🐟 Meme Stash', trollbox: '💬 Colony Chat', mememind: '🧠 Meme Brain', mergeit: '🧊 Slide pedgy', wallet: '💰 Wallet', pfpcult: '📸 PFP Cult' };
     const isMobile = window.innerWidth < 768;
     const isPhoneApp = ['rugsweeper','trollbox','mememind','mergeit','wallet'].includes(type);
     const isWideApp = ['paint','memes','pfpcult'].includes(type);
@@ -1643,7 +1643,7 @@ export default function UltimateOS() {
       ))}
       <div className="relative z-10 flex flex-col items-center text-center">
         <div className="text-8xl mb-6 animate-bounce" style={{filter:'drop-shadow(0 0 30px rgba(125,211,252,0.6))'}}>🐧</div>
-        <h1 className="text-5xl font-black text-white mb-2 italic tracking-[0.2em]" style={{fontFamily:"'Fredoka One', 'Comic Sans MS', cursive", textShadow:'0 0 30px rgba(125,211,252,0.5)'}}>PENGU OS</h1>
+        <h1 className="text-5xl font-black text-white mb-2 italic tracking-[0.2em]" style={{fontFamily:"'Fredoka One', 'Comic Sans MS', cursive", textShadow:'0 0 30px rgba(125,211,252,0.5)'}}>pedgy OS</h1>
         <p className="text-sky-200 text-sm mb-8 tracking-[0.3em] uppercase font-bold opacity-70">Waddling into existence...</p>
         <div className="w-64 h-4 border-2 p-0.5 rounded-full" style={{borderColor:'rgba(186,230,253,0.5)'}}>
           <div className="h-full rounded-full" style={{background:'#7DD3FC', animation:'widthLoad 2.5s ease-out forwards', width:'0%', boxShadow:'0 0 10px #7DD3FC'}}></div>
@@ -1677,8 +1677,8 @@ export default function UltimateOS() {
       <div className="absolute top-0 left-0 p-4 z-20 h-[calc(100vh-40px)] w-full pointer-events-none flex flex-col flex-wrap content-start items-start gap-4 overflow-hidden">
         {[
           { id: 'pfpcult', emoji: '📸', label: 'PFP Cult' },
-          { id: 'mergeit', emoji: '🧊', label: 'Slide Pengu' },
-          { id: 'paint', emoji: '🎨', label: 'Paint Pengu' },
+          { id: 'mergeit', emoji: '🧊', label: 'Slide pedgy' },
+          { id: 'paint', emoji: '🎨', label: 'Paint pedgy' },
           { id: 'notepad', emoji: '📝', label: 'Write Stuff' },
           { id: 'memes', emoji: '🐟', label: 'Meme Stash' },
           { id: 'wallet', emoji: '💰', label: 'Wallet' },
@@ -1719,10 +1719,10 @@ export default function UltimateOS() {
                   </div>
                 </div>
                 <div className="p-4 border" style={{background:'rgba(3,11,20,0.8)', borderColor:'rgba(125,211,252,0.3)'}}>
-                  <span className="text-[9px] font-bold text-sky-700 uppercase block mb-1">Your PENGU 🐧</span>
+                  <span className="text-[9px] font-bold text-sky-700 uppercase block mb-1">Your pedgy 🐧</span>
                   <div className="flex justify-between items-baseline">
                     <span className="text-2xl font-black text-sky-300">{(dexData.balance || 0).toLocaleString()}</span>
-                    <span className="text-xs font-black text-sky-600">PENGU</span>
+                    <span className="text-xs font-black text-sky-600">pedgy</span>
                   </div>
                   {!hasAccess && (
                     <div className="mt-3 h-1 w-full overflow-hidden rounded-full" style={{background:'rgba(3,105,161,0.2)'}}>
@@ -1736,7 +1736,7 @@ export default function UltimateOS() {
                 <span className="text-3xl">{hasAccess ? '🐧' : '🔒'}</span>
                 <div>
                   <span className={`text-[11px] font-black uppercase tracking-[0.1em] block ${hasAccess ? 'text-sky-300' : 'text-yellow-400'}`}>{hasAccess ? 'Colony Member ✓' : 'Access Locked'}</span>
-                  <span className="text-[8px] text-sky-700 uppercase leading-tight">{hasAccess ? 'welcome to the colony, fren!' : 'hold 500k PENGU to join the colony.'}</span>
+                  <span className="text-[8px] text-sky-700 uppercase leading-tight">{hasAccess ? 'welcome to the colony, fren!' : 'hold 500k pedgy to join the colony.'}</span>
                 </div>
               </div>
 
@@ -1757,10 +1757,10 @@ export default function UltimateOS() {
           {win.type === 'terminal' && (
             <div className="p-4 h-full flex flex-col" style={{background:'#050d1a', fontFamily:'monospace', color:'#7DD3FC'}}>
               <div className="text-[10px] font-black uppercase tracking-widest text-sky-600 mb-4 flex items-center gap-2">
-                <span>🐧</span> PENGU_OS TERMINAL v1.0
+                <span>🐧</span> pedgy_OS TERMINAL v1.0
               </div>
               <div className="flex-1 overflow-y-auto text-[11px] space-y-1">
-                <p className="text-sky-400">Welcome to Pengu OS Terminal, fren.</p>
+                <p className="text-sky-400">Welcome to pedgy OS Terminal, fren.</p>
                 <p className="text-sky-600">Type 'help' for available commands.</p>
                 <p className="text-sky-300 mt-2">{'>'} Colony Status: WADDLING 🐧</p>
                 <p className="text-sky-300">{'>'} Fish Reserves: PLENTY 🐟</p>
@@ -1773,7 +1773,7 @@ export default function UltimateOS() {
             <div className="p-4 h-full flex flex-col gap-3 overflow-y-auto" style={{background:'#050d1a', fontFamily:'monospace', color:'#7DD3FC'}}>
               <div className="flex items-center gap-2 border-b pb-3" style={{borderColor:'rgba(3,105,161,0.4)'}}>
                 <span className="text-2xl">🎵</span>
-                <span className="text-[10px] font-black uppercase tracking-widest text-sky-600">Pengu Tunes</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-sky-600">pedgy Tunes</span>
               </div>
               <div className="flex-1 space-y-2">
                 {TUNES_PLAYLIST.map((track, i) => (
@@ -1799,7 +1799,7 @@ export default function UltimateOS() {
           {win.type === 'rugsweeper' && (
             <div className="h-full flex flex-col items-center justify-center gap-4 p-4" style={{background:'#050d1a', fontFamily:'monospace', color:'#7DD3FC'}}>
               <span className="text-6xl animate-bounce">🐧</span>
-              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-sky-600 text-center">Stack Pengu</p>
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-sky-600 text-center">Stack pedgy</p>
               <p className="text-[9px] text-sky-800 uppercase tracking-widest text-center">Stack the colony.<br/>Don't fall off the iceberg.</p>
               <div className="px-6 py-3 border font-black text-[10px] uppercase tracking-widest text-sky-900" style={{background:'#7DD3FC', borderColor:'#0369a1'}}>
                 🐧 Coming Soon
@@ -1809,12 +1809,12 @@ export default function UltimateOS() {
 
           {win.type === 'trollbox' && (() => {
             const [tbMessages, setTbMessages] = React.useState([
-              { id: 1, user: 'pengu_maxi', text: 'honk honk frens 🐧', time: '12:01' },
+              { id: 1, user: 'pedgy_maxi', text: 'honk honk frens 🐧', time: '12:01' },
               { id: 2, user: 'iceberghodler', text: 'fish reserves looking stacked today 🐟', time: '12:03' },
               { id: 3, user: 'waddle_gang', text: 'COLONY STRONG ❄️', time: '12:05' },
             ]);
             const [tbInput, setTbInput] = React.useState('');
-            const names = ['anon_penguin','frosty_degen','iceberg_irl','colony_fren','fish_maxi'];
+            const names = ['anon_pedgyin','frosty_degen','iceberg_irl','colony_fren','fish_maxi'];
             const sendMsg = () => {
               if (!tbInput.trim()) return;
               setTbMessages(prev => [...prev, { id: Date.now(), user: names[Math.floor(Math.random()*names.length)], text: tbInput, time: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) }]);
@@ -1855,9 +1855,9 @@ export default function UltimateOS() {
               "🐧 when you buy the top but your flippers are diamond",
               "🐟 fish rain incoming — colony feasting soon",
               "❄️ your bags are frozen but so is your conviction",
-              "🐧 nobody: / pengu: honk honk WAGMI honk",
+              "🐧 nobody: / pedgy: honk honk WAGMI honk",
               "🧊 iceberg theory: 90% of gains are underwater",
-              "🐟 bought pengu for the fish. stayed for the colony.",
+              "🐟 bought pedgy for the fish. stayed for the colony.",
             ];
             const generate = () => {
               setMmLoading(true);
