@@ -63,7 +63,14 @@ const ASSETS = {
     meme_06: "memes/1.jpg", meme_07: "memes/2.jpg", meme_08: "memes/3.jpg", meme_09: "memes/4.jpg",
     meme_10: "memes/5.jpg", meme_11: "memes/6.jpg", meme_12: "memes/7.jpg", meme_13: "memes/8.jpg",
     meme_14: "memes/9.jpg", meme_15: "memes/10.jpg", meme_16: "memes/11.jpg", meme_17: "memes/12.jpg",
-    meme_18: "memes/13.jpg", meme_19: "memes/14.jpg", 
+    meme_18: "memes/13.jpg", meme_19: "memes/14.jpg", meme_20: "memes/15.jpg", meme_21: "memes/16.jpg",
+    meme_22: "memes/17.jpg", meme_23: "memes/18.jpg", meme_24: "memes/19.jpg", meme_25: "memes/20.jpg",
+    meme_26: "memes/21.jpg", meme_27: "memes/22.jpg", meme_28: "memes/23.jpg", code_33: "memes/28.jpg",
+    meme_34: "memes/29.jpg", meme_35: "memes/30.jpg", meme_36: "memes/31.jpg", meme_37: "memes/32.jpg",
+    meme_38: "memes/33.jpg", meme_39: "memes/34.jpg", meme_40: "memes/35.jpg", meme_41: "memes/40.jpg",
+    meme_42: "memes/41.jpg", meme_43: "memes/42.jpg", meme_44: "memes/43.jpg", meme_45: "memes/44.jpg",
+    meme_46: "memes/45.jpg", meme_47: "memes/46.jpg", meme_48: "memes/47.jpg", meme_49: "memes/48.jpg",
+    meme_50: "memes/49.jpg",
   }
 };
 
@@ -194,10 +201,6 @@ const useDexData = (ca, userWallet) => {
   return { ...data, refresh: () => { fetchPrice(); fetchTokenBalance(); } };
 };
 
-// --- PENGU PALETTE (ice blues, soft whites, warm waddle vibes) ---
-// Accent: #7DD3FC (ice blue), #BAE6FD (frost), #0EA5E9 (deep ocean)
-// Fun: #FEF08A (yellow fish), #F97316 (warm belly), #E0F2FE (snow)
-
 // --- UI COMPONENTS ---
 const WindowFrame = ({ title, icon: Icon, children, onClose, onMinimize, onMaximize, isActive, onFocus }) => (
   <div
@@ -226,11 +229,6 @@ const WindowFrame = ({ title, icon: Icon, children, onClose, onMinimize, onMaxim
       {children}
     </div>
   </div>
-);
-
-// --- SNOWFLAKE BOOT ANIMATION ---
-const SnowflakeParticle = ({ style }) => (
-  <div style={style} className="absolute text-sky-200 opacity-60 animate-bounce pointer-events-none select-none">❄</div>
 );
 
 const StartMenu = ({ isOpen, onClose, onOpenApp }) => {
@@ -268,7 +266,7 @@ const StartMenu = ({ isOpen, onClose, onOpenApp }) => {
           <div className="px-2 py-1 text-sky-500 font-bold text-[10px] uppercase">🧊 Programs</div>
           {[
             { id: 'terminal', icon: Terminal, label: 'Terminal' },
-            { id: 'forgeit', icon: Sparkles, label: 'Forge Pengu' },
+            { id: 'pfpcult', icon: Camera, label: 'PFP Cult' },
             { id: 'mergeit', icon: Joystick, label: 'Slide Pengu' },      
             { id: 'paint', icon: Paintbrush, label: 'Paint Pengu' },
             { id: 'memes', icon: Folder, label: 'Meme Stash' },
@@ -333,7 +331,7 @@ const SystemResourceMonitor = ({ wallet, balance, hasAccess }) => {
   );
 };
 
-// --- PENGU AI (Shippy renamed to Pengu in personality, same const) ---
+// --- PENGU AI ---
 const Shippy = ({ hidden, dexData }) => {
   const [isOpen, setIsOpen] = useState(false); 
   const [messages, setMessages] = useState([]);
@@ -434,7 +432,7 @@ SPEAKING STYLE:
 KNOWLEDGE:
 Price is ${currentPrice}. Mention casually when relevant.
 User is ${userName}. If they seem cool, adopt them into the colony.
-You know all the apps: Paint Pengu (meme maker), Slide Pengu (2048 style), Meme Brain (tweet ideas), Stack Pengu (stacking game), Tunes (vibes), Terminal, Forge Pengu (AI pfp generator), Colony Chat (trollbox).
+You know all the apps: Paint Pengu (meme maker), Slide Pengu (2048 style), PFP Cult (upload any image to penguify it), Meme Stash, Write Stuff, Terminal, Colony Chat.
 Talk about them like they're your home. Because they are.
 
 EMOTIONAL MODES:
@@ -1048,7 +1046,7 @@ const NotepadApp = () => {
   );
 };
 
-// --- MERGE IT (SLIDE PENGU) ---
+// --- SLIDE PENGU (MERGE IT) ---
 const TILE_DATA = {
   2:    { label: 'SARDINE', color: 'bg-sky-950', border: 'border-sky-800', text: 'text-sky-500', glow: '' },
   4:    { label: 'ANCHOVY', color: 'bg-sky-900', border: 'border-sky-700', text: 'text-sky-400', glow: '' },
@@ -1307,118 +1305,19 @@ const MergeItApp = () => {
   );
 };
 
-// --- FORGE IT (FORGE PENGU) ---
-const UNLIMITED_THRESHOLD = 3000000; 
-const HOLDER_THRESHOLD = 500000;
-const LIMIT_ELITE = 99999;
-const LIMIT_HOLDER = 99999;
-const LIMIT_GUEST = 99999;
-const REFRESH_INTERVAL_MS = 6 * 60 * 60 * 1000; 
-const APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'pengu-forge-colony';
+// --- PFP CULT ---
+const REFRESH_INTERVAL_MS = 6 * 60 * 60 * 1000;
+const APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'pengu-pfp-cult';
 const BASE_CHARACTER_PATH = "main.jpg";
 
-const PFP_CATEGORIES = [
-  { id: 'bg', label: 'WORLD', icon: Image },
-  { id: 'head', label: 'HATS', icon: Star },
-  { id: 'expression', label: 'VIBE', icon: Smile },
-  { id: 'item', label: 'PROP', icon: Gift },
-  { id: 'glasses', label: 'SPECS', icon: Glasses },
-  { id: 'aura', label: 'AURA', icon: Zap },
-  { id: 'super', label: 'SUPER', icon: Shield },
-  { id: 'clone', label: 'CLONE', icon: Camera },
-];
-
-const PFP_TRAITS = {
-  bg: [
-    { id: 'plain', label: 'Arctic White', prompt: 'standing against a simple flat icy off-white background' },
-    { id: 'ice', label: 'Ice Sheet', prompt: 'standing on a vast flat frozen ice sheet under a pale sky' },
-    { id: 'ocean', label: 'Polar Ocean', prompt: 'standing at the edge of a dark icy polar ocean at dawn' },
-    { id: 'doodles', label: 'Notebook Doodles', prompt: 'standing against a paper background covered in cute penguin pencil doodles' },
-    { id: 'pastel', label: 'Pastel Gradient', prompt: 'standing against a soft icy blue and lavender pastel gradient' },
-    { id: 'polka', label: 'Polka Chaos', prompt: 'against a flat colorful polka dot pattern with snowflake motifs' },
-    { id: 'grid', label: 'Blueprint Grid', prompt: 'against a blue industrial blueprint grid background' },
-    { id: 'night_ice', label: 'Night Glacier', prompt: 'against a deep midnight blue glacial ice cliff with aurora lights' },
-    { id: 'graffiti', label: 'Graffiti Wall', prompt: 'against a wall covered in penguin graffiti tags' },
-    { id: 'colony', label: 'The Colony', prompt: 'standing in front of a crowd of tiny penguin silhouettes on an iceberg', vip: true },
-    { id: 'space_ice', label: 'Glacier in Space', prompt: 'floating on a chunk of ice in outer space with stars and galaxies', vip: true },
-    { id: 'gold_leaf', label: 'Gold Leaf Canvas', prompt: 'against a high-contrast black canvas with real gold leaf textures', vip: true },
-  ],
-  head: [
-    { id: 'none', label: 'None', prompt: 'no headgear' },
-    { id: 'beanie', label: 'Wool Beanie', prompt: 'wearing a slouched colorful wool beanie' },
-    { id: 'backward', label: 'Backward Cap', prompt: 'wearing a backward baseball cap' },
-    { id: 'bucket', label: 'Bucket Hat', prompt: 'wearing a pastel fabric bucket hat' },
-    { id: 'cowboy', label: 'Cowboy Hat', prompt: 'wearing a classic brown cowboy hat slightly too big' },
-    { id: 'top_hat', label: 'Top Hat', prompt: 'wearing a dapper black top hat' },
-    { id: 'construction', label: 'Hard Hat', prompt: 'wearing a yellow construction helmet' },
-    { id: 'party', label: 'Party Cone', prompt: 'wearing a colorful paper party cone hat' },
-    { id: 'snowflake_crown', label: 'Snowflake Crown', prompt: 'wearing a delicate crown made of ice and snowflakes', vip: true },
-    { id: 'halo', label: 'Halo', prompt: 'with a soft golden halo above the head', vip: true },
-    { id: 'devil', label: 'Devil Horns', prompt: 'with small red devil horns on its head', vip: true },
-    { id: 'diamond_crown', label: 'Diamond Crown', prompt: 'with a floating diamond crown above the head', vip: true },
-  ],
-  expression: [
-    { id: 'classic', label: 'Happy Honk', prompt: 'with a classic happy penguin expression' },
-    { id: 'grin', label: 'Big Grin', prompt: 'with a wide open happy grin' },
-    { id: 'side_eye', label: 'Side Eye', prompt: 'with a suspicious side-eye expression' },
-    { id: 'wink', label: 'Wink', prompt: 'with one eye closed in a cheeky wink' },
-    { id: 'derp', label: 'Derp Face', prompt: 'with a silly derp cross-eyed expression' },
-    { id: 'cool', label: 'Too Cool', prompt: 'with a smug unbothered cool expression' },
-  ],
-  item: [
-    { id: 'none', label: 'None', prompt: 'holding nothing' },
-    { id: 'fish', label: 'Big Fish 🐟', prompt: 'proudly holding a large fish' },
-    { id: 'coffee', label: 'Coffee Cup', prompt: 'holding a steaming coffee cup' },
-    { id: 'phone', label: 'Phone', prompt: 'holding a smartphone showing a green candle chart' },
-    { id: 'coin', label: 'PENGU Coin', prompt: 'holding a giant gold coin with "PENGU" engraved on it' },
-    { id: 'sign', label: 'WAGMI Sign', prompt: 'holding a handmade cardboard sign that says WAGMI' },
-    { id: 'umbrella', label: 'Umbrella', prompt: 'holding a colorful polka dot umbrella' },
-    { id: 'balloon', label: 'Fish Balloon', prompt: 'holding a fish-shaped balloon' },
-    { id: 'orb', label: 'Ice Orb', prompt: 'holding a glowing magical ice orb', vip: true },
-    { id: 'trident', label: 'Penguin Trident', prompt: 'holding a miniature ice trident', vip: true },
-  ],
-  glasses: [
-    { id: 'none', label: 'None', prompt: 'no eyewear' },
-    { id: 'round', label: 'Round Specs', prompt: 'wearing cute round glasses' },
-    { id: 'shades', label: 'Big Sunglasses', prompt: 'wearing huge oversized sunglasses' },
-    { id: 'ski', label: 'Ski Goggles', prompt: 'wearing orange ski goggles' },
-    { id: 'monocle', label: 'Monocle', prompt: 'wearing a fancy golden monocle' },
-    { id: 'cracked', label: 'Cracked Lens', prompt: 'wearing glasses with one cracked lens' },
-    { id: 'vr', label: 'VR Headset', prompt: 'wearing a VR headset pushed up on its forehead' },
-    { id: 'laser', label: 'Laser Eyes', prompt: 'with red laser beams shooting from eyes', vip: true },
-    { id: 'diamond', label: 'Diamond Frames', prompt: 'wearing glasses made of solid diamonds', vip: true },
-  ],
-  aura: [
-    { id: 'none', label: 'None', prompt: 'no special aura' },
-    { id: 'snow', label: 'Snow Flurry', prompt: 'surrounded by gently falling snowflakes' },
-    { id: 'ice_glow', label: 'Ice Glow', prompt: 'with a soft cool icy blue glow surrounding them' },
-    { id: 'fish_rain', label: 'Fish Rain', prompt: 'with tiny fish raining down around them' },
-    { id: 'aurora', label: 'Aurora Effect', prompt: 'surrounded by swirling aurora borealis colors' },
-    { id: 'static', label: 'Static Buzz', prompt: 'with a digital static glitch effect surrounding them' },
-    { id: 'rainbow', label: 'Rainbow Outline', prompt: 'with a rainbow-colored outline aura', vip: true },
-    { id: 'gold_aura', label: 'Golden Glow', prompt: 'surrounded by a warm golden radiance', vip: true },
-  ],
-  super: [
-    { id: 'none', label: 'None', prompt: 'regular pengu appearance' },
-    { id: 'superhero', label: 'Superhero', prompt: 'fully transformed into a penguin superhero with cape and chest logo', vip: true },
-    { id: 'knight', label: 'Ice Knight', prompt: 'fully transformed into an ice knight in crystalline armor', vip: true },
-    { id: 'astronaut', label: 'Astronaut', prompt: 'fully transformed into a penguin astronaut in a space suit', vip: true },
-    { id: 'pirate', label: 'Pirate Pengu', prompt: 'fully transformed into a pirate penguin with eyepatch and hook', vip: true },
-    { id: 'wizard', label: 'Ice Wizard', prompt: 'fully transformed into a penguin wizard with a pointy hat and glowing staff', vip: true },
-  ]
-};
-
-const ForgeItApp = () => {
+const PfpCultApp = () => {
   const [user, setUser] = useState(null);
-  const hasEliteAccess = true;
-  const hasHolderAccess = true;
-  const [dailyCount, setDailyCount] = useState(0); 
   const [isSyncing, setIsSyncing] = useState(true);
-  const [isRandomizing, setIsRandomizing] = useState(false);
-  const [trustMode, setTrustMode] = useState(false);
-  const [cloneImage, setCloneImage] = useState(null);
+  const [sourceImage, setSourceImage] = useState(null);
+  const [sourceImagePreview, setSourceImagePreview] = useState(null);
+  const [isDraggingFile, setIsDraggingFile] = useState(false);
   const fileInputRef = useRef(null);
-  
+
   const apiKey = (() => {
     try { if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_APP_GEMINI) return import.meta.env.VITE_APP_GEMINI; } catch (e) {}
     try { if (typeof process !== 'undefined' && process.env?.VITE_APP_GEMINI) return process.env.VITE_APP_GEMINI; } catch (e) {}
@@ -1426,76 +1325,40 @@ const ForgeItApp = () => {
     return typeof __apiKey !== 'undefined' ? __apiKey : "";
   })();
 
-  const [selections, setSelections] = useState({
-    bg: PFP_TRAITS.bg[0], head: PFP_TRAITS.head[0], expression: PFP_TRAITS.expression[0],
-    item: PFP_TRAITS.item[0], glasses: PFP_TRAITS.glasses[0], aura: PFP_TRAITS.aura[0], super: PFP_TRAITS.super[0],
-  });
-  
-  const [activeCat, setActiveCat] = useState('bg');
   const [generatedImg, setGeneratedImg] = useState(null);
   const [isForging, setIsForging] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [logs, setLogs] = useState(["🐧 COLONY_FORGE_READY", "❄️ ICE_RESERVES_STANDBY"]);
   const [error, setError] = useState(null);
-
-  const currentLimit = LIMIT_ELITE;
 
   useEffect(() => {
     const initAuth = async () => {
-      if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) await signInWithCustomToken(auth, __initial_auth_token);
-      else await signInAnonymously(auth);
+      try {
+        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) await signInWithCustomToken(auth, __initial_auth_token);
+        else await signInAnonymously(auth);
+      } catch(e) {}
     };
     initAuth();
-    const unsubscribe = onAuthStateChanged(auth, (u) => { if (u) setUser(u); });
+    const unsubscribe = onAuthStateChanged(auth, (u) => { if (u) { setUser(u); setIsSyncing(false); } });
     return () => unsubscribe();
   }, []);
 
-  useEffect(() => {
-    if (!user) return;
-    setIsSyncing(true);
-    const usageRef = doc(db, 'artifacts', APP_ID, 'users', user.uid, 'usage', 'forge_limits');
-    const unsub = onSnapshot(usageRef, (snap) => {
-      if (snap.exists()) { const data = snap.data(); const now = Date.now(); if (now - (data.lastReset || 0) > REFRESH_INTERVAL_MS) setDailyCount(0); else setDailyCount(data.count || 0); }
-      else setDailyCount(0);
-      setIsSyncing(false);
-    }, (err) => { console.error("Quota Sync Error", err); setIsSyncing(false); });
-    return () => unsub();
-  }, [user]);
-
-  const addLog = (msg) => setLogs(prev => [msg, ...prev].slice(0, 4));
-
-  const handleTraitSelect = (catId, trait) => {
-    setSelections(prev => {
-      const next = { ...prev, [catId]: trait };
-      if (catId === 'super' && trait.id !== 'none') { next.head = PFP_TRAITS.head[0]; next.item = PFP_TRAITS.item[0]; next.glasses = PFP_TRAITS.glasses[0]; next.expression = PFP_TRAITS.expression[0]; setCloneImage(null); }
-      else if (['head','item','glasses','expression'].includes(catId) && trait.id !== 'none') { next.super = PFP_TRAITS.super[0]; setCloneImage(null); }
-      setTrustMode(false);
-      return next;
-    });
+  const handleFileUpload = (file) => {
+    if (!file || !file.type.startsWith('image/')) { setError("IMAGES ONLY, FREN 🐧"); return; }
+    const reader = new FileReader();
+    reader.onloadend = () => {
+      const dataUrl = reader.result;
+      setSourceImagePreview(dataUrl);
+      setSourceImage(dataUrl.split(',')[1]);
+      setGeneratedImg(null);
+      setError(null);
+    };
+    reader.readAsDataURL(file);
   };
 
-  const handleRandomize = () => {
-    setIsRandomizing(true); setTrustMode(false); setCloneImage(null); addLog("🎲 SHUFFLING_COLONY...");
-    let count = 0;
-    const interval = setInterval(() => {
-      const newSels = {};
-      Object.keys(PFP_TRAITS).forEach(cat => { if (cat === 'super' || cat === 'clone') { newSels[cat] = PFP_TRAITS[cat][0]; return; } const items = PFP_TRAITS[cat]; newSels[cat] = items[Math.floor(Math.random() * items.length)]; });
-      setSelections(prev => ({...prev, ...newSels}));
-      count++;
-      if (count >= 10) { clearInterval(interval); setIsRandomizing(false); addLog("🐧 RANDOM_PENGU_LOCKED."); }
-    }, 60);
-  };
-
-  const handleTrustIt = () => { setTrustMode(true); setCloneImage(null); addLog("🐟 GRANTING_PENGU_IMAGINATION..."); const defaults = {}; Object.keys(PFP_TRAITS).forEach(k => defaults[k] = PFP_TRAITS[k][0]); setSelections(defaults); addLog("❄️ TRUST_COLONY_ACTIVE."); };
-
-  const handleFileUpload = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => { setCloneImage(reader.result.split(',')[1]); setTrustMode(false); addLog("📸 SOURCE_PFP_LOADED. READY_TO_CLONE."); };
-      reader.readAsDataURL(file);
-    }
-  };
+  const handleInputChange = (e) => { if (e.target.files[0]) handleFileUpload(e.target.files[0]); };
+  const handleDrop = (e) => { e.preventDefault(); setIsDraggingFile(false); const f = e.dataTransfer.files[0]; if (f) handleFileUpload(f); };
+  const handleDragOver = (e) => { e.preventDefault(); setIsDraggingFile(true); };
+  const handleDragLeave = () => setIsDraggingFile(false);
 
   const getBaseCharacter64 = async () => {
     try {
@@ -1506,170 +1369,157 @@ const ForgeItApp = () => {
   };
 
   const handleForge = async () => {
-    if (isForging) return;
-    if (!user || isSyncing) { setError("SYNCING... WAIT."); return; }
+    if (isForging || !sourceImage) return;
     if (!apiKey) { setError("API_KEY_MISSING: VITE_APP_GEMINI not set."); return; }
 
     setIsForging(true); setGeneratedImg(null); setProgress(0); setError(null);
-    setLogs(["🐧 LOCKING_BLUEPRINT...", "❄️ PRESERVING_PENGU_SHAPE...", "🐟 ADDING_TRAITS..."]);
-
-    const progTimer = setInterval(() => setProgress(prev => prev < 95 ? prev + Math.random() * 5 : prev), 600);
+    const progTimer = setInterval(() => setProgress(prev => prev < 92 ? prev + Math.random() * 4 : prev), 500);
 
     try {
       const base64Image = await getBaseCharacter64();
-      if (!base64Image) throw new Error("Pengu base image not found.");
+      if (!base64Image) throw new Error("Pengu base image not found at main.jpg");
 
-      let promptText = "";
-      const contentParts = [{ text: "" }, { inlineData: { mimeType: "image/png", data: base64Image } }];
+      const promptText = `PENGUIN PFP CULT SYSTEM. You are given two images:
+Image 1: The base Pengu character — a cute cartoon penguin. This is the OUTPUT character. DO NOT change its body shape, pose, or penguin identity.
+Image 2: A source image uploaded by the user. Extract the style, clothing, accessories, colors, vibe, and aesthetic from this source image.
+Apply everything extracted from Image 2 onto the Pengu in Image 1. Dress it up. Give it the same accessories. Recreate the energy. Make it feel like the Pengu joined that world.
+Keep it cute, cartoonish, and charming. The result should still look like Pengu, just styled after the source image.`;
 
-      if (cloneImage) {
-        contentParts.push({ inlineData: { mimeType: "image/png", data: cloneImage } });
-        promptText = `PENGUIN PFP CLONE SYSTEM. Take the vibe, clothing, accessories from Image 2 and map them onto the penguin character in Image 1. DO NOT CHANGE the penguin body shape or pose. Keep it cute and cartoonish.`;
-      } else if (trustMode) {
-        promptText = `CREATIVE PENGUIN DECORATION. Use imagination to add funny accessories and outfits to this penguin character. MAINTAIN exact penguin body shape and pose. Make it cute, fun, and unique. Cartoonish art style.`;
-      } else if (selections.super.id !== 'none') {
-        promptText = `PENGUIN TRANSFORMATION. Keep the core penguin shape and anatomy. TRANSFORM: ${selections.super.prompt}. Keep it cute and cartoonish.`;
-      } else {
-        const activeTraits = Object.entries(selections).filter(([cat, trait]) => trait.id !== 'none').map(([cat, trait]) => trait.prompt).join(', ');
-        promptText = `PENGUIN PFP FORGE. DO NOT CHANGE the penguin silhouette or pose. ADD these traits: ${activeTraits}. Cute cartoonish style. Keep it charming and adorable.`;
-      }
-
-      contentParts[0].text = promptText;
+      const contentParts = [
+        { text: promptText },
+        { inlineData: { mimeType: "image/jpeg", data: base64Image } },
+        { inlineData: { mimeType: "image/jpeg", data: sourceImage } },
+      ];
 
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${apiKey}`, {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contents: [{ parts: contentParts }], generationConfig: { responseModalities: ["TEXT", "IMAGE"] } })
       });
 
-      if (!response.ok) throw new Error(`API_ERROR: ${response.status}`);
+      if (!response.ok) {
+        const errBody = await response.text();
+        throw new Error(`API_ERROR ${response.status}: ${errBody.slice(0, 200)}`);
+      }
       const result = await response.json();
       const base64Result = result.candidates?.[0]?.content?.parts?.find(p => p.inlineData)?.inlineData?.data;
 
       if (base64Result) {
-        try {
-          const usageRef = doc(db, 'artifacts', APP_ID, 'users', user.uid, 'usage', 'forge_limits');
-          const snap = await getDoc(usageRef);
-          const now = Date.now();
-          if (snap.exists() && (now - (snap.data().lastReset || 0) < REFRESH_INTERVAL_MS)) await updateDoc(usageRef, { count: increment(1) });
-          else await setDoc(usageRef, { count: 1, lastReset: now }, { merge: true });
-        } catch (dbErr) { console.warn("Usage Tracker Fail", dbErr); }
-
-        setTimeout(() => { setGeneratedImg(`data:image/png;base64,${base64Result}`); setProgress(100); addLog("🐧 PENGU_MATERIALIZED!"); setError(null); setIsForging(false); }, 200);
-      } else { throw new Error("AI returned empty response."); }
+        setGeneratedImg(`data:image/png;base64,${base64Result}`);
+        setProgress(100);
+        setIsForging(false);
+      } else {
+        throw new Error("AI returned no image. Try a different source photo.");
+      }
     } catch (err) {
-      setError(err.message); addLog("💀 ERROR: FORGE_HALTED"); setIsForging(false);
+      setError(err.message);
+      setIsForging(false);
     } finally { clearInterval(progTimer); }
   };
 
-  const downloadPFP = () => { if (!generatedImg) return; const link = document.createElement('a'); link.href = generatedImg; link.download = `PENGU_FORGE_${Date.now()}.png`; link.click(); };
+  const downloadPFP = () => {
+    if (!generatedImg) return;
+    const link = document.createElement('a');
+    link.href = generatedImg;
+    link.download = `PENGU_CULT_${Date.now()}.png`;
+    link.click();
+  };
 
   return (
-    <div className="flex flex-col h-full text-sky-300 font-mono overflow-hidden relative" style={{background:'#050d1a'}}>
-      <header className="h-12 border-b flex items-center justify-between px-4 shrink-0 z-[70]" style={{background:'#030b14', borderColor:'#0369a1'}}>
+    <div className="flex flex-col h-full font-mono overflow-hidden" style={{background:'#050d1a', color:'#7DD3FC'}}>
+      <header className="h-12 border-b flex items-center justify-between px-4 shrink-0" style={{background:'#030b14', borderColor:'#0369a1'}}>
         <div className="flex items-center gap-2">
           <span className="text-2xl">🐧</span>
-          <div><h1 className="text-[9px] font-black uppercase tracking-[0.3em] text-white italic leading-none">Forge_Pengu_Colony</h1><span className="text-[6px] text-sky-700 font-bold uppercase mt-1 tracking-tighter">Forge_Engine_v6.1_PROMO</span></div>
+          <div>
+            <h1 className="text-[9px] font-black uppercase tracking-[0.3em] text-white italic leading-none">PFP_CULT</h1>
+            <span className="text-[6px] text-sky-700 font-bold uppercase tracking-tighter">clone engine — upload anything, penguify it</span>
+          </div>
         </div>
-        <div className="px-2 py-1 border flex items-center gap-2" style={{borderColor:'rgba(254,240,138,0.4)', background:'rgba(254,240,138,0.1)', color:'#FEF08A'}}>
-          <div><span className="text-[8px] font-black uppercase tracking-tighter leading-none block">COLONY_ACCESS_ACTIVE 🐧</span><span className="text-[6px] font-bold opacity-60 tracking-widest uppercase italic block mt-0.5">FORGES: UNLIMITED ♾️</span></div>
-          <Crown size={12} className="animate-pulse" />
+        <div className="px-2 py-1 border flex items-center gap-2 text-[8px] font-black uppercase" style={{borderColor:'rgba(125,211,252,0.3)', color:'#7DD3FC'}}>
+          <Camera size={10}/> CLONE MODE
         </div>
       </header>
 
-      <main className="flex-1 flex flex-col md:flex-row min-h-0 relative">
-        <div className="flex-1 flex flex-col border-r bg-[#060f1e] relative min-h-0" style={{borderColor:'rgba(3,105,161,0.2)'}}>
-          <div className="flex md:grid border-b shrink-0 overflow-x-auto no-scrollbar sticky top-0 z-40" style={{background:'rgba(3,11,20,0.9)', borderColor:'rgba(3,105,161,0.3)'}}>
-            {PFP_CATEGORIES.map(cat => (
-              <button key={cat.id} onClick={() => setActiveCat(cat.id)} className={`p-4 min-w-[65px] flex-1 flex flex-col items-center gap-1.5 transition-all relative ${activeCat === cat.id ? 'text-sky-300' : 'text-sky-800'}`}>
-                <cat.icon size={16} className={activeCat === cat.id ? 'scale-110' : ''}/>
-                <span className="text-[6px] font-black uppercase tracking-widest leading-none mt-1">{cat.label}</span>
-                {activeCat === cat.id && <div className="absolute bottom-0 inset-x-0 h-1" style={{background:'#7DD3FC', boxShadow:'0 0 15px #7DD3FC'}}/>}
-              </button>
-            ))}
-          </div>
-
-          <div className="flex-1 overflow-y-auto p-3 md:p-5 pb-24 md:pb-5" style={{background:'#050d1a'}}>
-            {activeCat === 'clone' ? (
-              <div className="flex flex-col items-center justify-center h-full gap-6 text-center">
-                <div className="p-8 border-2 border-dashed w-full max-w-sm" style={{borderColor:'rgba(125,211,252,0.2)', background:'rgba(3,11,20,0.8)'}}>
-                  <span className="text-5xl block mb-4">🐧📸</span>
-                  <h3 className="text-sm font-black uppercase tracking-widest text-sky-300">Clone Source PFP</h3>
-                  <p className="text-[8px] text-sky-700 mt-2 uppercase tracking-tighter leading-relaxed">Upload any image to map its vibes onto your pengu.</p>
-                  <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept="image/*" className="hidden" />
-                  <button onClick={() => fileInputRef.current.click()} className="mt-6 w-full py-3 font-black uppercase text-[10px] flex items-center justify-center gap-2 text-sky-900 hover:brightness-110 transition-all" style={{background:'#7DD3FC'}}>
-                    <Upload size={14}/>{cloneImage ? 'CHOOSE_ANOTHER' : 'UPLOAD_IMAGE 🐟'}
-                  </button>
-                </div>
-                {cloneImage && <div className="p-1 border" style={{borderColor:'rgba(125,211,252,0.4)'}}><img src={`data:image/png;base64,${cloneImage}`} className="w-32 h-32 object-cover grayscale opacity-60" /></div>}
-              </div>
-            ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
-                {PFP_TRAITS[activeCat]?.map(trait => {
-                  const isSelected = selections[activeCat]?.id === trait.id && !trustMode && !cloneImage;
-                  return (
-                    <button key={trait.id} onClick={() => handleTraitSelect(activeCat, trait)}
-                      className={`px-3 py-4 border text-center transition-all flex flex-col items-center justify-center relative active:scale-95 ${isSelected ? 'text-sky-200' : 'text-sky-700 hover:text-sky-400'}`}
-                      style={{background: isSelected ? 'rgba(3,105,161,0.2)' : 'rgba(255,255,255,0.03)', borderColor: isSelected ? '#7DD3FC' : 'rgba(125,211,252,0.1)'}}>
-                      <span className="text-[9px] font-black uppercase tracking-tighter leading-none">{trait.label}</span>
-                      {isSelected && <div className="absolute bottom-1 right-1 w-1 h-1 bg-sky-400 rounded-full animate-pulse" style={{boxShadow:'0 0 8px #7DD3FC'}}/>}
-                    </button>
-                  );
-                })}
-              </div>
-            )}
-          </div>
-
-          <div className="p-2 md:p-4 border-t shrink-0 md:relative fixed bottom-0 left-0 right-0 z-[60] flex flex-col gap-2" style={{background:'rgba(3,11,20,0.95)', borderColor:'rgba(3,105,161,0.4)', backdropFilter:'blur(8px)'}}>
-            <div className="flex gap-2">
-              <button onClick={handleRandomize} disabled={isForging || isRandomizing || isSyncing} className="flex-1 py-2 border flex items-center justify-center gap-2 text-[8px] font-black uppercase tracking-[0.3em] transition-all hover:text-sky-300" style={{borderColor:'rgba(125,211,252,0.2)', color:'rgba(125,211,252,0.4)'}}>
-                <Shuffle size={14} className={isRandomizing ? 'animate-spin' : ''}/> Randomize
-              </button>
-              <button onClick={handleTrustIt} disabled={isForging || isSyncing} className={`flex-1 py-2 border flex items-center justify-center gap-2 text-[8px] font-black uppercase tracking-[0.3em] transition-all ${trustMode ? 'text-sky-300' : 'text-sky-700 hover:text-sky-400'}`} style={{borderColor: trustMode ? '#7DD3FC' : 'rgba(125,211,252,0.1)', background: trustMode ? 'rgba(3,105,161,0.15)' : 'transparent'}}>
-                <Ghost size={14}/> TRUST_PENGU
-              </button>
+      <main className="flex-1 flex flex-col md:flex-row min-h-0 overflow-hidden">
+        {/* LEFT: upload + controls */}
+        <div className="flex-1 flex flex-col min-h-0 border-r" style={{borderColor:'rgba(3,105,161,0.2)'}}>
+          <div className="flex-1 overflow-y-auto p-4 md:p-6 flex flex-col gap-5">
+            <div className="p-3 border text-[9px] leading-relaxed text-sky-600 uppercase tracking-tight" style={{borderColor:'rgba(3,105,161,0.2)', background:'rgba(3,11,20,0.6)'}}>
+              🐧 upload <span className="text-sky-300 font-black">any image</span> — a pfp, a character, a vibe, a meme, whatever. pengu will absorb the style and wear it.
             </div>
-            <button onClick={handleForge} disabled={isForging || isRandomizing || isSyncing} className={`w-full py-4 md:py-5 font-black italic text-base md:text-lg tracking-[0.4em] transition-all relative overflow-hidden border-b-4 active:translate-y-1 active:border-b-0 ${isForging ? 'text-sky-800 cursor-wait' : 'text-sky-900 hover:brightness-110'}`}
-              style={{background: isForging ? '#0c1f33' : '#7DD3FC', borderColor: isForging ? '#0369a1' : '#0369a1', boxShadow: isForging ? 'none' : '0 0 40px rgba(125,211,252,0.3)'}}>
-              <span className="relative z-10 flex items-center justify-center gap-3">
-                {isForging ? <RefreshCw className="animate-spin" size={20}/> : <span className="text-2xl">🐧</span>}
-                {isForging ? 'FORGING PENGU...' : 'FORGE PENGU'}
-              </span>
+
+            <div
+              onDrop={handleDrop} onDragOver={handleDragOver} onDragLeave={handleDragLeave}
+              onClick={() => fileInputRef.current?.click()}
+              className={`relative border-2 border-dashed flex flex-col items-center justify-center gap-3 cursor-pointer transition-all min-h-[200px] ${isDraggingFile ? 'scale-[1.01]' : ''}`}
+              style={{borderColor: isDraggingFile ? '#7DD3FC' : 'rgba(125,211,252,0.25)', background: isDraggingFile ? 'rgba(3,105,161,0.15)' : 'rgba(3,11,20,0.6)'}}>
+              <input type="file" ref={fileInputRef} onChange={handleInputChange} accept="image/*" className="hidden" />
+              {sourceImagePreview ? (
+                <div className="flex flex-col items-center gap-3 p-4 w-full">
+                  <img src={sourceImagePreview} className="max-h-48 max-w-full object-contain" style={{border:'1px solid rgba(125,211,252,0.3)'}} />
+                  <span className="text-[8px] font-black uppercase text-sky-600 tracking-widest">✓ loaded — click to change</span>
+                </div>
+              ) : (
+                <>
+                  <span className="text-5xl">📸</span>
+                  <div className="text-center">
+                    <p className="text-[11px] font-black uppercase text-sky-400 tracking-widest">Drop your image here</p>
+                    <p className="text-[8px] text-sky-700 uppercase mt-1">or click to browse</p>
+                  </div>
+                  <p className="text-[7px] text-sky-800 uppercase tracking-tight">pfp · character · meme · nft · anything</p>
+                </>
+              )}
+            </div>
+          </div>
+
+          <div className="p-3 md:p-4 border-t shrink-0" style={{background:'rgba(3,11,20,0.95)', borderColor:'rgba(3,105,161,0.4)'}}>
+            <button
+              onClick={handleForge}
+              disabled={isForging || !sourceImage || isSyncing}
+              className={`w-full py-4 font-black italic text-base tracking-[0.4em] uppercase transition-all flex items-center justify-center gap-3 border-b-4 active:translate-y-1 active:border-b-0 ${isForging || !sourceImage ? 'cursor-not-allowed opacity-60' : 'hover:brightness-110'}`}
+              style={{background: isForging ? '#0c1f33' : '#7DD3FC', color: isForging ? '#7DD3FC' : '#030b14', borderColor:'#0369a1', boxShadow: (!isForging && sourceImage) ? '0 0 40px rgba(125,211,252,0.25)' : 'none'}}>
+              {isForging ? <RefreshCw className="animate-spin" size={18}/> : <span className="text-xl">🐧</span>}
+              {isForging ? 'cloning...' : !sourceImage ? 'upload an image first' : 'penguify it'}
             </button>
           </div>
         </div>
 
-        <div className={`w-full md:w-[350px] lg:w-[420px] flex flex-col border-l shrink-0 min-h-0 ${(isForging || generatedImg) ? 'fixed inset-0 z-[80] md:relative md:inset-auto md:z-0 flex' : 'hidden md:flex'}`} style={{background:'#030b14', borderColor:'rgba(3,105,161,0.4)'}}>
-          <div className="flex-1 flex flex-col p-6 items-center justify-center relative overflow-hidden">
+        {/* RIGHT: output */}
+        <div className={`w-full md:w-[340px] lg:w-[400px] flex flex-col shrink-0 min-h-0 ${(isForging || generatedImg) ? 'flex' : 'hidden md:flex'}`} style={{background:'#030b14'}}>
+          <div className="flex-1 flex flex-col items-center justify-center p-6 gap-5">
             {isForging ? (
-              <div className="flex flex-col items-center gap-6 w-full">
-                <div className="relative w-48 h-48 md:w-72 md:h-72 border flex items-center justify-center overflow-hidden" style={{borderColor:'rgba(125,211,252,0.1)'}}>
-                  <span className="text-8xl animate-bounce">🐧</span>
-                  <div className="absolute bottom-0 left-0 w-full h-[2px] animate-[scan_2s_linear_infinite]" style={{background:'#7DD3FC'}}/>
+              <div className="flex flex-col items-center gap-5 w-full">
+                <div className="relative w-48 h-48 border flex items-center justify-center overflow-hidden" style={{borderColor:'rgba(125,211,252,0.1)'}}>
+                  <span className="text-7xl animate-bounce">🐧</span>
+                  <div className="absolute bottom-0 left-0 w-full h-[2px]" style={{background:'#7DD3FC', animation:'scan 1.8s linear infinite'}}/>
                 </div>
-                <div className="w-48 space-y-3">
-                  <div className="flex justify-between text-[8px] font-black text-sky-400 uppercase tracking-widest italic"><span>Forging pengu...</span><span>{Math.round(progress)}%</span></div>
-                  <div className="h-1 rounded-full overflow-hidden p-[1px]" style={{background:'rgba(0,0,0,0.5)', border:'1px solid #0369a1'}}>
-                    <div className="h-full transition-all duration-300 rounded-full" style={{width:`${progress}%`, background:'#7DD3FC', boxShadow:'0 0 15px #7DD3FC'}}/>
+                <div className="w-48 space-y-2">
+                  <div className="flex justify-between text-[8px] font-black text-sky-500 uppercase tracking-widest">
+                    <span>absorbing vibes...</span><span>{Math.round(progress)}%</span>
+                  </div>
+                  <div className="h-1 overflow-hidden" style={{background:'rgba(0,0,0,0.5)', border:'1px solid #0369a1'}}>
+                    <div className="h-full transition-all duration-300" style={{width:`${progress}%`, background:'#7DD3FC', boxShadow:'0 0 12px #7DD3FC'}}/>
                   </div>
                 </div>
               </div>
             ) : generatedImg ? (
-              <div className="w-full max-w-[280px] space-y-4">
-                <div className="relative group p-1 overflow-hidden" style={{background:'rgba(3,11,20,0.8)', border:'1px solid rgba(125,211,252,0.2)'}}>
+              <div className="w-full max-w-[280px] flex flex-col gap-3">
+                <div className="relative group overflow-hidden" style={{background:'rgba(3,11,20,0.8)', border:'1px solid rgba(125,211,252,0.2)'}}>
                   <img src={generatedImg} className="w-full aspect-square object-cover" />
-                  <div className="absolute top-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-all">
-                    <button onClick={downloadPFP} className="p-3 hover:brightness-110 text-sky-900" style={{background:'#7DD3FC'}}><Download size={20}/></button>
+                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all" style={{background:'rgba(0,0,0,0.4)'}}>
+                    <button onClick={downloadPFP} className="p-3 hover:brightness-110 text-sky-900" style={{background:'#7DD3FC'}}><Download size={22}/></button>
                   </div>
                 </div>
-                <button onClick={downloadPFP} className="w-full py-4 font-black uppercase text-[11px] flex items-center justify-center gap-3 tracking-[0.2em] transition-all hover:brightness-110 text-sky-900" style={{background:'#7DD3FC'}}><Download size={16}/> Save Pengu 🐧</button>
-                <button onClick={() => setGeneratedImg(null)} className="w-full py-2 text-[9px] font-black uppercase text-sky-700 hover:text-sky-400 transition-all flex items-center justify-center gap-2 group">
-                  <X size={12} className="group-hover:rotate-90 transition-transform"/> Forge Another
+                <button onClick={downloadPFP} className="w-full py-3 font-black uppercase text-[11px] flex items-center justify-center gap-2 tracking-[0.2em] transition-all hover:brightness-110 text-sky-900" style={{background:'#7DD3FC'}}>
+                  <Download size={14}/> save pengu 🐧
+                </button>
+                <button onClick={() => { setGeneratedImg(null); setSourceImage(null); setSourceImagePreview(null); }} className="w-full py-2 text-[9px] font-black uppercase text-sky-700 hover:text-sky-400 transition-all flex items-center justify-center gap-2">
+                  <RefreshCw size={11}/> clone another
                 </button>
               </div>
             ) : (
-              <div className="flex flex-col items-center gap-8 opacity-10">
-                <span className="text-[120px] leading-none">🐧</span>
-                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white italic">Colony_Idle</p>
+              <div className="flex flex-col items-center gap-6 opacity-[0.07]">
+                <span className="text-[110px] leading-none">🐧</span>
+                <p className="text-[9px] font-black uppercase tracking-[0.4em] text-white italic">awaiting_source</p>
               </div>
             )}
           </div>
@@ -1677,13 +1527,16 @@ const ForgeItApp = () => {
       </main>
 
       {error && (
-        <div className="fixed bottom-24 md:bottom-10 right-4 left-4 md:left-auto md:w-[400px] border-l-4 p-5 flex items-start gap-4 text-white z-[200] backdrop-blur-xl animate-in slide-in-from-right-10" style={{background:'rgba(153,27,27,0.9)', borderColor:'#ef4444'}}>
-          <span className="text-2xl">🐧</span>
-          <div className="flex-1 space-y-1"><p className="text-[11px] font-black uppercase leading-none tracking-widest">Colony_Error</p><p className="text-[9px] opacity-70 font-bold uppercase mt-2 leading-tight">{error}</p></div>
-          <button onClick={() => setError(null)} className="p-1 hover:bg-white/10 rounded transition-colors"><X size={18}/></button>
+        <div className="absolute bottom-16 right-4 left-4 border-l-4 p-4 flex items-start gap-3 z-[200]" style={{background:'rgba(153,27,27,0.95)', borderColor:'#ef4444', color:'white'}}>
+          <span className="text-xl">🐧</span>
+          <div className="flex-1">
+            <p className="text-[10px] font-black uppercase tracking-widest">Clone_Error</p>
+            <p className="text-[8px] opacity-70 uppercase mt-1 leading-tight">{error}</p>
+          </div>
+          <button onClick={() => setError(null)} className="p-0.5 hover:bg-white/10 transition-colors"><X size={14}/></button>
         </div>
       )}
-      <style>{`@keyframes scan { 0% { transform: translateY(-100%); } 100% { transform: translateY(800%); } } .no-scrollbar::-webkit-scrollbar { display: none; }`}</style>
+      <style>{`@keyframes scan { 0% { transform: translateY(-400%); } 100% { transform: translateY(800%); } }`}</style>
     </div>
   );
 };
@@ -1705,7 +1558,7 @@ const DesktopIcon = ({ icon: Icon, label, onClick, hasAlert, emoji }) => (
   </div>
 );
 
-// --- WINDOW FRAME ---
+// --- DRAGGABLE WINDOW ---
 const DraggableWindow = ({ win, isActive, children, onFocus, onClose, onMaximize, onMinimize, onMove }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -1760,10 +1613,10 @@ export default function UltimateOS() {
 
   const openApp = (type) => {
     const id = os_gen_id();
-    const titles = { paint: '🎨 Paint Pengu', terminal: '💻 Terminal', tunes: '🎵 Tunes', rugsweeper: '🐧 Stack Pengu', notepad: '📝 Write Stuff', memes: '🐟 Meme Stash', trollbox: '💬 Colony Chat', mememind: '🧠 Meme Brain', mergeit: '🧊 Slide Pengu', wallet: '💰 Wallet', forgeit: '⚡ Forge Pengu' };
+    const titles = { paint: '🎨 Paint Pengu', terminal: '💻 Terminal', tunes: '🎵 Tunes', rugsweeper: '🐧 Stack Pengu', notepad: '📝 Write Stuff', memes: '🐟 Meme Stash', trollbox: '💬 Colony Chat', mememind: '🧠 Meme Brain', mergeit: '🧊 Slide Pengu', wallet: '💰 Wallet', pfpcult: '📸 PFP Cult' };
     const isMobile = window.innerWidth < 768;
     const isPhoneApp = ['rugsweeper','trollbox','mememind','mergeit','wallet'].includes(type);
-    const isWideApp = ['paint','memes','forgeit'].includes(type);
+    const isWideApp = ['paint','memes','pfpcult'].includes(type);
     const defaultW = isWideApp ? 740 : (isPhoneApp ? 340 : 500);
     const defaultH = isWideApp ? 540 : (isPhoneApp ? 580 : 400);
     const newWin = { id, type, title: titles[type] || 'App', x: isMobile ? 10 : 50 + (windows.length * 20), y: isMobile ? 20 : 50 + (windows.length * 20), w: isMobile ? window.innerWidth - 20 : defaultW, h: isMobile ? window.innerHeight - 150 : defaultH, z: maxZ+1, isMaximized: false, isMinimized: false };
@@ -1786,23 +1639,18 @@ export default function UltimateOS() {
   // --- BOOT SCREEN ---
   if (!booted) return (
     <div className="w-full h-screen flex flex-col items-center justify-center relative overflow-hidden p-6" style={{background:'linear-gradient(135deg, #0369a1 0%, #075985 50%, #0c4a6e 100%)'}}>
-      {/* Snowflakes */}
       {snowflakes.map(s => (
         <div key={s.id} className="absolute text-sky-200/40 animate-bounce pointer-events-none" style={{left:s.left, top:s.top, fontSize:s.size, animationDelay:s.delay}}>❄</div>
       ))}
-      
-      {/* Boot content */}
       <div className="relative z-10 flex flex-col items-center text-center">
         <div className="text-8xl mb-6 animate-bounce" style={{filter:'drop-shadow(0 0 30px rgba(125,211,252,0.6))'}}>🐧</div>
         <h1 className="text-5xl font-black text-white mb-2 italic tracking-[0.2em]" style={{fontFamily:"'Fredoka One', 'Comic Sans MS', cursive", textShadow:'0 0 30px rgba(125,211,252,0.5)'}}>PENGU OS</h1>
         <p className="text-sky-200 text-sm mb-8 tracking-[0.3em] uppercase font-bold opacity-70">Waddling into existence...</p>
-        
         <div className="w-64 h-4 border-2 p-0.5 rounded-full" style={{borderColor:'rgba(186,230,253,0.5)'}}>
           <div className="h-full rounded-full" style={{background:'#7DD3FC', animation:'widthLoad 2.5s ease-out forwards', width:'0%', boxShadow:'0 0 10px #7DD3FC'}}></div>
         </div>
         <div className="mt-4 text-[10px] uppercase tracking-[0.3em] text-sky-300/60">Freezing the blockchain...</div>
       </div>
-      
       <style>{`@keyframes widthLoad { from { width: 0%; } to { width: 100%; } }`}</style>
     </div>
   );
@@ -1812,7 +1660,7 @@ export default function UltimateOS() {
       {/* Wallpaper */}
       <div className="absolute inset-0 z-0 bg-cover bg-center" style={{backgroundImage: `url(${ASSETS.wallpaper})`, backgroundColor:'#0369a1'}}></div>
       
-      {/* Very subtle snow overlay */}
+      {/* Snow overlay */}
       <div className="absolute inset-0 z-[1] pointer-events-none">
         {snowflakes.map(s => (
           <div key={s.id} className="absolute text-sky-100/20 animate-bounce" style={{left:s.left, top:s.top, fontSize:s.size, animationDelay:s.delay}}>❄</div>
@@ -1830,7 +1678,7 @@ export default function UltimateOS() {
       <div className="absolute top-0 left-0 p-4 z-20 h-[calc(100vh-40px)] w-full pointer-events-none flex flex-col flex-wrap content-start items-start gap-4 overflow-hidden">
         {[
           { id: 'terminal', emoji: '💻', label: 'Terminal' },
-          { id: 'forgeit', emoji: '⚡', label: 'Forge Pengu' },
+          { id: 'pfpcult', emoji: '📸', label: 'PFP Cult' },
           { id: 'mergeit', emoji: '🧊', label: 'Slide Pengu' },
           { id: 'paint', emoji: '🎨', label: 'Paint Pengu' },
           { id: 'notepad', emoji: '📝', label: 'Write Stuff' },
@@ -1849,7 +1697,7 @@ export default function UltimateOS() {
         <DraggableWindow key={win.id} win={win} isActive={win.id === activeWindowId}
           onFocus={() => focusWindow(win.id)} onClose={() => closeWindow(win.id)}
           onMaximize={() => toggleMax(win.id)} onMinimize={() => minimizeWindow(win.id)} onMove={moveWindow}>
-          {win.type === 'forgeit' && <ForgeItApp />}
+          {win.type === 'pfpcult' && <PfpCultApp />}
           {win.type === 'paint' && <PaintApp />}
           {win.type === 'memes' && <MemesApp />}
           {win.type === 'notepad' && <NotepadApp />}
@@ -1907,6 +1755,149 @@ export default function UltimateOS() {
               </div>
             </div>
           )}
+
+          {win.type === 'terminal' && (
+            <div className="p-4 h-full flex flex-col" style={{background:'#050d1a', fontFamily:'monospace', color:'#7DD3FC'}}>
+              <div className="text-[10px] font-black uppercase tracking-widest text-sky-600 mb-4 flex items-center gap-2">
+                <span>🐧</span> PENGU_OS TERMINAL v1.0
+              </div>
+              <div className="flex-1 overflow-y-auto text-[11px] space-y-1">
+                <p className="text-sky-400">Welcome to Pengu OS Terminal, fren.</p>
+                <p className="text-sky-600">Type 'help' for available commands.</p>
+                <p className="text-sky-300 mt-2">{'>'} Colony Status: WADDLING 🐧</p>
+                <p className="text-sky-300">{'>'} Fish Reserves: PLENTY 🐟</p>
+                <p className="text-sky-300">{'>'} Iceberg Temp: COLD ❄️</p>
+              </div>
+            </div>
+          )}
+
+          {win.type === 'tunes' && (
+            <div className="p-4 h-full flex flex-col gap-3 overflow-y-auto" style={{background:'#050d1a', fontFamily:'monospace', color:'#7DD3FC'}}>
+              <div className="flex items-center gap-2 border-b pb-3" style={{borderColor:'rgba(3,105,161,0.4)'}}>
+                <span className="text-2xl">🎵</span>
+                <span className="text-[10px] font-black uppercase tracking-widest text-sky-600">Pengu Tunes</span>
+              </div>
+              <div className="flex-1 space-y-2">
+                {TUNES_PLAYLIST.map((track, i) => (
+                  <div key={i} className="flex items-center gap-3 p-3 border cursor-pointer hover:brightness-110 transition-all" style={{background:'rgba(3,105,161,0.1)', borderColor:'rgba(125,211,252,0.15)'}}>
+                    <span className="text-sky-600 text-[10px] font-black w-4">{i+1}</span>
+                    <div className="flex-1">
+                      <p className="text-[11px] font-black text-sky-300 uppercase tracking-tight">{track.title}</p>
+                      <p className="text-[9px] text-sky-700 uppercase">{track.artist}</p>
+                    </div>
+                    <span className="text-[9px] text-sky-700 font-mono">{track.duration}</span>
+                    <span className="text-sky-500 text-sm">▶</span>
+                  </div>
+                ))}
+              </div>
+              <div className="border-t pt-3 flex items-center justify-center gap-4" style={{borderColor:'rgba(3,105,161,0.4)'}}>
+                <button className="text-sky-600 hover:text-sky-300 transition-colors text-xl">⏮</button>
+                <button className="text-sky-300 hover:text-white transition-colors text-3xl">▶</button>
+                <button className="text-sky-600 hover:text-sky-300 transition-colors text-xl">⏭</button>
+              </div>
+            </div>
+          )}
+
+          {win.type === 'rugsweeper' && (
+            <div className="h-full flex flex-col items-center justify-center gap-4 p-4" style={{background:'#050d1a', fontFamily:'monospace', color:'#7DD3FC'}}>
+              <span className="text-6xl animate-bounce">🐧</span>
+              <p className="text-[10px] font-black uppercase tracking-[0.3em] text-sky-600 text-center">Stack Pengu</p>
+              <p className="text-[9px] text-sky-800 uppercase tracking-widest text-center">Stack the colony.<br/>Don't fall off the iceberg.</p>
+              <div className="px-6 py-3 border font-black text-[10px] uppercase tracking-widest text-sky-900" style={{background:'#7DD3FC', borderColor:'#0369a1'}}>
+                🐧 Coming Soon
+              </div>
+            </div>
+          )}
+
+          {win.type === 'trollbox' && (() => {
+            const [tbMessages, setTbMessages] = React.useState([
+              { id: 1, user: 'pengu_maxi', text: 'honk honk frens 🐧', time: '12:01' },
+              { id: 2, user: 'iceberghodler', text: 'fish reserves looking stacked today 🐟', time: '12:03' },
+              { id: 3, user: 'waddle_gang', text: 'COLONY STRONG ❄️', time: '12:05' },
+            ]);
+            const [tbInput, setTbInput] = React.useState('');
+            const names = ['anon_penguin','frosty_degen','iceberg_irl','colony_fren','fish_maxi'];
+            const sendMsg = () => {
+              if (!tbInput.trim()) return;
+              setTbMessages(prev => [...prev, { id: Date.now(), user: names[Math.floor(Math.random()*names.length)], text: tbInput, time: new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) }]);
+              setTbInput('');
+            };
+            return (
+              <div className="h-full flex flex-col" style={{background:'#050d1a', fontFamily:'monospace', color:'#7DD3FC'}}>
+                <div className="px-3 py-2 border-b flex items-center gap-2" style={{background:'rgba(3,11,20,0.9)', borderColor:'rgba(3,105,161,0.4)'}}>
+                  <span>💬</span>
+                  <span className="text-[9px] font-black uppercase tracking-widest text-sky-600">Colony Chat</span>
+                  <div className="ml-auto flex items-center gap-1"><div className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse"/><span className="text-[8px] text-sky-700">LIVE</span></div>
+                </div>
+                <div className="flex-1 overflow-y-auto p-3 space-y-3">
+                  {tbMessages.map(m => (
+                    <div key={m.id} className="text-[11px]">
+                      <span className="text-sky-500 font-black">{m.user}</span>
+                      <span className="text-sky-800 text-[9px] ml-2">{m.time}</span>
+                      <p className="text-sky-300 mt-0.5 ml-2">{m.text}</p>
+                    </div>
+                  ))}
+                </div>
+                <div className="p-2 flex gap-2 border-t" style={{borderColor:'rgba(3,105,161,0.4)'}}>
+                  <input value={tbInput} onChange={e=>setTbInput(e.target.value)} onKeyDown={e=>e.key==='Enter'&&sendMsg()}
+                    className="flex-1 px-2 py-1.5 text-[11px] outline-none text-sky-300 font-bold"
+                    style={{background:'rgba(3,105,161,0.15)', border:'1px solid rgba(125,211,252,0.2)'}}
+                    placeholder="honk something..." />
+                  <button onClick={sendMsg} className="px-3 py-1 text-[10px] font-black text-sky-900 hover:brightness-110 transition-all" style={{background:'#7DD3FC'}}>SEND</button>
+                </div>
+              </div>
+            );
+          })()}
+
+          {win.type === 'mememind' && (() => {
+            const [mmIdea, setMmIdea] = React.useState('');
+            const [mmResult, setMmResult] = React.useState(null);
+            const [mmLoading, setMmLoading] = React.useState(false);
+            const ideas = [
+              "🐧 when you buy the top but your flippers are diamond",
+              "🐟 fish rain incoming — colony feasting soon",
+              "❄️ your bags are frozen but so is your conviction",
+              "🐧 nobody: / pengu: honk honk WAGMI honk",
+              "🧊 iceberg theory: 90% of gains are underwater",
+              "🐟 bought pengu for the fish. stayed for the colony.",
+            ];
+            const generate = () => {
+              setMmLoading(true);
+              setTimeout(() => {
+                setMmResult(ideas[Math.floor(Math.random()*ideas.length)]);
+                setMmLoading(false);
+              }, 800);
+            };
+            return (
+              <div className="h-full flex flex-col gap-4 p-4" style={{background:'#050d1a', fontFamily:'monospace', color:'#7DD3FC'}}>
+                <div className="flex items-center gap-2 border-b pb-3" style={{borderColor:'rgba(3,105,161,0.4)'}}>
+                  <span className="text-xl">🧠</span>
+                  <span className="text-[10px] font-black uppercase tracking-widest text-sky-600">Meme Brain</span>
+                </div>
+                <div className="flex-1 flex flex-col items-center justify-center gap-6 text-center">
+                  {mmResult ? (
+                    <div className="p-6 border max-w-xs" style={{background:'rgba(3,105,161,0.1)', borderColor:'rgba(125,211,252,0.3)'}}>
+                      <p className="text-sky-200 text-sm font-bold leading-relaxed">{mmResult}</p>
+                      <button onClick={()=>{const t=encodeURIComponent(mmResult);window.open(`https://twitter.com/intent/tweet?text=${t}`,'_blank');}}
+                        className="mt-4 px-4 py-2 text-[9px] font-black uppercase text-white" style={{background:'#1da1f2'}}>
+                        🐧 Post to X
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center gap-3 opacity-30">
+                      <span className="text-6xl">🧠</span>
+                      <p className="text-[9px] uppercase tracking-widest text-sky-600">Brain empty. Generate a meme.</p>
+                    </div>
+                  )}
+                  <button onClick={generate} disabled={mmLoading}
+                    className="px-8 py-3 font-black uppercase text-[11px] tracking-widest text-sky-900 hover:brightness-110 transition-all"
+                    style={{background: mmLoading ? '#0c1f33' : '#7DD3FC', color: mmLoading ? '#7DD3FC' : '#050d1a'}}>
+                    {mmLoading ? '🐧 Thinking...' : '⚡ Generate Meme Idea'}
+                  </button>
+                </div>
+              </div>
+            );
+          })()}
         </DraggableWindow>
       ))}
 
