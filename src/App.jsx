@@ -1379,10 +1379,10 @@ const PfpCultApp = () => {
       if (!base64Image) throw new Error("pedgy base image not found at main.jpg");
 
       const promptText = `pedgyIN PFP CULT SYSTEM. You are given two images:
-Image 1: The base pedgy character — a cute cartoon pedgyin. This is the OUTPUT character. DO NOT change its body shape, pose, or pedgyin identity.
+Image 1: The base pedgy character — a cute cartoon pedgyin. This is the OUTPUT character. DO NOT change its body shape, pose, or pedgyin identity, I REPEAT, YOU CANT CHANGE ITS POSE DRAWING STYLE OR SHAPE OR TRY TO IMPROVE IT. LEACE IT AS IT IS.
 Image 2: A source image uploaded by the user. Extract the style, clothing, accessories, colors, vibe, and aesthetic from this source image.
 Apply everything extracted from Image 2 onto the pedgy in Image 1. Dress it up. Give it the same accessories. Recreate the energy. Make it feel like the pedgy joined that world.
-Keep it cute, cartoonish, and charming. The result should still look like pedgy, just styled after the source image.`;
+The result should still look like pedgy, just styled after the source image.`;
 
       const contentParts = [
         { text: promptText },
