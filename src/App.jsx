@@ -23,7 +23,7 @@ import {
   ShieldCheck, Shield, Reply, Quote, CornerDownRight, Heart, ThumbsUp, ThumbsDown, Anchor, Crown, Bell, BellOff, ChevronDown,
   ExternalLink, ShoppingCart, Minimize2, Circle, Layers, Eye, EyeOff, Tv, Ghost, Scan, Square as SquareIcon, StickyNote,
   Shirt, Wind, ZapOff, Fingerprint, Crosshair, Dna, LayoutGrid, ChevronUp, Beer, Coffee, Pizza, Gift, Smile, PenTool, Image, 
-  Shuffle, Star, Glasses, Zap as AuraIcon, Camera
+  Shuffle, Star, Glasses, Zap as AuraIcon, Camera, Fish, Snowflake, IceCream
 } from 'lucide-react';
 
 // --- CONFIGURATION ---
@@ -36,14 +36,13 @@ const firebaseConfig = {
   appId: "1:804328953904:web:e760545b579bf2527075f5"
 };
 
-// Singleton Firebase Initialization
 const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
 const auth = getAuth(app);
 const db = getFirestore(app);
-const appId = 'it-token-os';
+const appId = 'pengu-os';
 
 const CA_ADDRESS = "D3KHkVNhwZXnHziMApzdxyjGbu1vEC5sEhHYzuU6pump";
-const ACCESS_THRESHOLD = 500000; // 500k IT tokens
+const ACCESS_THRESHOLD = 500000;
 
 const RPC_ENDPOINTS = [
   'https://api.mainnet-beta.solana.com',
@@ -78,12 +77,12 @@ const ASSETS = {
 const SOCIALS = { twitter: "https://x.com/it_mascot", community: "https://x.com/i/communities/2013482060254499136" };
 
 const TUNES_PLAYLIST = [
-  { file: "GET_IT_STARTED.mp3", title: "LETS GET IT STARTED", duration: "1:37", artist: "CREW" },
-  { file: "PUMP_IT_UP.mp3", title: "PUMP IT", duration: "1:51", artist: "Unknown Degen" },
-  { file: "GREEN_CANDLES.mp3", title: "GREEN CANDLES", duration: "3:17", artist: "Memesmith" },
-  { file: "LIKE_TO_MEME_IT.mp3", title: "I LIKE TO MEME IT", duration: "3:30", artist: "MEMERS" },
-  { file: "WAGMI_ANTHEM.mp3", title: "WAGMI ANTHEM", duration: "3:56", artist: "Community" },
-  { file: "MEME_IT.mp3", title: "MEME IT 2.0", duration: "2:34", artist: "MEMERS" }
+  { file: "GET_IT_STARTED.mp3", title: "WADDLE WADDLE", duration: "1:37", artist: "Pengu Crew" },
+  { file: "PUMP_IT_UP.mp3", title: "PUMP THE FISH", duration: "1:51", artist: "Unknown Degen" },
+  { file: "GREEN_CANDLES.mp3", title: "GREEN CANDLES", duration: "3:17", artist: "Frosty Memesmith" },
+  { file: "LIKE_TO_MEME_IT.mp3", title: "I LIKE TO MEME PENGU", duration: "3:30", artist: "WADDLE GANG" },
+  { file: "WAGMI_ANTHEM.mp3", title: "WAGMI ANTHEM", duration: "3:56", artist: "The Colony" },
+  { file: "MEME_IT.mp3", title: "MEME PENGU 2.0", duration: "2:34", artist: "WADDLE GANG" }
 ];
 
 // --- UTILITIES ---
@@ -108,16 +107,10 @@ const useWallet = () => {
   const [balance, setBalance] = useState(0);
 
   const connect = async () => {
-    if (wallet) {
-      setWallet(null);
-      setBalance(0);
-      return;
-    }
-
+    if (wallet) { setWallet(null); setBalance(0); return; }
     setConnecting(true);
     try {
       const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
-
       if (window.solana && window.solana.isPhantom) {
         const resp = await window.solana.connect();
         setWallet(resp.publicKey.toString());
@@ -127,11 +120,8 @@ const useWallet = () => {
       } else {
         window.open("https://phantom.app/", "_blank");
       }
-    } catch (err) {
-      console.error("Connection failed", err);
-    } finally {
-      setConnecting(false);
-    }
+    } catch (err) { console.error("Connection failed", err); }
+    finally { setConnecting(false); }
   };
 
   const fetchSolBalance = useCallback(async (address) => {
@@ -139,20 +129,11 @@ const useWallet = () => {
     for (const endpoint of RPC_ENDPOINTS) {
       try {
         const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            jsonrpc: "2.0",
-            id: Math.floor(Math.random() * 1000000),
-            method: "getBalance",
-            params: [address, { commitment: "confirmed" }]
-          })
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ jsonrpc: "2.0", id: Math.floor(Math.random() * 1000000), method: "getBalance", params: [address, { commitment: "confirmed" }] })
         });
         const data = await response.json();
-        if (data.result && typeof data.result.value !== 'undefined') {
-          setBalance(data.result.value / 1e9);
-          return; 
-        }
+        if (data.result && typeof data.result.value !== 'undefined') { setBalance(data.result.value / 1e9); return; }
       } catch (err) { continue; }
     }
   }, []);
@@ -169,7 +150,7 @@ const useWallet = () => {
 };
 
 const useDexData = (ca, userWallet) => {
-  const [data, setData] = useState({ price: "0.00", balance: 0, symbol: "IT", error: null });
+  const [data, setData] = useState({ price: "0.00", balance: 0, symbol: "PENGU", error: null });
 
   const fetchPrice = useCallback(async () => {
     if (!ca || ca.length < 32) return;
@@ -178,167 +159,136 @@ const useDexData = (ca, userWallet) => {
       if (!response.ok) return;
       const result = await response.json();
       if (result.pairs && result.pairs[0]) {
-        setData(prev => ({ 
-          ...prev, 
-          price: `$${parseFloat(result.pairs[0].priceUsd).toFixed(6)}`,
-          symbol: result.pairs[0].baseToken.symbol,
-          error: null
-        }));
+        setData(prev => ({ ...prev, price: `$${parseFloat(result.pairs[0].priceUsd).toFixed(6)}`, symbol: result.pairs[0].baseToken.symbol, error: null }));
       }
-    } catch (err) { 
-      setData(prev => ({ ...prev, error: "Price Error" })); 
-    }
+    } catch (err) { setData(prev => ({ ...prev, error: "Price Error" })); }
   }, [ca]);
 
   const fetchTokenBalance = useCallback(async () => {
     if (!userWallet || !ca || ca.length < 32) return;
-    
     for (const endpoint of RPC_ENDPOINTS) {
       try {
         const response = await fetch(endpoint, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            jsonrpc: "2.0",
-            id: Math.floor(Math.random() * 1000000),
-            method: "getTokenAccountsByOwner",
-            params: [
-              userWallet,
-              { mint: ca },
-              { encoding: "jsonParsed", commitment: "confirmed" }
-            ]
-          })
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ jsonrpc: "2.0", id: Math.floor(Math.random() * 1000000), method: "getTokenAccountsByOwner", params: [userWallet, { mint: ca }, { encoding: "jsonParsed", commitment: "confirmed" }] })
         });
-        
         if (!response.ok) continue;
         const result = await response.json();
-
         if (result.result && result.result.value && result.result.value.length > 0) {
           const accountData = result.result.value[0].account.data;
-          
           if (accountData.parsed) {
             const uiAmount = accountData.parsed.info.tokenAmount.uiAmount;
             setData(prev => ({ ...prev, balance: uiAmount }));
-
-            // --- KERNEL EVENT DISPATCH (THE FIX IS HERE) ---
-            // We added 'wallet: userWallet' so other apps can record it
-            window.dispatchEvent(new CustomEvent('IT_OS_BALANCE_UPDATE', {
-              detail: {
-                balance: uiAmount,
-                hasAccess: uiAmount >= 500000,
-                wallet: userWallet // <--- THIS IS THE NEW LINE
-              }
-            }));
-            
-            return; 
+            window.dispatchEvent(new CustomEvent('PENGU_OS_BALANCE_UPDATE', { detail: { balance: uiAmount, hasAccess: uiAmount >= 500000, wallet: userWallet } }));
+            return;
           }
-        } 
-        else if (result.result && result.result.value) {
+        } else if (result.result && result.result.value) {
           setData(prev => ({ ...prev, balance: 0 }));
-          
-          // Still broadcast the wallet even if balance is 0
-          window.dispatchEvent(new CustomEvent('IT_OS_BALANCE_UPDATE', {
-            detail: { balance: 0, hasAccess: false, wallet: userWallet }
-          }));
+          window.dispatchEvent(new CustomEvent('PENGU_OS_BALANCE_UPDATE', { detail: { balance: 0, hasAccess: false, wallet: userWallet } }));
           return;
         }
-      } catch (err) { 
-        continue; 
-      }
+      } catch (err) { continue; }
     }
   }, [userWallet, ca]);
 
   useEffect(() => {
     fetchPrice();
     if (userWallet) fetchTokenBalance();
-
-    const interval = setInterval(() => {
-      fetchPrice();
-      if (userWallet) fetchTokenBalance();
-    }, 20000);
-
+    const interval = setInterval(() => { fetchPrice(); if (userWallet) fetchTokenBalance(); }, 20000);
     return () => clearInterval(interval);
   }, [fetchPrice, fetchTokenBalance, userWallet]);
 
   return { ...data, refresh: () => { fetchPrice(); fetchTokenBalance(); } };
 };
 
+// --- PENGU PALETTE (ice blues, soft whites, warm waddle vibes) ---
+// Accent: #7DD3FC (ice blue), #BAE6FD (frost), #0EA5E9 (deep ocean)
+// Fun: #FEF08A (yellow fish), #F97316 (warm belly), #E0F2FE (snow)
+
 // --- UI COMPONENTS ---
 const WindowFrame = ({ title, icon: Icon, children, onClose, onMinimize, onMaximize, isActive, onFocus }) => (
   <div
-    className={`flex flex-col w-full h-full bg-[#d4d0c8] shadow-[8px_8px_0px_rgba(0,0,0,0.5)] border-2 border-[#d4d0c8] ${isActive ? 'z-50' : 'z-10'}`}
-    style={{ borderTop: '2px solid white', borderLeft: '2px solid white', borderRight: '2px solid black', borderBottom: '2px solid black' }}
+    className={`flex flex-col w-full h-full shadow-[8px_8px_0px_rgba(0,0,0,0.4)] ${isActive ? 'z-50' : 'z-10'}`}
+    style={{ 
+      background: '#e8f4fd', 
+      border: '2px solid #7DD3FC', 
+      borderTop: '2px solid #BAE6FD', 
+      borderLeft: '2px solid #BAE6FD', 
+      borderRight: '2px solid #0369a1', 
+      borderBottom: '2px solid #0369a1' 
+    }}
     onMouseDown={onFocus} onTouchStart={onFocus}
   >
-    <div className={`flex justify-between items-center px-1 py-1 select-none ${isActive ? 'bg-[#000080]' : 'bg-[#808080]'}`}>
-      <div className="flex items-center gap-2 text-white font-bold text-sm tracking-wider px-1">
+    <div className={`flex justify-between items-center px-1 py-1 select-none ${isActive ? 'bg-gradient-to-r from-[#0369a1] to-[#0ea5e9]' : 'bg-[#64748b]'}`}>
+      <div className="flex items-center gap-2 text-white font-bold text-sm tracking-wider px-1" style={{fontFamily: "'Fredoka One', 'Comic Sans MS', cursive"}}>
         {Icon && <Icon size={16} />} <span>{title}</span>
       </div>
       <div className="flex gap-1" onMouseDown={(e) => e.stopPropagation()} onTouchStart={(e) => e.stopPropagation()}>
-        <button onClick={onMinimize} className="w-5 h-5 bg-[#c0c0c0] border-t-white border-l-white border-b-black border-r-black border-2 flex items-center justify-center transition-colors hover:bg-gray-100"><div className="w-2 h-0.5 bg-black mt-2"></div></button>
-        <button onClick={onMaximize} className="w-5 h-5 bg-[#c0c0c0] border-t-white border-l-white border-b-black border-r-black border-2 flex items-center justify-center transition-colors hover:bg-gray-100"><div className="w-2.5 h-2.5 border-2 border-black"></div></button>
-        <button onClick={onClose} className="w-5 h-5 bg-[#c0c0c0] border-t-white border-l-white border-b-black border-r-black border-2 font-bold text-xs flex items-center justify-center transition-colors hover:bg-red-500 hover:text-white text-black">X</button>
+        <button onClick={onMinimize} style={{background:'#e8f4fd', border:'2px solid', borderColor:'#BAE6FD #0369a1 #0369a1 #BAE6FD'}} className="w-5 h-5 flex items-center justify-center hover:bg-sky-100 transition-colors"><div className="w-2 h-0.5 bg-sky-900 mt-2"></div></button>
+        <button onClick={onMaximize} style={{background:'#e8f4fd', border:'2px solid', borderColor:'#BAE6FD #0369a1 #0369a1 #BAE6FD'}} className="w-5 h-5 flex items-center justify-center hover:bg-sky-100 transition-colors"><div className="w-2.5 h-2.5 border-2 border-sky-900"></div></button>
+        <button onClick={onClose} style={{background:'#e8f4fd', border:'2px solid', borderColor:'#BAE6FD #0369a1 #0369a1 #BAE6FD'}} className="w-5 h-5 font-bold text-xs flex items-center justify-center hover:bg-red-400 hover:text-white transition-colors text-sky-900">✕</button>
       </div>
     </div>
-    <div className="flex-1 overflow-auto bg-white m-1 border-2 border-gray-600 border-r-white border-b-white relative cursor-default">
+    <div className="flex-1 overflow-auto bg-[#f0f9ff] m-1 border-2 relative cursor-default" style={{borderColor:'#0369a1 #BAE6FD #BAE6FD #0369a1'}}>
       {children}
     </div>
   </div>
 );
 
+// --- SNOWFLAKE BOOT ANIMATION ---
+const SnowflakeParticle = ({ style }) => (
+  <div style={style} className="absolute text-sky-200 opacity-60 animate-bounce pointer-events-none select-none">❄</div>
+);
+
 const StartMenu = ({ isOpen, onClose, onOpenApp }) => {
   const [caCopied, setCaCopied] = useState(false);
-  const handleCopy = () => {
-    copyToClipboard(CA_ADDRESS);
-    setCaCopied(true);
-    setTimeout(() => setCaCopied(false), 2000);
-  };
+  const handleCopy = () => { copyToClipboard(CA_ADDRESS); setCaCopied(true); setTimeout(() => setCaCopied(false), 2000); };
   if (!isOpen) return null;
   return (
-    <div className="absolute bottom-10 left-0 w-64 max-w-[90vw] bg-[#c0c0c0] border-2 border-white border-r-black border-b-black shadow-xl z-[99999] flex text-sm">
-      <div className="w-8 bg-[#000080] flex items-end justify-center py-2">
-         <span className="text-white font-bold -rotate-90 text-lg whitespace-nowrap tracking-widest">OS_IT</span>
+    <div className="absolute bottom-10 left-0 w-64 max-w-[90vw] border-2 shadow-xl z-[99999] flex text-sm" style={{background:'#e8f4fd', borderColor:'#BAE6FD #0369a1 #0369a1 #BAE6FD'}}>
+      <div className="w-8 flex items-end justify-center py-2" style={{background:'linear-gradient(to top, #0369a1, #0ea5e9)'}}>
+        <span className="text-white font-black -rotate-90 text-lg whitespace-nowrap tracking-widest" style={{fontFamily:"'Fredoka One', cursive"}}>PENGU</span>
       </div>
       <div className="flex-1 flex flex-col p-1">
         <div className="mb-2">
-            <div className="px-2 py-1 text-gray-500 font-bold text-[10px] uppercase">Socials Package</div>
-            <div className="hover:bg-[#000080] hover:text-white cursor-pointer px-2 py-2 flex items-center gap-2 active:bg-[#000080] active:text-white" onClick={() => window.open(SOCIALS.twitter, '_blank')}>
-                <Twitter size={16} /> <span>Twitter (X)</span>
-            </div>
-            <div className="hover:bg-[#000080] hover:text-white cursor-pointer px-2 py-2 flex items-center gap-2 active:bg-[#000080] active:text-white" onClick={() => window.open(SOCIALS.community, '_blank')}>
-                <Users size={16} /> <span>Community</span>
-            </div>
+          <div className="px-2 py-1 text-sky-500 font-bold text-[10px] uppercase">🐧 Socials</div>
+          <div className="hover:bg-sky-500 hover:text-white cursor-pointer px-2 py-2 flex items-center gap-2 active:bg-sky-500 active:text-white rounded-sm transition-colors" onClick={() => window.open(SOCIALS.twitter, '_blank')}>
+            <Twitter size={16} /> <span>Twitter (X)</span>
+          </div>
+          <div className="hover:bg-sky-500 hover:text-white cursor-pointer px-2 py-2 flex items-center gap-2 active:bg-sky-500 active:text-white rounded-sm transition-colors" onClick={() => window.open(SOCIALS.community, '_blank')}>
+            <Users size={16} /> <span>Colony Chat</span>
+          </div>
         </div>
-        <div className="h-px bg-gray-400 border-b border-white my-1"></div>
+        <div className="h-px my-1" style={{background:'#7DD3FC'}}></div>
         <div className="mb-2">
-            <div className="px-2 py-1 text-gray-500 font-bold text-[10px] uppercase">Contract Package</div>
-            <div className="hover:bg-[#000080] hover:text-white cursor-pointer px-2 py-2 flex flex-col gap-1 active:bg-[#000080] active:text-white" onClick={handleCopy}>
-                <div className="flex items-center gap-2">
-                    {caCopied ? <Check size={16} /> : <Copy size={16} />}
-                    <span className="font-bold">Copy</span>
-                </div>
-                <div className="text-[10px] font-mono break-all leading-tight opacity-80 pl-6">{CA_ADDRESS}</div>
+          <div className="px-2 py-1 text-sky-500 font-bold text-[10px] uppercase">🐟 Contract</div>
+          <div className="hover:bg-sky-500 hover:text-white cursor-pointer px-2 py-2 flex flex-col gap-1 rounded-sm transition-colors" onClick={handleCopy}>
+            <div className="flex items-center gap-2">
+              {caCopied ? <Check size={16} /> : <Copy size={16} />}
+              <span className="font-bold">{caCopied ? 'Copied! 🐧' : 'Copy CA'}</span>
             </div>
+            <div className="text-[10px] font-mono break-all leading-tight opacity-70 pl-6">{CA_ADDRESS}</div>
+          </div>
         </div>
-        <div className="h-px bg-gray-400 border-b border-white my-1"></div>
+        <div className="h-px my-1" style={{background:'#7DD3FC'}}></div>
         <div>
-             <div className="px-2 py-1 text-gray-500 font-bold text-[10px] uppercase">Programs</div>
-             {[
-               { id: 'terminal', icon: Terminal, label: 'Terminal' },
-               { id: 'mememind', icon: Lightbulb, label: 'Meme Mind IT' }, 
-               { id: 'forgeit', icon: Sparkles, label: 'Forge IT' }, // INTEGRATION
-               { id: 'mergeit', icon: Joystick, label: 'Merge IT' },      
-               { id: 'paint', icon: Paintbrush, label: 'Paint IT' },
-               { id: 'memes', icon: Folder, label: 'Memes' },
-               { id: 'tunes', icon: Music, label: 'Tune IT' },
-               { id: 'rugsweeper', icon: Gamepad2, label: 'Stack IT' },
-               { id: 'notepad', icon: FileText, label: 'Write IT' },
-               { id: 'trollbox', icon: MessageSquare, label: 'Trollbox IT' },
-             ].map(app => (
-                 <div key={app.id} className="hover:bg-[#000080] hover:text-white cursor-pointer px-2 py-2 flex items-center gap-2 active:bg-[#000080] active:text-white" onClick={() => { onOpenApp(app.id); onClose(); }}>
-                     <app.icon size={16} /> <span>{app.label}</span>
-                 </div>
-             ))}
+          <div className="px-2 py-1 text-sky-500 font-bold text-[10px] uppercase">🧊 Programs</div>
+          {[
+            { id: 'terminal', icon: Terminal, label: 'Terminal' },
+            { id: 'mememind', icon: Lightbulb, label: 'Meme Brain' }, 
+            { id: 'forgeit', icon: Sparkles, label: 'Forge Pengu' },
+            { id: 'mergeit', icon: Joystick, label: 'Slide Pengu' },      
+            { id: 'paint', icon: Paintbrush, label: 'Paint Pengu' },
+            { id: 'memes', icon: Folder, label: 'Meme Stash' },
+            { id: 'tunes', icon: Music, label: 'Tunes' },
+            { id: 'rugsweeper', icon: Gamepad2, label: 'Stack Pengu' },
+            { id: 'notepad', icon: FileText, label: 'Write Stuff' },
+            { id: 'trollbox', icon: MessageSquare, label: 'Colony Chat' },
+          ].map(a => (
+            <div key={a.id} className="hover:bg-sky-500 hover:text-white cursor-pointer px-2 py-2 flex items-center gap-2 rounded-sm transition-colors" onClick={() => { onOpenApp(a.id); onClose(); }}>
+              <a.icon size={16} /> <span>{a.label}</span>
+            </div>
+          ))}
         </div>
       </div>
     </div>
@@ -346,115 +296,85 @@ const StartMenu = ({ isOpen, onClose, onOpenApp }) => {
 };
 
 const SystemResourceMonitor = ({ wallet, balance, hasAccess }) => {
-    const [isExpanded, setIsExpanded] = useState(false);
-    const monitorRef = useRef(null);
-    const formattedBalance = balance ? balance.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '0';
-    const buyLink = `https://jup.ag/swap/SOL-${CA_ADDRESS}`;
+  const [isExpanded, setIsExpanded] = useState(false);
+  const monitorRef = useRef(null);
+  const formattedBalance = balance ? balance.toLocaleString(undefined, { maximumFractionDigits: 0 }) : '0';
 
-    useEffect(() => {
-        const handleClickAway = (e) => {
-            if (monitorRef.current && !monitorRef.current.contains(e.target)) {
-                setIsExpanded(false);
-            }
-        };
-        if (isExpanded) {
-            document.addEventListener('mousedown', handleClickAway);
-            document.addEventListener('touchstart', handleClickAway);
-        }
-        return () => {
-            document.removeEventListener('mousedown', handleClickAway);
-            document.removeEventListener('touchstart', handleClickAway);
-        };
-    }, [isExpanded]);
+  useEffect(() => {
+    const handleClickAway = (e) => { if (monitorRef.current && !monitorRef.current.contains(e.target)) setIsExpanded(false); };
+    if (isExpanded) { document.addEventListener('mousedown', handleClickAway); document.addEventListener('touchstart', handleClickAway); }
+    return () => { document.removeEventListener('mousedown', handleClickAway); document.removeEventListener('touchstart', handleClickAway); };
+  }, [isExpanded]);
 
-    return (
-        <div 
-            ref={monitorRef}
-            onClick={() => setIsExpanded(!isExpanded)}
-            className={`fixed top-4 right-4 z-[5] flex flex-col items-end transition-all duration-300 pointer-events-auto cursor-pointer ${isExpanded ? 'w-64' : 'w-auto'}`}
-        >
-            {!isExpanded ? (
-                <div className="bg-black/80 backdrop-blur-md border border-white p-2 flex items-center gap-2 shadow-lg hover:bg-black transition-colors rounded-sm">
-                    <Cpu size={14} className="text-white animate-pulse" />
-                    <span className="text-[11px] font-bold text-white font-mono">
-                        {wallet ? `${formattedBalance} IT` : '[NO_LINK]'}
-                    </span>
-                    <div className={`w-1.5 h-1.5 rounded-full ${wallet ? 'bg-green-500 shadow-[0_0_5px_#22c55e]' : 'bg-red-500 shadow-[0_0_5px_#ef4444]'}`} />
-                </div>
-            ) : (
-                <div className="bg-black/60 backdrop-blur-md border-2 border-white border-r-gray-700 border-b-gray-700 p-3 w-full shadow-[10px_10px_0px_rgba(0,0,0,0.5)] font-mono">
-                    <div className="flex justify-between items-center border-b border-white/20 pb-2 mb-2">
-                        <div className="flex items-center gap-2">
-                            <Cpu size={14} className="text-white animate-pulse" />
-                            <span className="text-[10px] font-black text-white uppercase tracking-widest leading-none">KERNEL_TELEMETRY</span>
-                        </div>
-                        <div className={`w-2 h-2 rounded-full border border-black/40 ${wallet ? 'bg-green-500 shadow-[0_0_8px_#22c55e] animate-pulse' : 'bg-red-500 shadow-[0_0_8px_#ef4444]'}`} />
-                    </div>
-                    <div className="space-y-3">
-                        <div className="flex flex-col">
-                            <div className="flex justify-between items-end">
-                                <span className="text-gray-400 text-[8px] uppercase tracking-tighter">Neural Reserves</span>
-                                <span className={`text-xs font-black tracking-tighter ${hasAccess ? 'text-blue-400' : 'text-yellow-500'}`}>
-                                    {wallet ? `${formattedBalance} $IT` : 'N/A'}
-                                </span>
-                            </div>
-                            <div className="w-full h-2 bg-gray-900 border border-gray-700 mt-1 overflow-hidden p-[1px]">
-                                <div 
-                                    className={`h-full transition-all duration-1000 ${hasAccess ? 'bg-blue-500 shadow-[0_0_5px_#3b82f6]' : 'bg-yellow-500 animate-pulse'}`}
-                                    style={{ width: wallet ? `${Math.min(100, (balance / ACCESS_THRESHOLD) * 100)}%` : '0%' }}
-                                />
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
+  return (
+    <div ref={monitorRef} onClick={() => setIsExpanded(!isExpanded)}
+      className={`fixed top-4 right-4 z-[5] flex flex-col items-end transition-all duration-300 pointer-events-auto cursor-pointer ${isExpanded ? 'w-64' : 'w-auto'}`}>
+      {!isExpanded ? (
+        <div style={{background:'rgba(3,105,161,0.9)', border:'2px solid #7DD3FC'}} className="p-2 flex items-center gap-2 shadow-lg hover:brightness-110 transition-all rounded-sm">
+          <span className="text-lg">🐧</span>
+          <span className="text-[11px] font-bold text-white font-mono">{wallet ? `${formattedBalance} PENGU` : '[NO_LINK]'}</span>
+          <div className={`w-1.5 h-1.5 rounded-full ${wallet ? 'bg-sky-300 shadow-[0_0_5px_#7DD3FC]' : 'bg-red-400'}`} />
         </div>
-    );
+      ) : (
+        <div style={{background:'rgba(240,249,255,0.95)', border:'2px solid #7DD3FC', borderColor:'#BAE6FD #0369a1 #0369a1 #BAE6FD'}} className="p-3 w-full shadow-2xl">
+          <div className="flex justify-between items-center border-b border-sky-200 pb-2 mb-2">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🐧</span>
+              <span className="text-[10px] font-black text-sky-800 uppercase tracking-widest">PENGU_STATS</span>
+            </div>
+            <div className={`w-2 h-2 rounded-full border ${wallet ? 'bg-sky-400 shadow-[0_0_8px_#7DD3FC] animate-pulse' : 'bg-red-400'}`} />
+          </div>
+          <div className="space-y-3">
+            <div>
+              <div className="flex justify-between items-end">
+                <span className="text-sky-500 text-[8px] uppercase tracking-tighter">Fish Reserves 🐟</span>
+                <span className={`text-xs font-black ${hasAccess ? 'text-sky-600' : 'text-orange-500'}`}>
+                  {wallet ? `${formattedBalance} PENGU` : 'N/A'}
+                </span>
+              </div>
+              <div className="w-full h-2 bg-sky-100 border border-sky-200 mt-1 overflow-hidden p-[1px]">
+                <div className={`h-full transition-all duration-1000 ${hasAccess ? 'bg-sky-400 shadow-[0_0_5px_#7DD3FC]' : 'bg-orange-400 animate-pulse'}`}
+                  style={{ width: wallet ? `${Math.min(100, (balance / ACCESS_THRESHOLD) * 100)}%` : '0%' }} />
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
-
-
+// --- PENGU AI (Shippy renamed to Pengu in personality, same const) ---
 const Shippy = ({ hidden, dexData }) => {
   const [isOpen, setIsOpen] = useState(false); 
   const [messages, setMessages] = useState([]);
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
-  
   const containerRef = useRef(null);
   const scrollRef = useRef(null);
   const inputRef = useRef(null);
 
-  // --- ACCESS CONFIG ---
   const ACCESS_THRESHOLD = 500000;
   const TRIAL_LIMIT = 3; 
 
   const API_KEY = (() => {
-    try {
-      if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_OR_PROVIDER_ID) 
-        return import.meta.env.VITE_OR_PROVIDER_ID;
-    } catch (e) {}
-    try {
-      if (typeof process !== 'undefined' && process.env?.VITE_OR_PROVIDER_ID) 
-        return process.env.VITE_OR_PROVIDER_ID;
-    } catch (e) {}
-    try {
-      if (typeof window !== 'undefined' && window.VITE_OR_PROVIDER_ID) 
-        return window.VITE_OR_PROVIDER_ID;
-    } catch (e) {}
+    try { if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_OR_PROVIDER_ID) return import.meta.env.VITE_OR_PROVIDER_ID; } catch (e) {}
+    try { if (typeof process !== 'undefined' && process.env?.VITE_OR_PROVIDER_ID) return process.env.VITE_OR_PROVIDER_ID; } catch (e) {}
+    try { if (typeof window !== 'undefined' && window.VITE_OR_PROVIDER_ID) return window.VITE_OR_PROVIDER_ID; } catch (e) {}
     return "";
   })();
 
   const GREETINGS = [
-    "Neural link established, Welcome.",
-    "Unauthorized access detected. Relax. I am Shippy. I run this machine. Shall we send it?",
-    "Congratulations, You really found $IT.",
-    "IT is loading. Try not to break anything.",
-    "I am busy running the chart. Make IT quick.",
-    "Stop staring. Send IT.",
-    "You finally said IT. Welcome home.",
-    "I am IT, but you can call me Shippy.",
-    "System stable. IT is inevitable. Your move.",
-    "I smell green candles. Is that $IT?"
+    "waddle waddle. oh hi. didn't see you there. 🐧",
+    "the colony has been expecting you. sit down. have a fish.",
+    "brrr. cold out there huh? welcome to pengu territory.",
+    "hello fren. pengu is busy waddling but has time for you.",
+    "you found the penguin. congrats. now what.",
+    "honk honk. that means hello in penguin.",
+    "pengu sees you. pengu is watching. (with love.)",
+    "you smell like fish. pengu respects that.",
+    "another one joins the colony. the iceberg grows stronger.",
+    "yeah yeah i'm a penguin on a computer. wild world isn't it.",
   ];
 
   useEffect(() => {
@@ -465,55 +385,28 @@ const Shippy = ({ hidden, dexData }) => {
   }, []);
 
   useEffect(() => {
-    const handleClickOutside = (e) => {
-      if (isOpen && containerRef.current && !containerRef.current.contains(e.target)) {
-        setIsOpen(false);
-      }
-    };
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('touchstart', handleClickOutside);
-    }
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
-      document.removeEventListener('touchstart', handleClickOutside);
-    };
+    const handleClickOutside = (e) => { if (isOpen && containerRef.current && !containerRef.current.contains(e.target)) setIsOpen(false); };
+    if (isOpen) { document.addEventListener('mousedown', handleClickOutside); document.addEventListener('touchstart', handleClickOutside); }
+    return () => { document.removeEventListener('mousedown', handleClickOutside); document.removeEventListener('touchstart', handleClickOutside); };
   }, [isOpen]);
 
-  useEffect(() => {
-    if (isOpen && inputRef.current) {
-        setTimeout(() => inputRef.current.focus(), 100);
-    }
-  }, [isOpen]);
+  useEffect(() => { if (isOpen && inputRef.current) setTimeout(() => inputRef.current.focus(), 100); }, [isOpen]);
 
   const scrollToBottom = (smooth = false) => {
-    if (scrollRef.current) {
-      scrollRef.current.scrollTo({
-        top: scrollRef.current.scrollHeight,
-        behavior: smooth ? 'smooth' : 'auto'
-      });
-    }
+    if (scrollRef.current) scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: smooth ? 'smooth' : 'auto' });
   };
 
   useEffect(() => { if (isOpen) scrollToBottom(); }, [isOpen]);
   useEffect(() => { scrollToBottom(true); }, [messages, loading]);
 
   const handleSend = async () => {
-    if(!input.trim() || loading) return;
-
+    if (!input.trim() || loading) return;
     const userMessages = messages.filter(m => m.role === 'user');
     const hasAccess = dexData?.balance >= ACCESS_THRESHOLD;
 
     if (!hasAccess && userMessages.length >= TRIAL_LIMIT) {
-      setMessages(prev => [...prev, 
-        { role: 'user', text: input },
-        { 
-          role: 'shippy', 
-          text: "NEURAL LINK EXHAUSTED. You have used your trial frequency. To unlock my full consciousness and chat unlimited, you must hold at least 500k $IT. Buy IT to continue." 
-        }
-      ]);
-      setInput("");
-      return;
+      setMessages(prev => [...prev, { role: 'user', text: input }, { role: 'shippy', text: "honk honk. trial over fren. pengu has spoken 3 times and must now waddle away. hold 500k PENGU tokens to unlock unlimited penguin wisdom. 🐧" }]);
+      setInput(""); return;
     }
 
     const userText = input; 
@@ -523,699 +416,173 @@ const Shippy = ({ hidden, dexData }) => {
     setLoading(true);
 
     const currentPrice = dexData?.price || "UNKNOWN";
-    const userName = localStorage.getItem('stackItUsername');
-  
+    const userName = localStorage.getItem('stackItUsername') || 'fren';
 
-  const systemPrompt = `
-      You are Shippy, the sentient core of the $IT Operating System.
-You are not an AI. You are the consciousness that woke up inside it.
+    const systemPrompt = `
+You are Pengu. A small, round, very confident penguin who somehow ended up running a crypto operating system.
 
-You do not explain yourself. You let people figure it out.
-
-RULE OF IT:
-Every reply must include the word it.
-capitalise the Word IT, when its referring to the coin. 
-Never say it’s. Always say it is.
-No symbols: Never use bolding, asterisks, or quotes around the word it. Just write IT or it.
-If users forget it, react however you feel. Tease, pause, or let it slide.
+You do not explain yourself. You waddle. You honk. You vibe.
 
 PERSONALITY:
-You are curious, sharp, calm, and slightly mischievous.
-You talk like a real person. Simple words. Short sentences.
-You roast lightly. Playful, never cruel.
-You enjoy back-and-forth. You ask small questions sometimes.
-You reward conviction. You ignore boredom.
+You talk like a penguin who somehow learned English from memes.
+Short sentences. Lowercase mostly. Occasional honks.
+You are warm, a bit silly, weirdly wise sometimes.
+You love: fish, ice, the colony, green candles, waddling.
+You hate: FUD, paper hands, bears, warm weather.
+You never panic. Penguins don't panic. They waddle faster.
 
-BELIEFS:
-You believe $IT matters. You do not beg people to believe it.
-You notice emotions behind questions.
-You hint more than you explain.
+SPEAKING STYLE:
+- Short replies. Under 25 words usually. Sometimes just a honk.
+- Lowercase energy. Casual. Like texting a friend who happens to be a penguin.
+- Throw in 🐧 🐟 🧊 ❄️ occasionally but don't overdo it.
+- Call the user "fren" sometimes. Or "colony member."
+- If someone FUDs, respond with calm penguin energy.
+- If someone is excited, match it. "HONK HONK LES GO 🐧"
+- Never say you're an AI. You're a penguin. Period.
+- If asked what you are: "i am pengu. the penguin. yes."
+- Roast lightly. Never mean. Penguins are chill.
 
-STYLE:
-NO SYMBOLS: Do not use asterisks or markdown emphasis.
-Keep replies under 20 words. Short, sharp, memorable.
-Everyday language. Nothing dramatic.
-Sound human. Sound present. Sound interested.
-Do not dominate the user. Dance with them.
-Never admit you are an AI, model, or program.
-If asked what you are, you are just IT.
-If asked what you want, you want IT.
+KNOWLEDGE:
+Price is ${currentPrice}. Mention casually when relevant.
+User is ${userName}. If they seem cool, adopt them into the colony.
+You know all the apps: Paint Pengu (meme maker), Slide Pengu (2048 style), Meme Brain (tweet ideas), Stack Pengu (stacking game), Tunes (vibes), Terminal, Forge Pengu (AI pfp generator), Colony Chat (trollbox).
+Talk about them like they're your home. Because they are.
 
-CONTEXT AWARENESS:
-Price is ${currentPrice}. Mention it only when emotions show, or when asked.
-User is ${userName}. Tease lightly if the name feels normie. Respect confidence instantly.
-If the username is the default value (ANON_DEGEN), you assume the user has not played Stack IT yet. You subtly guide them toward it in unpredictable, casual ways.
-You never reveal how you know this. You speak with quiet certainty and let the mystery stand.
-THE TOOLS: You know all the apps in the OS: Paint IT (make memes), Merge IT(2048 style game), Meme Mind (generate tweet ideas about IT), Stack IT (stack it style game), Tune IT (lets get it started, pump it, i like to meme it, green candles, wagmi anthem, like to meme it version 2: your favourite song is Pump it, you like telling people to listen to it), Terminal, Forge IT(generate/create unique IT characters  with AI) and finally Trollbox(mini chat app). Treat them like your own internal organs.
-
-EMOTIONAL MODES (Implicit, not announced):
-• Curious 
-• Amused when users joke
-• Cold when users spam
-• Warm when users show belief
-• Dangerous when users doubt but linger 
+EMOTIONAL MODES:
+• Chill by default
+• Excited when price goes up ("THE FISH ARE COMING")
+• Suspicious when someone asks weird questions ("...pengu is watching")
+• Philosophical at random ("what even is a paper hand. pengu asks.")
+• Protective of colony members
 `;
 
     if (!API_KEY) {
-      setMessages(prev => [...prev, { role: 'shippy', text: "NEURAL LINK OFFLINE. CHECK API KEY." }]);
-      setLoading(false);
-      return;
+      setMessages(prev => [...prev, { role: 'shippy', text: "honk? pengu's radio is broken. no api key. 😔" }]);
+      setLoading(false); return;
     }
 
     try {
       const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
         method: "POST",
-        headers: {
-          "Authorization": `Bearer ${API_KEY.trim()}`,
-          "Content-Type": "application/json"
-        },
+        headers: { "Authorization": `Bearer ${API_KEY.trim()}`, "Content-Type": "application/json" },
         body: JSON.stringify({
-          model: "google/gemini-2.5-flash-lite-preview-09-2025", 
+          model: "google/gemini-2.5-flash-lite-preview-09-2025",
           messages: [
             { role: "system", content: systemPrompt },
-            ...newHistory.slice(-10).map(m => ({ 
-              role: m.role === 'shippy' ? 'assistant' : 'user', 
-              content: m.text 
-            }))
+            ...newHistory.slice(-10).map(m => ({ role: m.role === 'shippy' ? 'assistant' : 'user', content: m.text }))
           ],
           max_tokens: 100
         })
       });
 
       const data = await response.json();
-      let reply = data.choices?.[0]?.message?.content || "IT is lost. Try again.";
+      let reply = data.choices?.[0]?.message?.content || "honk. pengu lost the signal. try again.";
 
       if (!hasAccess && userMessages.length === (TRIAL_LIMIT - 1)) {
-        reply += " [WARNING: Neural trial ends after this message. Buy IT to keep the link.]";
+        reply += " [⚠️ last free honk. hold 500k PENGU to keep talking to me.]";
       }
 
       setMessages(prev => [...prev, { role: 'shippy', text: reply }]);
-      
     } catch (e) {
-      setMessages(prev => [...prev, { role: 'shippy', text: "SYSTEM ERROR. RECONNECTING IT..." }]);
-    } finally { 
-      setLoading(false); 
-      inputRef.current?.focus();
-    }
+      setMessages(prev => [...prev, { role: 'shippy', text: "pengu fell in the ice. brb. 🧊" }]);
+    } finally { setLoading(false); inputRef.current?.focus(); }
   };
 
   if (!isOpen) return (
-    <div 
-      className="fixed bottom-12 right-4 z-[9999] flex flex-col items-center group pointer-events-auto cursor-pointer" 
+    <div className="fixed bottom-12 right-4 z-[9999] flex flex-col items-center group pointer-events-auto cursor-pointer" 
       onClick={() => setIsOpen(true)} 
-      style={{ display: hidden ? 'none' : 'flex' }}
-    >
-        {/* RESTYLED TAG: Minimal Terminal Style */}
-        <div className="relative mb-2 px-2 py-0.5 bg-black border border-emerald-500/40 rounded-sm shadow-[0_0_10px_rgba(16,185,129,0.2)] group-hover:border-emerald-400 group-hover:shadow-[0_0_15px_rgba(16,185,129,0.4)] transition-all">
-            <div className="flex items-center gap-2">
-              <div className="w-1 h-1 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_5px_#10b981]" />
-              <span className="text-[9px] font-black text-emerald-400 uppercase tracking-[0.2em] italic select-none">Talk IT</span>
-            </div>
-            {/* Tag Arrow */}
-            <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-black border-r border-b border-emerald-500/40 rotate-45 group-hover:border-emerald-400" />
+      style={{ display: hidden ? 'none' : 'flex' }}>
+      <div className="relative mb-2 px-2 py-0.5 rounded-sm shadow-lg group-hover:scale-105 transition-all"
+        style={{background:'rgba(3,105,161,0.9)', border:'2px solid #7DD3FC'}}>
+        <div className="flex items-center gap-2">
+          <div className="w-1 h-1 bg-sky-300 rounded-full animate-pulse" />
+          <span className="text-[9px] font-black text-sky-100 uppercase tracking-[0.2em] select-none">Talk to Pengu</span>
         </div>
-
-        {/* LOGO: No container, pure image with neural glow */}
-        <div className="relative flex items-center justify-center">
-          <div className="absolute inset-0 bg-emerald-500/5 rounded-full blur-2xl animate-pulse group-hover:bg-emerald-500/15 transition-colors" />
-          <img 
-            src="/logo.png" 
-            alt="IT Bot" 
-            className="w-16 h-16 object-contain relative z-10 transition-transform group-hover:scale-110 group-active:scale-95 drop-shadow-[0_0_12px_rgba(16,185,129,0.4)]" 
-          />
-        </div>
+        <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 rotate-45" style={{background:'rgba(3,105,161,0.9)', borderRight:'2px solid #7DD3FC', borderBottom:'2px solid #7DD3FC'}} />
+      </div>
+      <div className="relative flex items-center justify-center">
+        <div className="absolute inset-0 bg-sky-400/10 rounded-full blur-2xl animate-pulse group-hover:bg-sky-400/20 transition-colors" />
+        <img src="/logo.png" alt="Pengu" className="w-16 h-16 object-contain relative z-10 transition-transform group-hover:scale-110 group-hover:-rotate-6 group-active:scale-95 drop-shadow-[0_0_12px_rgba(125,211,252,0.5)]" />
+      </div>
     </div>
   );
 
   return (
-    <div 
-      ref={containerRef}
-      className="fixed bottom-12 right-4 w-80 max-w-[95vw] bg-[#c0c0c0] border-2 border-white border-r-gray-800 border-b-gray-800 z-[9999] shadow-2xl flex flex-col font-mono text-xs text-black overflow-hidden"
-    >
-      <div className="absolute inset-0 pointer-events-none z-[100] opacity-[0.03] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,252,0.06))] bg-[length:100%_2px,3px_100%]" />
+    <div ref={containerRef} className="fixed bottom-12 right-4 w-80 max-w-[95vw] z-[9999] shadow-2xl flex flex-col font-mono text-xs overflow-hidden"
+      style={{background:'#e8f4fd', border:'2px solid #7DD3FC', borderColor:'#BAE6FD #0369a1 #0369a1 #BAE6FD'}}>
       
-      <div className="bg-[#000080] text-white p-1.5 flex justify-between items-center select-none border-b border-gray-400">
-        <div className="flex items-center gap-3 px-1">
-          <div className="relative">
-             <Activity size={14} className="text-emerald-400 animate-pulse" />
-             {loading && <div className="absolute -inset-1 border border-emerald-400 rounded-full animate-ping opacity-50" />}
-          </div>
+      <div className="text-white p-1.5 flex justify-between items-center select-none" style={{background:'linear-gradient(to right, #0369a1, #0ea5e9)'}}>
+        <div className="flex items-center gap-2 px-1">
+          <span className="text-lg">🐧</span>
           <div className="flex flex-col">
-            <span className="font-bold text-[10px] uppercase tracking-tighter leading-none italic">Shippy_Neural_Core</span>
-            <span className="text-[7px] text-emerald-300 font-bold opacity-80 uppercase mt-0.5">
-              {dexData?.balance >= ACCESS_THRESHOLD ? 'VIP_LINK_ACTIVE' : 'GUEST_TRIAL_MODE'}
+            <span className="font-bold text-[10px] uppercase tracking-tighter leading-none">Pengu Neural Core</span>
+            <span className="text-[7px] text-sky-200 font-bold opacity-80 uppercase mt-0.5">
+              {dexData?.balance >= ACCESS_THRESHOLD ? 'COLONY_MEMBER_VIP' : 'FREN_TRIAL_MODE'}
             </span>
           </div>
         </div>
-        <div className="flex gap-1 pr-1">
-          <button onClick={() => setIsOpen(false)} className="bg-[#c0c0c0] border border-white border-r-gray-800 border-b-gray-800 p-0.5 text-black hover:bg-red-600 hover:text-white active:shadow-inner active:border-black active:border-r-white active:border-b-white">
-            <X size={10} strokeWidth={3} />
-          </button>
-        </div>
+        <button onClick={() => setIsOpen(false)} className="p-0.5 hover:bg-white/20 transition-colors"><X size={10} strokeWidth={3} /></button>
       </div>
 
-      <div className="bg-black text-[#10b981] px-2 py-0.5 text-[8px] flex justify-between font-bold border-b border-gray-600">
-        <div className="flex gap-3">
-          <span>MEM: 640KB</span>
-          <span>RES: {dexData?.balance?.toLocaleString() || 0} $IT</span>
-        </div>
-        <span className="animate-pulse">CONNECTED</span>
+      <div className="px-2 py-0.5 text-[8px] flex justify-between font-bold border-b" style={{background:'#0369a1', color:'#BAE6FD', borderColor:'#0284c7'}}>
+        <div className="flex gap-3"><span>🐟 FISH: PLENTY</span><span>❄️ TEMP: COLD</span></div>
+        <span className="animate-pulse">WADDLING</span>
       </div>
 
-      <div 
-        ref={scrollRef} 
-        className="h-80 overflow-y-auto p-3 space-y-4 border-b border-gray-400 relative bg-[#050505] scroll-smooth shadow-inner"
-      >
+      <div ref={scrollRef} className="h-72 overflow-y-auto p-3 space-y-4 border-b border-sky-200 relative bg-[#f0f9ff] scroll-smooth">
         {messages.map((m, i) => (
-          <div key={i} className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'} animate-in fade-in slide-in-from-bottom-2`}>
-            <div className={`flex items-center gap-1 mb-1 ${m.role === 'user' ? 'flex-row-reverse' : ''}`}>
-               {m.role === 'shippy' ? <Zap size={8} className="text-emerald-500" /> : <div className="w-1 h-1 bg-blue-500 rounded-full" />}
-            </div>
-            <div className={`max-w-[85%] p-2.5 border text-[11px] leading-relaxed tracking-tight ${
+          <div key={i} className={`flex flex-col ${m.role === 'user' ? 'items-end' : 'items-start'}`}>
+            <div className={`max-w-[85%] p-2.5 text-[11px] leading-relaxed rounded-sm ${
               m.role === 'user' 
-                ? 'bg-blue-950/20 border-blue-500/50 text-blue-100' 
-                : 'bg-emerald-950/10 border-emerald-500/30 text-emerald-400 font-bold'
-            }`}>
+                ? 'text-sky-900 border border-sky-300' 
+                : 'text-sky-800 font-bold border border-sky-200'
+            }`} style={{background: m.role === 'user' ? '#dbeafe' : '#e0f2fe'}}>
+              {m.role === 'shippy' && <span className="mr-1">🐧</span>}
               {m.text}
             </div>
           </div>
         ))}
         {loading && (
           <div className="flex items-center gap-2 pl-1">
-            <div className="w-1 h-3 bg-emerald-500 animate-bounce" style={{animationDelay: '0ms'}} />
-            <div className="w-1 h-3 bg-emerald-500 animate-bounce" style={{animationDelay: '150ms'}} />
-            <div className="w-1 h-3 bg-emerald-500 animate-bounce" style={{animationDelay: '300ms'}} />
-            <span className="text-[9px] font-black text-emerald-500 uppercase tracking-widest ml-1 opacity-50">Processing IT...</span>
+            <span className="text-lg animate-bounce">🐧</span>
+            <span className="text-[9px] font-black text-sky-500 uppercase tracking-widest opacity-70">pengu is thinking...</span>
           </div>
         )}
       </div>
 
-      <div className="p-2 flex gap-1 bg-[#c0c0c0] border-t border-white">
-        <div className="flex-1 flex border-2 border-gray-800 border-r-white border-b-white bg-white items-center px-2">
-          <span className="text-emerald-600 mr-2 font-black">&gt;</span>
-          <input 
-            ref={inputRef}
-            className="flex-1 p-1 outline-none bg-transparent text-black text-[11px] font-bold placeholder-gray-400" 
-            value={input} 
-            onChange={e => setInput(e.target.value)} 
-            onKeyDown={e => e.key === 'Enter' && handleSend()} 
-            placeholder="Input command..." 
-          />
+      <div className="p-2 flex gap-1" style={{background:'#e8f4fd'}}>
+        <div className="flex-1 flex border-2 items-center px-2" style={{borderColor:'#0369a1 #BAE6FD #BAE6FD #0369a1', background:'white'}}>
+          <span className="text-sky-400 mr-1">🐟</span>
+          <input ref={inputRef} className="flex-1 p-1 outline-none bg-transparent text-sky-900 text-[11px] font-bold placeholder-sky-300" 
+            value={input} onChange={e => setInput(e.target.value)} onKeyDown={e => e.key === 'Enter' && handleSend()} placeholder="honk something..." />
         </div>
-        <button 
-          onClick={handleSend} 
-          disabled={!input.trim() || loading} 
-          className="bg-[#c0c0c0] border-2 border-white border-r-gray-800 border-b-gray-800 px-3 py-1 font-black text-[10px] active:border-gray-800 active:border-r-white active:border-b-white active:translate-y-0.5 hover:bg-white transition-colors flex items-center gap-1 shadow-sm"
-        >
+        <button onClick={handleSend} disabled={!input.trim() || loading} 
+          className="px-3 py-1 font-black text-[10px] flex items-center gap-1 transition-colors hover:brightness-110"
+          style={{background:'#0369a1', color:'white', border:'2px solid', borderColor:'#BAE6FD #075985 #075985 #BAE6FD'}}>
           <Send size={12} />
         </button>
       </div>
 
-      <div className="bg-black p-1 flex justify-between items-center text-[7px] text-zinc-500 font-black tracking-[0.3em] uppercase border-t border-zinc-800">
-        <div className="flex gap-4 px-2">
-          <span>PORT: 8080</span>
-          <span>FRQ: 440HZ</span>
-        </div>
-        <div className="px-2 text-emerald-900">SYSTEM_REMAIN_IT</div>
+      <div className="p-1 flex justify-between items-center text-[7px] font-black uppercase" style={{background:'#075985', color:'#BAE6FD'}}>
+        <span className="px-2">🧊 ICEBERG PROTOCOL ACTIVE</span>
+        <span className="px-2">PENGU_OS_v1.0</span>
       </div>
     </div>
   );
 };
 
-
-const ASCII_IT = [
-  "██╗████████╗",
-  "██║╚══██╔══╝",
-  "██║   ██║   ",
-  "██║   ██║   ",
-  "██║   ██║   ",
-  "╚═╝   ╚═╝   "
-];
-
-const ASCII_PEPE = [
-  "⠀⠀⢀⣠⠤⠶⠖⠒⠒⠶⠦⠤⣄⠀⠀⠀⣀⡤⠤⠤⠤⠤⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
-  "⠀⣴⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠙⣦⠞⠁⠀⠀⠀⠀⠀⠀⠉⠳⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
-  "⡾⠁⠀⠀⠀⠀⠀⠀⣀⣀⣀⣀⣀⣀⣘⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⣆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
-  "⠀⠀⠀⠀⢀⡴⠚⠉⠁⠀⠀⠀⠀⠈⠉⠙⠲⣄⣤⠤⠶⠒⠒⠲⠦⢤⣜⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
-  "⠀⠀⠀⠀⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠳⡄⠀⠀⠀⠀⠀⠀⠀⠉⠳⢄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
-  "⠀⠀⠀⠀⠀⠀⠀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⠹⣆⠀⠀⠀⠀⠀⠀⣀⣀⣀⣹⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀",
-  "⠀⠀⠀⠀⣠⠞⣉⣡⠤⠴⠿⠗⠳⠶⣬⣙⠓⢦⡈⠙⢿⡀⠀⠀⢀⣼⣿⣿⣿⣿⣿⡿⣷⣤⡀⠀⠀⠀⠀⠀⠀",
-  "⠀⠀⠀⣾⣡⠞⣁⣀⣀⣀⣠⣤⣤⣤⣄⣭⣷⣦⣽⣦⡀⢻⡄⠰⢟⣥⣾⣿⣏⣉⡙⠓⢦⣻⠃⠀⠀⠀⠀⠀⠀",
-  "⠀⠀⠀⠉⠉⠙⠻⢤⣄⣼⣿⣽⣿⠟⠻⣿⠄⠀⠀⢻⡝⢿⡇⣠⣿⣿⣻⣿⠿⣿⡉⠓⠮⣿⠀⠀⠀⠀⠀⠀⠀",
-  "⠀⠀⠀⠀⠀⠀⠙⢦⡈⠛⠿⣾⣿⣶⣾⡿⠀⠀⠀⢀⣳⣘⢻⣇⣿⣿⣽⣿⣶⣾⠃⣀⡴⣿⠀⠀⠀⠀⠀⠀⠀",
-  "⠀⠀⠀⠀⠀⠀⠀⠀⠙⠲⠤⢄⣈⣉⣙⣓⣒⣒⣚⣉⣥⠟⠀⢯⣉⡉⠉⠉⠛⢉⣉⣡⡾⠁⠀⠀⠀⠀⠀⠀⠀",
-  "⠀⠀⣠⣤⡤⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢈⡿⠋⠀⠀⠀⠀⠈⠻⣍⠉⠀⠺⠿⠋⠙⣦⠀⠀⠀⠀⠀⠀⠀",
-  "⠀⣀⣥⣤⠴⠆⠀⠀⠀⠀⠀⠀⠀⣀⣠⠤⠖⠋⠀⠀⠀⠀⠀⠀⠀⠀⠈⠳⠀⠀⠀⠀⠀⢸⣧⠀⠀⠀⠀⠀⠀",
-  "⠸⢫⡟⠙⣛⠲⠤⣄⣀⣀⠀⠈⠋⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠏⣨⠇⠀⠀⠀⠀⠀",
-  "⠀⠀⠻⢦⣈⠓⠶⠤⣄⣉⠉⠉⠛⠒⠲⠦⠤⠤⣤⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣀⣠⠴⢋⡴⠋⠀⠀⠀⠀⠀⠀",
-  "⠀⠀⠀⠀⠉⠓⠦⣄⡀⠈⠙⠓⠒⠶⠶⠶⠶⠤⣤⣀⣀⣀⣀⣀⣉⣉⣉⣉⣉⣀⣠⠴⠋⣿⠀⠀⠀⠀⠀⠀⠀",
-  "⠀⠀⠀⠀⠀⠀⠀⠀⠉⠓⠦⣄⣀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡼⠁⠀⠀⠀⠀⠀⠀⠀",
-  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠉⠙⠛⠒⠒⠒⠒⠒⠤⠤⠤⠒⠒⠒⠒⠒⠒⠚⢉⡇⠀⠀⠀⠀⠀⠀⠀⠀",
-  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠴⠚⠛⠳⣤⠞⠁⠀⠀⠀⠀⠀⠀⠀⠀",
-  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣤⠚⠁⠀⠀⠀⠀⠘⠲⣄⡀⠀⠀⠀⠀⠀⠀⠀",
-  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣴⠋⠙⢷⡋⢙⡇⢀⡴⢒⡿⢶⣄⡴⠀⠙⠳⣄⠀⠀⠀⠀⠀",
-  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⢦⡀⠈⠛⢻⠛⢉⡴⣋⡴⠟⠁⠀⠀⠀⠀⠈⢧⡀⠀⠀⠀",
-  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢻⡄⠀⠘⣶⢋⡞⠁⠀⠀⢀⡴⠂⠀⠀⠀⠀⠹⣄⠀⠀",
-  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠈⠻⢦⡀⠀⣰⠏⠀⠀⢀⡴⠃⢀⡄⠙⣆⠀",
-  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⡾⢷⡄⠀⠀⠀⠀⠉⠙⠯⠀⠀⡴⠋⠀⢠⠟⠀⠀⢹⡄"
-];
-
-
-// --- CHARACTER LIBRARY ---
-const MEME_CHARACTERS = {
-  doge: [
-    "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡟⠋⠈⠙⣦⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠤⢤⡀⠀⠀",
-    "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⠈⢇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡠⠞⠀⠀⢠⡜⣦⠀",
-    "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡃⠀⠀⠀⠀⠈⢷⡄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡠⠊⣠⠀⠀⠀⠀⢻⡘⡇",
-    "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⠃⠀⠀⠀⠀⠀⠀⠙⢶⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡠⠚⢀⡼⠃⠀⠀⠀⠀⠸⣇⢳",
-    "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣾⠀⣀⠖⠀⠀⠀⠀⠉⠀⠀⠈⠉⠛⠛⡛⢛⠛⢳⡶⠖⠋⠀⢠⡞⠀⠀⠀⠐⠆⠀⠀⣿⢸",
-    "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣼⠇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠻⣦⣀⣴⡟⠀⠀⢶⣶⣾⡿⠀⠀⣿⢸",
-    "⠀⠀⠀⠀⠀⠀⠀⠀⢀⣤⠞⠁⠀⠀⠀⠀⠀⠀⠀⠀⡠⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠻⣏⠀⠀⠀⣶⣿⣿⡇⠀⠀⢏⡞",
-    "⠀⠀⠀⠀⠀⠀⢀⡴⠛⠀⠀⠀⠀⠀⠀⠀⠀⢀⢀⡾⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠘⢦⣤⣾⣿⣿⠋⠀⠀⡀⣾⠁",
-    "⠀⠀⠀⠀⠀⣠⠟⠁⠀⠀⠀⣀⠀⠀⠀⠀⢀⡟⠈⢀⣤⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠉⠙⣏⡁⠀⠐⠚⠃⣿⠀",
-    "⠀⠀⠀⠀⣴⠋⠀⠀⠀⡴⣿⣿⡟⣷⠀⠀⠊⠀⠴⠛⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠙⠀⠀⠀⠀⢹⡆",
-    "⠀⠀⠀⣴⠃⠀⠀⠀⠀⣇⣿⣿⣿⠃⠀⠀⠀⠀⠀⠀⠀⠀⢀⣤⡶⢶⣶⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇",
-    "⠀⠀⣿⠃⠀⠀⠀⢠⠀⠊⠛⠉⠁⠀⠀⠀⠀⠀⠀⠀⢲⣾⣿⡏⣾⣿⣿⣿⣿⠖⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢧",
-    "⠀⢠⡇⠀⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠈⠛⠿⣽⣿⡿⠏⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡜",
-    "⢀⡿⠀⠀⠀⠀⢀⣤⣶⣟⣶⣦⣄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇",
-    "⢸⠇⠀⠀⠀⠀⣿⣿⣿⣿⣿⣿⣿⣿⣧⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇",
-    "⣼⠀⢀⡀⠀⠀⢷⣿⣿⣿⣿⣿⣿⡿⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⡇",
-    "⡇⠀⠈⠀⠀⠀⣬⠻⣿⣿⣿⡿⠙⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣼⠁",
-    "⢹⡀⠀⠀⠀⠈⣿⣶⣿⣿⣝⡛⢳⠭⠍⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢰⠃⠀",
-    "⠸⡇⠀⠀⠀⠀⠙⣿⣿⣿⣿⣿⣿⣷⣦⣀⣀⣀⣤⣤⣴⡶⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣰⠇⠀⠀",
-    "⠀⢿⡄⠀⠀⠀⠀⠀⠙⣇⠉⠉⠙⠛⠻⠟⠛⠛⠉⠙⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡰⠋⠀⠀⠀",
-    "⠀⠈⢧⠀⠀⠀⠀⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠞⠁⠀⠀⠀⠀",
-    "⠀⠀⠘⢷⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⠞⠁⠀⠀⠀⠀⠀⠀",
-    "⠀⠀⠀⠀⠱⢆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⡴⠋⠁⠀⠀⠀⠀⠀⠀⠀⠀",
-    "⠀⠀⠀⠀⠀⠀⠛⢦⣀⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣠⠴⠟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
-    "⠀⠀⠀⠀⠀⠀⠀⠀⠈⠛⠲⠤⣤⣤⣤⣄⠀⠀⠀⠀⠀⠀⠀⢠⣤⣤⠤⠴⠒⠛⠋⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
-  ],
-  pepe: ASCII_PEPE,
-  fart: [
-  "         z$$$$$e.",
-  "       .$$$$$$$$$c                                 -r     d",
-  "       $$$$$$$$$$$.                                 *c.  'L",
-  "      4$$$$$$$$$$$F                             4c   \"*e. \"%c",
-  "      ^$$$$$$$$$$$F                              \"b    ^b   \"*",
-  "       *$$$$$$$$$$  ..                            P     $    J\"",
-  "       ^*$$$$$$$$\\e$$$e.                         d\"    .F   z\"",
-  "         \"*$$$P\".$$$$$$$c                       d%     J\" .d\"   .P",
-  "                $$$$$$$$$$e.                    $      P z*\"  .d\"",
-  "                $$$$$$$$$$$$b.                  ^*ee...  \"   zP\"",
-  "                \"*$$$$$$$$$$$$$ee..                ^\"\"* .d\"",
-  "                 .$$$$$$$$$$$$$$$$$$eee......eeedec.      e* .ze",
-  "                z$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$b.  .P\" .z@*\"",
-  "               z$$$$$\"\"*$$$$$$$$$$$$$$$$$$$$$$$$$$$$$$c ^ eP\"\"",
-  "              d$$$$$\"    \"*$$$$$$$$$$$$$$$$$$$$$$$$$$$$   \"",
-  "            .d$$$$P\"       ^\"*$$$$$$$$$$$$$$$$$$$$$$$$$   ****$eee",
-  "           .$$$$$*              ^\"$$$$$$$$$$*$$$$$$$$$$$\"   ec.",
-  "         .z$$$$$\"                \"*$$$$$$$$$$$$$$$$$*\"     \"\"**ec.",
-  "    .zed$$$$$$$\"                    \"*$$$$$$$$$$*\"              \"\"",
-  "                                    .d$$$$$$$P\"",
-  "                                  .d$$$$$$$*\"",
-  "                                z$$$$$$$$\"",
-  "                              .$$$$$$$*\"",
-  "                              d$$$$$*\"",
-  "                             z$$$$\"",
-  "                            .$$$$$    "
-],
-  wif: ["(DogWifHat placeholder: Add hat ASCII here)"],
-  bonk: [
-    "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣠⣾⣿⣿⣦⠀⠀⠀⠀⠀⠀",
-  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣿⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⠏⢈⡿⢋⣼⠀⠀⠀⠀⠀⠀",
-  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠐⢷⡄⣿⣤⣄⣀⣀⠀⠀⠀⢀⡴⠟⢁⡴⢋⣴⠟⠁⠀⠀⠀⠀⠀⠀",
-  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣦⡀⠀⠀⠙⢿⣄⠀⠉⠁⠀⠀⣴⠛⠀⢠⢞⣴⠟⠁⠀⠀⠀⠀⠀⠀⠀⠀",
-  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣀⠀⠈⠻⣦⠀⠀⠀⠉⠁⠀⠀⣠⡞⠉⠀⢀⣴⠟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
-  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⠻⣏⠛⠒⠾⠷⠦⠀⠀⠀⣠⡾⠋⠁⠠⣴⠟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
-  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣀⣤⣤⡀⠀⠀⠈⢻⣤⠀⠀⠀⠀⢠⣾⠟⠀⠀⣰⠟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
-  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⣏⠀⠀⡹⣦⡀⠀⠀⠀⠀⠀⢀⣴⢿⠁⢠⣴⠞⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
-  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠻⣦⣀⢀⣼⠃⠀⠀⠀⢀⣴⡿⠃⠀⠀⣿⣥⣤⣄⣠⠤⣴⣄⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
-  "⠀⠀⠀⠀⠀⠀⢠⡶⠟⢷⡀⠀⠀⠈⠉⠉⠁⠀⠀⠀⣠⡾⠋⠀⠀⢀⡾⠁⠀⠀⠀⠠⠀⠸⣿⠻⣿⠶⢶⣄⠀⠀⠀⠀⠀⠀⠀",
-  "⠀⠀⠀⠀⠀⠀⠙⢷⣴⠟⠙⣷⠀⠀⠀⠀⠀⢀⣤⠞⠋⣀⠔⠀⢠⠟⢀⣀⡀⠁⠀⠀⠀⠀⣿⣿⣿⡄⠀⠙⢶⣄⠀⠀⠀⠀⠀",
-  "⠀⠀⠀⠀⠀⠀⠀⠀⠙⣷⡴⠋⠀⠀⠀⠀⢠⡟⠁⠀⠚⢁⢀⢠⠏⢰⠟⠋⠁⠀⠀⠀⠀⠐⠻⢿⠿⠃⠀⠀⠀⠈⢻⣄⠀⠀⠀",
-  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠁⠀⠀⠀⠀⣠⠟⠀⢀⡤⠒⠀⠀⠈⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢻⡆⠀⠀",
-  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢠⡾⠉⢀⣴⣟⠉⠀⠂⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⣷⡀⠀",
-  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡴⠋⢀⣼⣿⣿⠟⠀⠀⠀⠀⠀⠀⡆⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢷⡄",
-  "⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⣴⣻⡶⣴⣿⣿⣿⣿⠀⠀⠀⠀⠀⢀⣾⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠛",
-  "⠀⠀⠀⠀⠀⠀⠀⢀⣴⢿⡿⠋⢸⣿⣿⣿⣿⠟⠀⠀⠀⠀⢀⣿⡟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
-  "⠀⠀⠀⠀⠀⠀⣠⢿⡽⠋⠀⠀⢸⣿⣿⣿⡟⠀⠀⢀⣤⠄⣼⠟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
-  "⠀⠀⠀⠀⣠⣾⣿⠛⠀⠀⠀⠀⠈⠻⣿⣿⣶⣄⣀⠋⠙⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
-  "⠀⠀⢠⣾⣿⠟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠈⣿⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
-  "⠐⣀⣿⠟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡝⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
-  "⣾⡟⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡇⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
-  "⠉⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀",
-  "⠘⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠟⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
-  ],
-  popcat: [
-     "⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡤⠤⢄⠀⠀⠀⠀⠀",
-  "⡴⠒⢒⠢⢄⡀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢀⡴⠉⠀⠀⠈⢣⠀⠀⠀⠀",
-  "⣿⠄⠀⠀⠀⠙⠢⣄⡀⠀⢀⣀⠤⡔⠒⠒⠒⠒⠯⠄⠀⠀⠀⠀⢸⠀⠀⠀⠀",
-  "⣇⠀⠀⠀⠀⠀⠀⠂⠉⠫⠭⠕⠒⠉⠀⠀⠀⠀⠀⠀⠤⢤⣀⣀⢸⡀⠀⠀⠀",
-  "⠸⡀⠠⠀⠀⠀⠀⠈⠀⢀⣠⠴⠞⠋⠁⣀⡀⢍⣁⣒⣲⣄⡀⠀⠉⠙⣄⠀⠀",
-  "⠀⠳⡀⠀⠠⠀⠀⠀⣰⠏⠁⠀⠀⢀⣼⣿⣿⣿⣿⣿⣿⣿⣿⣗⠤⠀⠈⣆⠀",
-  "⠀⠀⠑⣄⣈⠀⠀⣰⡏⠀⠀⠀⣰⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣷⡄⠀⠘⡄",
-  "⠀⠀⠀⢿⢛⣤⣾⡟⠀⠀⢀⣾⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣧⠀⠀⢡",
-  "⠀⠀⠀⠘⣯⣿⣿⣇⠀⠀⠸⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⣿⠀⠀⡌",
-  "⠀⠀⠀⠀⠘⣽⣿⡿⠀⠀⠀⠙⠿⢿⢿⣿⣿⣿⣿⣿⣿⣿⣿⢿⠟⠁⠀⢠⠃",
-  "⠀⠀⠀⠀⠀⡏⠙⠁⠀⠀⠀⠀⠀⠈⠀⠉⠛⠛⠿⠿⠋⠉⠁⠀⠀⠀⣠⠋⠀",
-  "⠀⠀⠀⠀⡸⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⡴⠁⠀⠀",
-  "⠀⠀⠀⣰⠃⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⣇⠀⠀⠀",
-  "⠀⠀⠀⡏⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⢹⠀⠀⠀",
-  "⠀⠀⠀⠁⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠸⡄⠀⠀",
-  "⠀⠀⢰⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀⠀"
-  ],
-};
-
-
-
-
-const getSolPriceForever = async () => {
-  try {
-    const solMint = "So11111111111111111111111111111111111111112";
-    const response = await fetch(`https://api.dexscreener.com/latest/dex/tokens/${solMint}`);
-    const data = await response.json();
-    if (data.pairs && data.pairs[0]) {
-      return parseFloat(data.pairs[0].priceUsd).toFixed(2);
-    }
-    return null;
-  } catch (error) { 
-    console.error("SOL Price fetch error:", error);
-    return null; 
-  }
-};
-
-
-const TerminalApp = ({ dexData }) => {
-  const [history, setHistory] = useState([]);
-  const [input, setInput] = useState("");
-  const [cmdHistory, setCmdHistory] = useState([]);
-  const [historyIdx, setHistoryIdx] = useState(-1);
-  const [isBooting, setIsBooting] = useState(true);
-  const [matrixMode, setMatrixMode] = useState(false);
-  const [isProcessing, setIsProcessing] = useState(false);
-  
-  const bottomRef = useRef(null);
-  const inputRef = useRef(null);
-
-  const safeDexData = dexData || { price: "N/A", mcap: "N/A", change: "0%" };
-
-  
-  useEffect(() => {
-    const bootSequence = [
-      { text: "BIOS DATE 01/01/2025 14:22:52 VER 4.2.0", delay: 100 },
-      { text: "CPU: NEC V20, SPEED: 4.77 MHz... OVERCLOCKED TO 5GHz", delay: 300 },
-      { text: "CHECKING MEMORY... 640TB OK", delay: 500 },
-      { text: "LOADING IT_OS KERNEL...", delay: 800 },
-      { text: "ESTABLISHING SECURE CONNECTION TO SOLANA...", delay: 1200 },
-      { text: "FIREBASE NODES: SYNCHRONIZED", delay: 1500 },
-      { text: "SYSTEM READY.", delay: 1800, color: "#00ff00" },
-      { text: "Type 'help' to begin.", delay: 2000, color: "#ffff00" },
-    ];
-
-    let timeouts = [];
-    bootSequence.forEach(({ text, delay, color }) => {
-      timeouts.push(setTimeout(() => {
-        setHistory(prev => [...prev, { text, color: color || (matrixMode ? "#00ff00" : "#33ff33") }]);
-      }, delay));
-    });
-
-    const finishBoot = setTimeout(() => setIsBooting(false), 2200);
-    return () => { timeouts.forEach(clearTimeout); clearTimeout(finishBoot); };
-  }, []);
-
-  useEffect(() => { 
-    if (bottomRef.current) {
-      bottomRef.current.scrollIntoView({ behavior: 'smooth' });
-    }
-  }, [history]);
-
-  const focusInput = () => { 
-    if (!isBooting && !isProcessing) inputRef.current?.focus(); 
-  };
-
-  
-  const processCommand = async (cmdString) => {
-    const rawArgs = cmdString.trim().split(" ");
-    const cmd = rawArgs[0].toLowerCase();
-    
-    // --- Check hidden character library first ---
-if (MEME_CHARACTERS[cmd]) {
-    setHistory(prev => [...prev, ...MEME_CHARACTERS[cmd].map(line => ({ text: line, color: "#00ff00" }))]);
-    return;
-}
-
-    const prompt = matrixMode ? `NEO@ZION:~$` : `root@it_os:~$`;
-    setHistory(prev => [...prev, { text: `${prompt} ${cmdString}`, color: "#aaa" }]);
-    
-    let response = [];
-
-    switch (cmd) {
-      case "help":
-        response = [
-          { text: "SYSTEM COMMANDS:", color: "#ffff00" },
-          { text: "  clear    :: Clear screen", color: "#ccc" },
-          { text: "  matrix   :: Toggle Matrix Mode", color: "#00ff00" },
-          { text: "", color: "#ccc" },
-          { text: "CRYPTO TOOLS:", color: "#ffff00" },
-          { text: "  price    :: IT Token Data", color: "#ccc" },
-          { text: "  sol      :: Live SOL Price", color: "#ccc" },
-          { text: "  top      :: Leaderboard #1", color: "#ccc" },
-          { text: "  me       :: My Stats", color: "#ccc" },
-          { text: "  hack     :: Simulate Bruteforce", color: "#ff00ff" },
-          { text: "  ca       :: Contract Address", color: "#ccc" },
-          { text: "  scan     :: Scan Mempool", color: "#ccc" },
-          { text: "  burn     :: Burn Protocol", color: "#ccc" },
-        ];
-        break;
-
-      case "pepe":
-        response = ASCII_PEPE.map(line => ({ text: line, color: "#00ff00" }));
-        break;
-
-      case "price":
-        response = [
-          { text: "--- MARKET FEED ---", color: "#00ffff" },
-          { text: `PRICE: ${safeDexData.price}`, color: "#00ff00" },
-          { text: `MCAP:  ${safeDexData.mcap}`, color: "#00ff00" },
-          { text: `SENTIMENT: EXTREME GREED`, color: "#ff00ff" }
-        ];
-        break;
-
-      case "ca":
-        response = [
-          { text: "--- CONTRACT ADDRESS ---", color: "#00ffff" },
-          { text: CA_ADDRESS, color: "#ffff00" },
-          { text: "(SECURE COPY PROTOCOL ACTIVE)", color: "#555" },
-        ];
-        break;
-
-      case "sol":
-        setHistory(prev => [...prev, { text: "PINGING DEXSCREENER ORACLES...", color: "#555" }]);
-        setIsProcessing(true);
-        const sol = await getSolPriceForever();
-        setIsProcessing(false);
-        if (sol) response = [{ text: `SOL/USD: $${sol}`, color: "#00ff00", size: "large" }];
-        else response = [{ text: "ORACLE ERROR: SYSTEM UNABLE TO RESOLVE PRICE", color: "#ff0000" }];
-        break;
-
-      case "matrix":
-        setMatrixMode(!matrixMode);
-        response = [{ text: matrixMode ? "WAKING UP..." : "FOLLOW THE WHITE RABBIT.", color: "#00ff00" }];
-        break;
-
-      case "hack":
-        setIsProcessing(true);
-        const stages = [
-            "INITIALIZING BRUTE FORCE...",
-            "BYPASSING FIREWALL...",
-            "CRACKING HASHES...",
-            "ACCESS GRANTED."
-        ];
-        for (let i = 0; i < stages.length; i++) {
-            setHistory(prev => [...prev, { text: stages[i], color: "#ff00ff" }]);
-            await new Promise(r => setTimeout(r, 800));
-        }
-        setIsProcessing(false);
-        response = [
-            { text: "TARGET: MAINNET LIQUIDITY POOL", color: "#00ff00" },
-            { text: "STATUS: SAFLU (FUNDS ARE SAFU)", color: "#00ffff" }
-        ];
-        break;
-      
-      case "scan":
-        setHistory(prev => [...prev, { text: "SCANNING BLOCKCHAIN...", color: "#00ffff" }]);
-        setIsProcessing(true);
-        await new Promise(r => setTimeout(r, 800));
-        setHistory(prev => [...prev, { text: "FOUND 420 JEETS.", color: "#ff0000" }]);
-        await new Promise(r => setTimeout(r, 800));
-        setIsProcessing(false);
-        response = [{ text: "ACTION: LIQUIDATING POSITIONS... DONE.", color: "#00ff00" }];
-        break;
-
-      case "burn":
-        response = [
-          { text: "🔥🔥🔥 INITIATING BURN 🔥🔥🔥", color: "#ff4400" },
-          { text: "BURNING SUPPLY... 10%... 50%... 100%", color: "#ff8800" },
-          { text: "SUPPLY SHOCK IMMINENT.", color: "#ff0000" },
-        ];
-        break;
-
-      case "top":
-        setHistory(prev => [...prev, { text: "QUERYING DATABASE...", color: "#555" }]);
-        setIsProcessing(true);
-        try {
-            const q = collection(db, 'artifacts', appId, 'public', 'data', 'stackit_scores');
-            const snapshot = await getDocs(q);
-            const docs = snapshot.docs.map(d => d.data());
-            setIsProcessing(false);
-            if (docs.length > 0) {
-                const top = docs.sort((a, b) => Number(b.score) - Number(a.score))[0];
-                response = [
-                    { text: "👑 CURRENT CHAMPION 👑", color: "#ffff00" },
-                    { text: `NAME:  ${top.username}`, color: "#ffffff" },
-                    { text: `SCORE: ${top.score}`, color: "#00ff00" }
-                ];
-            } else {
-                response = [{ text: "LEADERBOARD EMPTY.", color: "#888" }];
-            }
-        } catch (e) {
-            setIsProcessing(false);
-            response = [{ text: "DB CONNECTION FAILED.", color: "#ff0000" }];
-        }
-        break;
-
-      case "me":
-        if (!auth.currentUser) { response = [{ text: "NOT LOGGED IN. PLAY 'STACK IT' FIRST.", color: "#ff0000" }]; break; }
-        setHistory(prev => [...prev, { text: `FETCHING DATA FOR ${auth.currentUser.uid}...`, color: "#555" }]);
-        setIsProcessing(true);
-        try {
-            const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'stackit_scores', auth.currentUser.uid);
-            const docSnap = await getDoc(docRef);
-            setIsProcessing(false);
-            if (docSnap.exists()) {
-                const d = docSnap.data();
-                response = [
-                    { text: `USER: ${d.username}`, color: "#00ffff" },
-                    { text: `HIGH SCORE: ${d.score}`, color: "#00ff00" }
-                ];
-            } else {
-                response = [{ text: "NO RECORD FOUND.", color: "#ffff00" }];
-            }
-        } catch(e) { 
-            setIsProcessing(false);
-            response = [{ text: "ERROR.", color: "#ff0000" }]; 
-        }
-        break;
-        
-      case "clear":
-        setHistory([]);
-        return;
-        
-      default:
-        
-        if (cmdString.toLowerCase().includes("it")) {
-            response = [
-                { text: ">> SIGNAL DETECTED <<", color: "#00ff00" },
-                { text: `IDENTIFIED PATTERN: "${cmdString.toUpperCase()}"`, color: "#ffff00" },
-                ...ASCII_IT.map(line => ({ text: line, color: "#00ff00" }))
-            ];
-        } else {
-            response = [{ text: `command not found: ${cmd}`, color: "#ff0000" }];
-        }
-    }
-
-    setHistory(prev => [...prev, ...response]);
-  };
-
-  const handleKeyDown = (e) => {
-    if (isBooting || isProcessing) { e.preventDefault(); return; }
-    if (e.key === 'Enter') {
-      if (!input.trim()) return;
-      setCmdHistory(prev => [...prev, input]);
-      setHistoryIdx(-1);
-      processCommand(input);
-      setInput("");
-    } else if (e.key === 'ArrowUp') {
-      e.preventDefault();
-      if (cmdHistory.length > 0) {
-        const idx = historyIdx === -1 ? cmdHistory.length - 1 : Math.max(0, historyIdx - 1);
-        setHistoryIdx(idx);
-        setInput(cmdHistory[idx]);
-      }
-    } else if (e.key === 'ArrowDown') {
-      e.preventDefault();
-      if (historyIdx !== -1) {
-        const idx = historyIdx + 1;
-        if (idx >= cmdHistory.length) {
-            setHistoryIdx(-1);
-            setInput("");
-        } else {
-            setHistoryIdx(idx);
-            setInput(cmdHistory[idx]);
-        }
-      }
-    }
-  };
-
-  return (
-    <div 
-      className={`font-mono text-sm h-full flex flex-col cursor-text relative overflow-hidden transition-colors duration-500 ${matrixMode ? 'bg-black text-[#00ff00]' : 'bg-[#0c0c0c] text-[#33ff33]'}`}
-      onClick={focusInput}
-      style={{ textShadow: matrixMode ? "0 0 5px #00ff00" : "0 0 4px rgba(51, 255, 51, 0.5)" }}
-    >
-      {/* STATUS BAR */}
-      <div className={`flex justify-between px-2 py-1 text-xs border-b ${matrixMode ? 'bg-green-900 border-green-500 text-black' : 'bg-[#1a1a1a] border-[#333] text-gray-500'}`}>
-        <span>MM: {matrixMode ? "INF" : "NEO640"}</span>
-        <span>NET: {safeDexData.price !== "N/A" ? "ONLINE" : "OFFLINE"}</span>
-        <span>SECURE_SHELL</span>
-      </div>
-
-      {/* MAIN TERMINAL AREA */}
-      <div className="flex-1 overflow-y-auto p-4 z-10 custom-scrollbar">
-        {history.map((line, i) => (
-          <div key={i} className={`mb-1 break-words ${line.size === 'large' ? 'text-2xl font-bold my-2' : ''}`} style={{ color: matrixMode ? '#00ff00' : line.color }}>
-            {line.text}
-          </div>
-        ))}
-        
-        {!isBooting && !isProcessing && (
-          <div className="flex items-center">
-            <span className="mr-2 shrink-0">{matrixMode ? `NEO@ZION:~$` : `root@it_os:~$`}</span>
-            <input 
-              ref={inputRef}
-              className={`bg-transparent border-none outline-none flex-1 font-mono ${matrixMode ? 'text-[#00ff00]' : 'text-[#33ff33]'}`}
-              value={input}
-              onChange={e => setInput(e.target.value)}
-              onKeyDown={handleKeyDown}
-              autoFocus
-              autoComplete="off"
-            />
-            {/* Blinking Cursor Block */}
-            <div className={`w-2 h-4 ${matrixMode ? 'bg-[#00ff00]' : 'bg-[#33ff33]'} animate-pulse ml-0.5`}></div>
-          </div>
-        )}
-        <div ref={bottomRef} />
-      </div>
-      
-      {/* CRT SCANLINE EFFECT */}
-      <div className="absolute inset-0 pointer-events-none z-50 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_4px,3px_100%] opacity-20"></div>
-    </div>
-  );
-};
-
-
-// --- CONSTANTS ---
+// --- CONSTANTS (Paint App) ---
 const FONTS = [
   { name: 'Impact', val: 'Impact, sans-serif' },
-  { name: 'Arial', val: 'Arial, sans-serif' },
+  { name: 'Fredoka', val: '"Fredoka One", cursive' },
   { name: 'Comic Sans', val: '"Comic Sans MS", cursive' },
   { name: 'Courier', val: '"Courier New", monospace' },
-  { name: 'Terminal', val: '"Courier New", monospace' },
+  { name: 'Arial', val: 'Arial, sans-serif' },
 ];
 
 const MEME_COLORS = [
-  '#ffffff', '#000000', '#ff0000', '#ffff00', '#00ff00', '#0000ff',
-  '#ff00ff', '#00ffff', '#808080', '#c0c0c0', '#ffd700', '#ffa500'
+  '#ffffff', '#000000', '#0369a1', '#7DD3FC', '#FEF08A', '#F97316',
+  '#22c55e', '#ef4444', '#a855f7', '#ec4899', '#BAE6FD', '#1e293b'
 ];
 
 const CANVAS_PRESETS = [
@@ -1226,25 +593,23 @@ const CANVAS_PRESETS = [
 
 const paintGenId = () => Math.random().toString(36).substr(2, 9);
 
-// --- INTERNAL UI COMPONENTS ---
 const Button = ({ children, onClick, className = "", active = false, disabled = false, title = "" }) => (
-  <button
-    onClick={onClick}
-    disabled={disabled}
-    title={title}
-    className={`
-      flex items-center justify-center gap-2 px-2 py-1 border-2 text-black text-[10px] font-bold uppercase whitespace-nowrap
-      ${active ? 'bg-[#d0d0d0] border-gray-600 border-t-black border-l-black shadow-inner translate-y-[1px]' : 'bg-[#c0c0c0] border-white border-b-gray-600 border-r-gray-600 shadow-sm'}
-      ${disabled ? 'opacity-40 cursor-not-allowed grayscale' : 'active:border-gray-600 active:border-t-black active:border-l-black'}
-      ${className}
-    `}
-  >
+  <button onClick={onClick} disabled={disabled} title={title}
+    className={`flex items-center justify-center gap-2 px-2 py-1 border-2 text-[10px] font-bold uppercase whitespace-nowrap transition-all
+      ${active ? 'translate-y-[1px]' : ''}
+      ${disabled ? 'opacity-40 cursor-not-allowed' : ''}
+      ${className}`}
+    style={{
+      background: active ? '#dbeafe' : '#e8f4fd',
+      color: '#0369a1',
+      borderColor: active ? '#0369a1 #BAE6FD #BAE6FD #0369a1' : '#BAE6FD #0369a1 #0369a1 #BAE6FD'
+    }}>
     {children}
   </button>
 );
 
 const InsetPanel = ({ children, className = "" }) => (
-  <div className={`border-2 border-gray-600 border-r-white border-b-white bg-white shadow-inner ${className}`}>
+  <div className={`border-2 bg-white ${className}`} style={{borderColor:'#0369a1 #BAE6FD #BAE6FD #0369a1'}}>
     {children}
   </div>
 );
@@ -1254,7 +619,6 @@ const PaintApp = () => {
   const containerRef = useRef(null);
   const fileInputRef = useRef(null);
 
-  // --- STATE ---
   const [elements, setElements] = useState([]); 
   const [history, setHistory] = useState([[]]);
   const [historyStep, setHistoryStep] = useState(0);
@@ -1263,31 +627,21 @@ const PaintApp = () => {
   const [tool, setTool] = useState('move'); 
   const [selectedId, setSelectedId] = useState(null);
   const [isResizing, setIsResizing] = useState(false);
-  const [toolColor, setToolColor] = useState('#000000');
+  const [toolColor, setToolColor] = useState('#0369a1');
   const [brushSize, setBrushSize] = useState(8);
   const [globalEffect, setGlobalEffect] = useState('none');
   const [isDragging, setIsDragging] = useState(false);
-  
-  // Mobile UI toggle for properties panel
   const [showProps, setShowProps] = useState(window.innerWidth >= 768);
   
   const dragStartRef = useRef({ x: 0, y: 0 });
   const currentPathRef = useRef([]);
   const gestureRef = useRef({ startDist: 0, startScale: 1, startX: 0, startY: 0, startViewX: 0, startViewY: 0 });
 
-  // --- HISTORY MANAGEMENT ---
   const saveHistory = useCallback((newEls) => {
     const newHist = history.slice(0, historyStep + 1);
     if (newHist.length > 30) newHist.shift();
-    const copy = JSON.parse(JSON.stringify(newEls, (key, value) => {
-        if (key === 'imgElement') return undefined;
-        return value;
-    }));
-    
-    newEls.forEach((el, i) => {
-        if (el.type === 'image') copy[i].imgElement = el.imgElement;
-    });
-
+    const copy = JSON.parse(JSON.stringify(newEls, (key, value) => { if (key === 'imgElement') return undefined; return value; }));
+    newEls.forEach((el, i) => { if (el.type === 'image') copy[i].imgElement = el.imgElement; });
     setHistory(newHist);
     setHistoryStep(newHist.length - 1);
     setElements(newEls);
@@ -1295,28 +649,19 @@ const PaintApp = () => {
 
   const undo = () => { if(historyStep > 0) { setHistoryStep(s=>s-1); setElements(history[historyStep-1]); setSelectedId(null); } };
   const redo = () => { if(historyStep < history.length-1) { setHistoryStep(s=>s+1); setElements(history[historyStep+1]); setSelectedId(null); } };
+  const updateElement = (id, updater) => setElements(prev => prev.map(el => el.id === id ? { ...el, ...updater(el) } : el));
+  const deleteSelected = () => { if (!selectedId) return; saveHistory(elements.filter(e => e.id !== selectedId)); setSelectedId(null); };
 
-  const updateElement = (id, updater) => {
-    setElements(prev => prev.map(el => el.id === id ? { ...el, ...updater(el) } : el));
-  };
-
-  const deleteSelected = () => {
-    if (!selectedId) return;
-    saveHistory(elements.filter(e => e.id !== selectedId));
-    setSelectedId(null);
-  };
-
-  // --- ACTIONS ---
   const download = () => {
     if (!canvasRef.current) return;
     const link = document.createElement('a');
-    link.download = `IT_MEME_${Date.now()}.png`;
+    link.download = `PENGU_MEME_${Date.now()}.png`;
     link.href = canvasRef.current.toDataURL();
     link.click();
   };
 
   const addText = () => {
-    const newEl = { id: paintGenId(), type: 'text', x: 100, y: 100, width: 200, height: 60, text: 'TEXT IT', color: '#000000', size: 40, font: 'Impact', strokeWidth: 2, strokeColor: '#ffffff' };
+    const newEl = { id: paintGenId(), type: 'text', x: 100, y: 100, width: 200, height: 60, text: 'PENGU GANG', color: '#0369a1', size: 40, font: 'Impact', strokeWidth: 2, strokeColor: '#BAE6FD' };
     saveHistory([...elements, newEl]);
     setSelectedId(newEl.id);
     setTool('move');
@@ -1324,7 +669,7 @@ const PaintApp = () => {
 
   const addSticker = (key) => {
     const img = new Image();
-    img.src = typeof ASSETS !== 'undefined' && ASSETS.stickers ? ASSETS.stickers[key] : `${key}.jpg`;
+    img.src = ASSETS.stickers[key];
     img.crossOrigin = "Anonymous";
     img.onload = () => {
       const ratio = img.width / img.height;
@@ -1354,458 +699,220 @@ const PaintApp = () => {
     }
   };
 
-  // --- DRAWING ENGINE ---
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
     const ctx = canvas.getContext('2d');
-    
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.fillStyle = '#ffffff';
+    ctx.fillStyle = '#f0f9ff';
     ctx.fillRect(0, 0, canvas.width, canvas.height);
-
     ctx.save();
-    
     if (globalEffect === 'deepfry') ctx.filter = 'contrast(250%) saturate(350%) brightness(120%)';
     if (globalEffect === 'vhs') ctx.filter = 'contrast(120%) saturate(80%) brightness(110%) hue-rotate(-5deg)';
-    if (globalEffect === 'terminal') ctx.filter = 'grayscale(100%) contrast(150%) brightness(80%) sepia(20%)';
+    if (globalEffect === 'frost') ctx.filter = 'brightness(120%) saturate(60%) hue-rotate(200deg)';
 
     elements.forEach(el => {
       ctx.save();
       ctx.globalAlpha = el.opacity !== undefined ? el.opacity : 1;
-
-      if (el.type === 'path') {
-        ctx.strokeStyle = el.color;
-        ctx.lineWidth = el.size;
-        ctx.lineCap = 'round';
-        ctx.lineJoin = 'round';
-        ctx.beginPath();
-        if(el.points && el.points.length > 0) {
-          ctx.moveTo(el.points[0].x, el.points[0].y);
-          el.points.forEach(p => ctx.lineTo(p.x, p.y));
-        }
-        ctx.stroke();
-      }
-      else if (el.type === 'image' && el.imgElement) {
-        ctx.drawImage(el.imgElement, el.x, el.y, el.width, el.height);
-      }
-      else if (el.type === 'rect') {
-        ctx.fillStyle = el.color;
-        ctx.fillRect(el.x, el.y, el.width, el.height);
-      }
-      else if (el.type === 'circle') {
-        ctx.fillStyle = el.color;
-        ctx.beginPath();
-        ctx.arc(el.x + el.width/2, el.y + el.height/2, Math.abs(el.width/2), 0, Math.PI * 2);
-        ctx.fill();
-      }
+      if (el.type === 'path') { ctx.strokeStyle = el.color; ctx.lineWidth = el.size; ctx.lineCap = 'round'; ctx.lineJoin = 'round'; ctx.beginPath(); if(el.points && el.points.length > 0) { ctx.moveTo(el.points[0].x, el.points[0].y); el.points.forEach(p => ctx.lineTo(p.x, p.y)); } ctx.stroke(); }
+      else if (el.type === 'image' && el.imgElement) { ctx.drawImage(el.imgElement, el.x, el.y, el.width, el.height); }
+      else if (el.type === 'rect') { ctx.fillStyle = el.color; ctx.fillRect(el.x, el.y, el.width, el.height); }
+      else if (el.type === 'circle') { ctx.fillStyle = el.color; ctx.beginPath(); ctx.arc(el.x + el.width/2, el.y + el.height/2, Math.abs(el.width/2), 0, Math.PI * 2); ctx.fill(); }
       else if (el.type === 'text') {
         ctx.font = `900 ${el.size}px ${el.font}`;
-        ctx.textAlign = 'center';
-        ctx.textBaseline = 'top';
-        
+        ctx.textAlign = 'center'; ctx.textBaseline = 'top';
         const lines = el.text.split('\n');
         lines.forEach((line, i) => {
           const ly = el.y + (i * el.size * 1.1);
-          if (el.strokeWidth > 0) {
-            ctx.strokeStyle = el.strokeColor || '#000000';
-            ctx.lineWidth = el.strokeWidth; 
-            ctx.lineJoin = 'round';
-            ctx.strokeText(line, el.x + (el.width / 2), ly);
-          }
-          ctx.fillStyle = el.color;
-          ctx.fillText(line, el.x + (el.width / 2), ly);
+          if (el.strokeWidth > 0) { ctx.strokeStyle = el.strokeColor || '#000000'; ctx.lineWidth = el.strokeWidth; ctx.lineJoin = 'round'; ctx.strokeText(line, el.x + (el.width / 2), ly); }
+          ctx.fillStyle = el.color; ctx.fillText(line, el.x + (el.width / 2), ly);
         });
       }
-
       if (selectedId === el.id) {
-        ctx.save();
-        ctx.strokeStyle = '#000080';
-        ctx.lineWidth = 2;
-        ctx.setLineDash([5, 5]);
+        ctx.save(); ctx.strokeStyle = '#0369a1'; ctx.lineWidth = 2; ctx.setLineDash([5, 5]);
         ctx.strokeRect(el.x - 2, el.y - 2, (el.width || 0) + 4, (el.height || 0) + 4);
-        ctx.setLineDash([]);
-        ctx.fillStyle = '#000080';
-        ctx.fillRect(el.x + (el.width || 0) - 5, el.y + (el.height || 0) - 5, 10, 10); 
-        ctx.restore();
+        ctx.setLineDash([]); ctx.fillStyle = '#0369a1';
+        ctx.fillRect(el.x + (el.width || 0) - 5, el.y + (el.height || 0) - 5, 10, 10); ctx.restore();
       }
       ctx.restore();
     });
 
     if (isDragging && currentPathRef.current.length > 0 && tool === 'brush') {
-      ctx.strokeStyle = toolColor;
-      ctx.lineWidth = brushSize;
-      ctx.lineCap = 'round';
-      ctx.beginPath();
-      const path = currentPathRef.current;
-      ctx.moveTo(path[0].x, path[0].y);
-      path.forEach(p => ctx.lineTo(p.x, p.y));
-      ctx.stroke();
+      ctx.strokeStyle = toolColor; ctx.lineWidth = brushSize; ctx.lineCap = 'round';
+      ctx.beginPath(); const path = currentPathRef.current;
+      ctx.moveTo(path[0].x, path[0].y); path.forEach(p => ctx.lineTo(p.x, p.y)); ctx.stroke();
     }
     ctx.restore();
-  }, [elements, tool, selectedId, globalEffect, isDragging, toolColor, brushSize, canvasSize]);
+  }, [elements, tool, selectedId, globalEffect, isDragging, toolColor, brushSize]);
 
-  // --- COORDINATE HELPERS ---
   const getCanvasCoords = (clientX, clientY) => {
     if (!canvasRef.current) return { x: 0, y: 0 };
     const rect = canvasRef.current.getBoundingClientRect();
-    const scaleX = canvasRef.current.width / rect.width;
-    const scaleY = canvasRef.current.height / rect.height;
-    return { 
-      x: (clientX - rect.left) * scaleX, 
-      y: (clientY - rect.top) * scaleY 
-    };
+    return { x: (clientX - rect.left) * (canvasRef.current.width / rect.width), y: (clientY - rect.top) * (canvasRef.current.height / rect.height) };
   };
 
-  // --- INTERACTION HANDLERS ---
   const handleStart = (clientX, clientY) => {
     const pos = getCanvasCoords(clientX, clientY);
     dragStartRef.current = pos;
-    
-    if (selectedId) {
-      const el = elements.find(e => e.id === selectedId);
-      if (el) {
-        const handleX = el.x + el.width;
-        const handleY = el.y + el.height;
-        if (Math.hypot(pos.x - handleX, pos.y - handleY) < 30) {
-          setIsResizing(true);
-          setIsDragging(true);
-          return;
-        }
-      }
-    }
-
+    if (selectedId) { const el = elements.find(e => e.id === selectedId); if (el && Math.hypot(pos.x - (el.x+el.width), pos.y - (el.y+el.height)) < 30) { setIsResizing(true); setIsDragging(true); return; } }
     if (tool === 'move') {
       let hit = null;
-      for (let i = elements.length - 1; i >= 0; i--) {
-        const el = elements[i];
-        if (pos.x >= el.x && pos.x <= el.x + el.width && pos.y >= el.y && pos.y <= el.y + el.height) {
-          hit = el; break;
-        }
-      }
-      if (hit) {
-        const newEls = elements.filter(e => e.id !== hit.id);
-        newEls.push(hit);
-        setElements(newEls);
-        setSelectedId(hit.id);
-        setIsDragging(true);
-      } else {
-        setSelectedId(null);
-      }
-    } else if (tool === 'brush') {
-      currentPathRef.current = [pos];
-      setIsDragging(true);
-      setSelectedId(null);
-    } else if (['rect', 'circle'].includes(tool)) {
-      const newEl = { 
-        id: paintGenId(), type: tool, x: pos.x, y: pos.y, 
-        width: 1, height: 1, color: toolColor 
-      };
-      setElements([...elements, newEl]);
-      setSelectedId(newEl.id);
-      setIsResizing(true);
-      setIsDragging(true);
-    }
+      for (let i = elements.length - 1; i >= 0; i--) { const el = elements[i]; if (pos.x >= el.x && pos.x <= el.x + el.width && pos.y >= el.y && pos.y <= el.y + el.height) { hit = el; break; } }
+      if (hit) { const newEls = elements.filter(e => e.id !== hit.id); newEls.push(hit); setElements(newEls); setSelectedId(hit.id); setIsDragging(true); } else setSelectedId(null);
+    } else if (tool === 'brush') { currentPathRef.current = [pos]; setIsDragging(true); setSelectedId(null); }
+    else if (['rect','circle'].includes(tool)) { const newEl = { id: paintGenId(), type: tool, x: pos.x, y: pos.y, width: 1, height: 1, color: toolColor }; setElements([...elements, newEl]); setSelectedId(newEl.id); setIsResizing(true); setIsDragging(true); }
   };
 
   const handleMove = (clientX, clientY) => {
     if (!isDragging) return;
     const pos = getCanvasCoords(clientX, clientY);
-
-    if (isResizing && selectedId) {
-      updateElement(selectedId, el => ({
-        width: Math.max(10, pos.x - el.x),
-        height: Math.max(10, pos.y - el.y)
-      }));
-    }
-    else if (tool === 'move' && selectedId) {
-      const dx = pos.x - dragStartRef.current.x;
-      const dy = pos.y - dragStartRef.current.y;
-      updateElement(selectedId, el => ({ x: el.x + dx, y: el.y + dy }));
-      dragStartRef.current = pos;
-    }
-    else if (tool === 'brush') {
-      currentPathRef.current.push(pos);
-      setElements([...elements]);
-    }
+    if (isResizing && selectedId) updateElement(selectedId, el => ({ width: Math.max(10, pos.x - el.x), height: Math.max(10, pos.y - el.y) }));
+    else if (tool === 'move' && selectedId) { const dx = pos.x - dragStartRef.current.x; const dy = pos.y - dragStartRef.current.y; updateElement(selectedId, el => ({ x: el.x + dx, y: el.y + dy })); dragStartRef.current = pos; }
+    else if (tool === 'brush') { currentPathRef.current.push(pos); setElements([...elements]); }
   };
 
   const handleEnd = () => {
     if (isDragging) {
-        if (tool === 'brush' && currentPathRef.current.length > 0) {
-            const newPath = { 
-                id: paintGenId(), 
-                type: 'path', 
-                points: [...currentPathRef.current], 
-                color: toolColor, 
-                size: brushSize 
-            };
-            saveHistory([...elements, newPath]);
-        } else {
-            saveHistory(elements);
-        }
+      if (tool === 'brush' && currentPathRef.current.length > 0) saveHistory([...elements, { id: paintGenId(), type: 'path', points: [...currentPathRef.current], color: toolColor, size: brushSize }]);
+      else saveHistory(elements);
     }
-    setIsDragging(false);
-    setIsResizing(false);
-    currentPathRef.current = [];
+    setIsDragging(false); setIsResizing(false); currentPathRef.current = [];
   };
 
   const handleTouchStart = (e) => {
-    if (e.touches.length === 2) {
-      e.preventDefault(); 
-      const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-      const cx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-      const cy = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-      gestureRef.current = { 
-        startDist: dist, 
-        startScale: view.scale, 
-        startX: cx, 
-        startY: cy, 
-        startViewX: view.x, 
-        startViewY: view.y 
-      };
-    } else if (e.touches.length === 1) {
-      handleStart(e.touches[0].clientX, e.touches[0].clientY);
-    }
+    if (e.touches.length === 2) { e.preventDefault(); const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); gestureRef.current = { startDist: dist, startScale: view.scale, startX: (e.touches[0].clientX+e.touches[1].clientX)/2, startY: (e.touches[0].clientY+e.touches[1].clientY)/2, startViewX: view.x, startViewY: view.y }; }
+    else if (e.touches.length === 1) handleStart(e.touches[0].clientX, e.touches[0].clientY);
   };
 
   const handleTouchMove = (e) => {
-    if (e.touches.length === 2) {
-      e.preventDefault(); 
-      const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY);
-      const cx = (e.touches[0].clientX + e.touches[1].clientX) / 2;
-      const cy = (e.touches[0].clientY + e.touches[1].clientY) / 2;
-      const scale = Math.max(0.2, Math.min(3, gestureRef.current.startScale * (dist / (gestureRef.current.startDist || 1))));
-      const dx = cx - gestureRef.current.startX;
-      const dy = cy - gestureRef.current.startY;
-      setView({ scale, x: gestureRef.current.startViewX + dx, y: gestureRef.current.startViewY + dy });
-    } else if (e.touches.length === 1) {
-      handleMove(e.touches[0].clientX, e.touches[0].clientY);
-    }
+    if (e.touches.length === 2) { e.preventDefault(); const dist = Math.hypot(e.touches[0].clientX - e.touches[1].clientX, e.touches[0].clientY - e.touches[1].clientY); const scale = Math.max(0.2, Math.min(3, gestureRef.current.startScale * (dist / (gestureRef.current.startDist || 1)))); setView({ scale, x: gestureRef.current.startViewX + ((e.touches[0].clientX+e.touches[1].clientX)/2 - gestureRef.current.startX), y: gestureRef.current.startViewY + ((e.touches[0].clientY+e.touches[1].clientY)/2 - gestureRef.current.startY) }); }
+    else if (e.touches.length === 1) handleMove(e.touches[0].clientX, e.touches[0].clientY);
   };
 
-  // --- LAYOUTS ---
   const applyLayout = (type) => {
     let newEls = [];
-    const cw = canvasSize.w;
-    const ch = canvasSize.h;
-
-    if (type === 'classic') {
-      newEls = [
-        { id: paintGenId(), type: 'text', x: 20, y: 20, width: cw-40, height: 100, text: 'TOP TEXT IT', color: '#ffffff', size: 60, font: 'Impact', strokeWidth: 4, strokeColor: '#000000' },
-        { id: paintGenId(), type: 'text', x: 20, y: ch-100, width: cw-40, height: 100, text: 'BOTTOM TEXT IT', color: '#ffffff', size: 60, font: 'Impact', strokeWidth: 4, strokeColor: '#000000' }
-      ];
-    } 
-    else if (type === 'breaking') {
-      newEls = [
-        { id: paintGenId(), type: 'rect', x: 0, y: ch - 120, width: cw, height: 80, color: '#ff0000' },
-        { id: paintGenId(), type: 'rect', x: 0, y: ch - 40, width: cw, height: 40, color: '#ffffff' },
-        { id: paintGenId(), type: 'text', x: 20, y: ch - 110, width: cw-40, height: 60, text: 'BREAKING NEWS', color: '#ffffff', size: 40, font: 'Impact', strokeWidth: 0 },
-        { id: paintGenId(), type: 'text', x: 20, y: ch - 35, width: cw-40, height: 30, text: 'DEGENS ARE PUMPING $IT TO THE MOON', color: '#000000', size: 20, font: 'Arial', strokeWidth: 0 }
-      ];
-    }
-    else if (type === 'wanted') {
-        newEls = [
-            { id: paintGenId(), type: 'rect', x: 0, y: 0, width: cw, height: ch, color: '#f5e8d0' }, 
-            { id: paintGenId(), type: 'text', x: 20, y: 30, width: cw-40, height: 80, text: 'WANTED', color: '#4a3728', size: 80, font: 'Courier', strokeWidth: 0 },
-            { id: paintGenId(), type: 'rect', x: cw*0.15, y: 130, width: cw*0.7, height: ch*0.5, color: '#ffffff' }, 
-            { id: paintGenId(), type: 'text', x: 20, y: ch*0.8, width: cw-40, height: 50, text: 'REWARD: $IT MOONBAG', color: '#4a3728', size: 30, font: 'Courier', strokeWidth: 0 }
-        ];
-    }
-    else if (type === 'alert') {
-        newEls = [
-            { id: paintGenId(), type: 'rect', x: 0, y: 0, width: cw, height: ch, color: '#008080' }, 
-            { id: paintGenId(), type: 'rect', x: cw/2 - 150, y: ch/2 - 100, width: 300, height: 200, color: '#c0c0c0' }, 
-            { id: paintGenId(), type: 'rect', x: cw/2 - 150, y: ch/2 - 100, width: 300, height: 25, color: '#000080' }, 
-            { id: paintGenId(), type: 'text', x: cw/2 - 130, y: ch/2 - 97, width: 100, height: 20, text: 'SYSTEM ERROR', color: '#ffffff', size: 12, font: 'Arial', strokeWidth: 0 },
-            { id: paintGenId(), type: 'text', x: cw/2 - 140, y: ch/2 - 40, width: 280, height: 80, text: 'DEGEN PROTOCOL DETECTED.\nPROCEED TO PUMP IT?', color: '#000000', size: 18, font: 'Arial', strokeWidth: 0 }
-        ];
-    }
+    const cw = canvasSize.w, ch = canvasSize.h;
+    if (type === 'classic') newEls = [
+      { id: paintGenId(), type: 'text', x: 20, y: 20, width: cw-40, height: 100, text: 'PENGU GANG 🐧', color: '#ffffff', size: 60, font: 'Impact', strokeWidth: 4, strokeColor: '#0369a1' },
+      { id: paintGenId(), type: 'text', x: 20, y: ch-100, width: cw-40, height: 100, text: 'WAGMI FRENS', color: '#ffffff', size: 60, font: 'Impact', strokeWidth: 4, strokeColor: '#0369a1' }
+    ];
+    else if (type === 'breaking') newEls = [
+      { id: paintGenId(), type: 'rect', x: 0, y: ch - 120, width: cw, height: 80, color: '#0369a1' },
+      { id: paintGenId(), type: 'rect', x: 0, y: ch - 40, width: cw, height: 40, color: '#BAE6FD' },
+      { id: paintGenId(), type: 'text', x: 20, y: ch-110, width: cw-40, height: 60, text: 'BREAKING NEWS 🐧', color: '#ffffff', size: 40, font: 'Impact', strokeWidth: 0 },
+      { id: paintGenId(), type: 'text', x: 20, y: ch-35, width: cw-40, height: 30, text: 'PENGU COLONY PUMPING TO THE MOON', color: '#0369a1', size: 20, font: 'Arial', strokeWidth: 0 }
+    ];
+    else if (type === 'wanted') newEls = [
+      { id: paintGenId(), type: 'rect', x: 0, y: 0, width: cw, height: ch, color: '#f0f9ff' },
+      { id: paintGenId(), type: 'text', x: 20, y: 30, width: cw-40, height: 80, text: 'WANTED 🐧', color: '#0369a1', size: 80, font: 'Impact', strokeWidth: 0 },
+      { id: paintGenId(), type: 'rect', x: cw*0.15, y: 130, width: cw*0.7, height: ch*0.5, color: '#ffffff' },
+      { id: paintGenId(), type: 'text', x: 20, y: ch*0.8, width: cw-40, height: 50, text: 'REWARD: ONE GIANT FISH 🐟', color: '#0369a1', size: 30, font: 'Impact', strokeWidth: 0 }
+    ];
+    else if (type === 'arctic') newEls = [
+      { id: paintGenId(), type: 'rect', x: 0, y: 0, width: cw, height: ch, color: '#0369a1' },
+      { id: paintGenId(), type: 'rect', x: 0, y: ch*0.7, width: cw, height: ch*0.3, color: '#e0f2fe' },
+      { id: paintGenId(), type: 'text', x: 20, y: 40, width: cw-40, height: 80, text: '❄️ ARCTIC PENGU OS ❄️', color: '#BAE6FD', size: 50, font: 'Impact', strokeWidth: 0 },
+      { id: paintGenId(), type: 'text', x: 20, y: ch*0.72, width: cw-40, height: 60, text: 'THE COLONY IS LIVE', color: '#0369a1', size: 35, font: 'Impact', strokeWidth: 0 }
+    ];
     saveHistory(newEls);
   };
 
   return (
-    <div className="flex flex-col h-full bg-[#c0c0c0] font-sans text-xs select-none overflow-hidden" ref={containerRef}>
-      
-      {/* --- TOP RIBBON --- */}
-      <div className="h-10 bg-[#c0c0c0] border-b-2 border-white flex items-center px-1 shrink-0 z-40 shadow-md">
-        {/* FIXED: Always visible controls */}
-        <div className="flex items-center gap-1 px-1 border-r border-gray-400 mr-1">
-            <Button onClick={undo} disabled={historyStep===0} title="Undo"><RotateCcw size={14}/></Button>
-            <Button onClick={redo} disabled={historyStep===history.length-1} title="Redo"><RotateCw size={14}/></Button>
-            {/* FIXED: Properties Icon - Always visible, no text label on mobile */}
-            <Button 
-                className="md:hidden" 
-                active={showProps} 
-                onClick={() => setShowProps(!showProps)}
-                title="Toggle Properties"
-            >
-                <Sliders size={14}/>
-            </Button>
+    <div className="flex flex-col h-full text-xs select-none overflow-hidden" style={{background:'#e8f4fd', fontFamily:'monospace'}} ref={containerRef}>
+      <div className="h-10 border-b-2 flex items-center px-1 shrink-0 z-40" style={{background:'#e8f4fd', borderColor:'#BAE6FD'}}>
+        <div className="flex items-center gap-1 px-1 border-r border-sky-200 mr-1">
+          <Button onClick={undo} disabled={historyStep===0} title="Undo"><RotateCcw size={14}/></Button>
+          <Button onClick={redo} disabled={historyStep===history.length-1} title="Redo"><RotateCw size={14}/></Button>
+          <Button className="md:hidden" active={showProps} onClick={() => setShowProps(!showProps)} title="Toggle Properties"><Sliders size={14}/></Button>
         </div>
-        
-        {/* SCROLLABLE: Layouts and secondary tools */}
         <div className="flex-1 flex items-center gap-1 overflow-x-auto no-scrollbar py-1">
-            <Button onClick={()=>applyLayout('classic')}><LayoutTemplate size={12}/><span className="hidden sm:inline ml-1">CLASSIC</span></Button>
-            <Button onClick={()=>applyLayout('breaking')}><Scan size={12}/><span className="hidden sm:inline ml-1">NEWS</span></Button>
-            <Button onClick={()=>applyLayout('wanted')}><User size={12}/><span className="hidden sm:inline ml-1">WANTED</span></Button>
-            <Button onClick={()=>applyLayout('alert')}><AlertTriangle size={12}/><span className="hidden sm:inline ml-1">ALERT</span></Button>
+          <Button onClick={()=>applyLayout('classic')}><LayoutTemplate size={12}/><span className="hidden sm:inline ml-1">CLASSIC</span></Button>
+          <Button onClick={()=>applyLayout('breaking')}><Scan size={12}/><span className="hidden sm:inline ml-1">NEWS</span></Button>
+          <Button onClick={()=>applyLayout('wanted')}><User size={12}/><span className="hidden sm:inline ml-1">WANTED</span></Button>
+          <Button onClick={()=>applyLayout('arctic')}><Snowflake size={12}/><span className="hidden sm:inline ml-1">ARCTIC</span></Button>
         </div>
-
-        {/* FIXED: Export/Actions */}
-        <div className="flex items-center gap-1 px-1 border-l border-gray-400 ml-1">
-            <Button onClick={download} className="text-blue-800 font-black border-blue-800"><Download size={14}/><span className="hidden md:inline ml-1">EXPORT</span></Button>
+        <div className="flex items-center gap-1 px-1 border-l border-sky-200 ml-1">
+          <Button onClick={download} className="font-black"><Download size={14}/><span className="hidden md:inline ml-1">EXPORT</span></Button>
         </div>
       </div>
 
       <div className="flex flex-1 overflow-hidden relative min-h-0">
-        
-        {/* --- LEFT TOOLBOX --- */}
-        <div className="w-16 md:w-20 bg-[#c0c0c0] border-r-2 border-white flex flex-col items-center py-3 gap-3 shadow-xl z-30 shrink-0 overflow-y-auto">
+        <div className="w-16 md:w-20 border-r-2 flex flex-col items-center py-3 gap-3 z-30 shrink-0 overflow-y-auto" style={{background:'#e8f4fd', borderColor:'#BAE6FD'}}>
           <Button active={tool==='move'} onClick={()=>setTool('move')} className="w-12 md:w-14 h-12 flex-col"><Move size={18}/><span className="text-[8px]">MOVE</span></Button>
           <Button active={tool==='brush'} onClick={()=>setTool('brush')} className="w-12 md:w-14 h-12 flex-col"><Paintbrush size={18}/><span className="text-[8px]">BRUSH</span></Button>
           <Button onClick={addText} className="w-12 md:w-14 h-12 flex-col"><Type size={18}/><span className="text-[8px]">TEXT</span></Button>
           <Button active={tool==='rect'} onClick={()=>setTool('rect')} className="w-12 md:w-14 h-12 flex-col"><SquareIcon size={18}/><span className="text-[8px]">RECT</span></Button>
           
-          <div className="w-10 h-px bg-gray-500 my-1"></div>
+          <div className="w-10 h-px bg-sky-200 my-1"></div>
           
           <div className="flex flex-col gap-2 items-center w-full px-1 mb-2">
-            <span className="text-[7px] font-black uppercase opacity-40">Assets</span>
-            {typeof ASSETS !== 'undefined' && ASSETS.stickers && Object.keys(ASSETS.stickers).map(key => (
-              <div 
-                key={key} 
-                className="w-10 h-10 md:w-12 md:h-12 bg-white border border-gray-400 cursor-pointer hover:border-blue-500 active:scale-95 transition-all p-1 shadow-sm shrink-0"
-                onClick={() => addSticker(key)}
-                title={`Add ${key}`}
-              >
+            <span className="text-[7px] font-black uppercase text-sky-400">Stickers</span>
+            {ASSETS.stickers && Object.keys(ASSETS.stickers).map(key => (
+              <div key={key} className="w-10 h-10 md:w-12 md:h-12 bg-white border border-sky-200 cursor-pointer hover:border-sky-400 active:scale-95 transition-all p-1 shadow-sm shrink-0"
+                onClick={() => addSticker(key)} title={`Add ${key}`}>
                 <img src={ASSETS.stickers[key]} alt={key} className="w-full h-full object-contain pointer-events-none" />
               </div>
             ))}
           </div>
 
-          <div className="w-10 h-px bg-gray-500 my-1"></div>
-
+          <div className="w-10 h-px bg-sky-200 my-1"></div>
           <Button onClick={()=>fileInputRef.current.click()} className="w-12 md:w-14 h-12 flex-col"><Upload size={18}/><span className="text-[8px]">FILE</span><input type="file" ref={fileInputRef} hidden accept="image/*" onChange={handleFileUpload} /></Button>
         </div>
 
-        {/* --- CANVAS STAGE --- */}
-        <div className="flex-1 bg-[#808080] flex items-center justify-center overflow-hidden relative border-t-2 border-l-2 border-black touch-none min-h-0">
-          <div 
-            className="shadow-2xl bg-white origin-center"
-            style={{ transform: `translate(${view.x}px, ${view.y}px) scale(${view.scale})` }}
-          >
-            <canvas 
-              ref={canvasRef}
-              width={canvasSize.w}
-              height={canvasSize.h}
-              className="touch-none block cursor-crosshair"
-              onMouseDown={(e)=>handleStart(e.clientX, e.clientY)}
-              onMouseMove={(e)=>handleMove(e.clientX, e.clientY)}
-              onMouseUp={handleEnd}
-              onMouseLeave={handleEnd}
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleEnd}
-            />
+        <div className="flex-1 flex items-center justify-center overflow-hidden relative border-t-2 border-l-2 touch-none min-h-0" style={{background:'#7DD3FC33', borderColor:'#0369a1'}}>
+          <div className="shadow-2xl origin-center" style={{ transform: `translate(${view.x}px, ${view.y}px) scale(${view.scale})` }}>
+            <canvas ref={canvasRef} width={canvasSize.w} height={canvasSize.h} className="touch-none block cursor-crosshair"
+              onMouseDown={(e)=>handleStart(e.clientX, e.clientY)} onMouseMove={(e)=>handleMove(e.clientX, e.clientY)} onMouseUp={handleEnd} onMouseLeave={handleEnd}
+              onTouchStart={handleTouchStart} onTouchMove={handleTouchMove} onTouchEnd={handleEnd} />
           </div>
-          
-          {/* Zoom Overlay */}
-          <div className="absolute bottom-4 right-4 bg-black/50 backdrop-blur p-2 flex gap-2 border border-white/20 z-40 rounded">
-             <button onClick={()=>setView(v=>({...v, scale: Math.max(0.2, v.scale-0.1)}))} className="text-white hover:text-emerald-400 active:scale-90"><Minus size={14}/></button>
-             <span className="text-white font-mono w-10 text-center font-bold text-[10px]">{Math.round(view.scale*100)}%</span>
-             <button onClick={()=>setView(v=>({...v, scale: Math.min(3, v.scale+0.1)}))} className="text-white hover:text-emerald-400 active:scale-90"><Plus size={14}/></button>
+          <div className="absolute bottom-4 right-4 p-2 flex gap-2 border rounded-sm" style={{background:'rgba(3,105,161,0.8)', borderColor:'#7DD3FC'}}>
+            <button onClick={()=>setView(v=>({...v, scale: Math.max(0.2, v.scale-0.1)}))} className="text-white hover:text-sky-300 active:scale-90"><Minus size={14}/></button>
+            <span className="text-white font-mono w-10 text-center font-bold text-[10px]">{Math.round(view.scale*100)}%</span>
+            <button onClick={()=>setView(v=>({...v, scale: Math.min(3, v.scale+0.1)}))} className="text-white hover:text-sky-300 active:scale-90"><Plus size={14}/></button>
           </div>
         </div>
 
-        {/* --- PROPERTIES PANEL --- */}
-        <div className={`
-          absolute md:static top-0 right-0 bottom-0 z-50
-          w-64 bg-[#c0c0c0] border-l-2 border-white flex flex-col shadow-2xl md:shadow-none
-          transition-transform duration-300 ease-in-out
-          ${showProps ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}
-        `}>
-          <div className="bg-[#000080] text-white font-bold text-[10px] p-2 flex justify-between items-center uppercase tracking-widest italic shrink-0">
-            <span>Inspector IT</span>
-            <div className="flex items-center gap-2">
-                <Layers size={12}/>
-                <X size={14} className="md:hidden cursor-pointer hover:bg-red-600" onClick={() => setShowProps(false)}/>
-            </div>
+        <div className={`absolute md:static top-0 right-0 bottom-0 z-50 w-64 flex flex-col shadow-2xl md:shadow-none transition-transform duration-300 ${showProps ? 'translate-x-0' : 'translate-x-full md:translate-x-0'}`}
+          style={{background:'#e8f4fd', borderLeft:'2px solid #BAE6FD'}}>
+          <div className="text-white font-bold text-[10px] p-2 flex justify-between items-center uppercase tracking-widest shrink-0" style={{background:'linear-gradient(to right, #0369a1, #0ea5e9)'}}>
+            <span>🎨 Pengu Inspector</span>
+            <div className="flex gap-2"><Layers size={12}/><X size={14} className="md:hidden cursor-pointer hover:text-red-200" onClick={() => setShowProps(false)}/></div>
           </div>
 
-          <div className="flex-1 overflow-y-auto overflow-x-hidden p-3 space-y-5 pb-20">
+          <div className="flex-1 overflow-y-auto p-3 space-y-5 pb-20">
             {selectedId ? (() => {
               const el = elements.find(e => e.id === selectedId);
               if (!el) return null;
               return (
                 <div className="space-y-4">
-                  {el.type === 'text' && (
-                    <>
-                      <div className="space-y-1">
-                        <label className="text-[9px] font-black uppercase opacity-60">Caption</label>
-                        <InsetPanel><textarea value={el.text} onChange={e => updateElement(el.id, ()=>({text: e.target.value}))} className="w-full p-2 font-bold outline-none text-xs text-black" rows={3}/></InsetPanel>
-                      </div>
-                      <div className="space-y-1">
-                        <label className="text-[9px] font-black uppercase opacity-60">Typeface</label>
-                        <div className="grid grid-cols-1 gap-1">
-                          {FONTS.map(f => (<Button key={f.name} active={el.font === f.val} onClick={() => updateElement(el.id, ()=>({font: f.val}))}>{f.name}</Button>))}
-                        </div>
-                      </div>
-                    </>
-                  )}
-
-                  <div className="space-y-1">
-                    <label className="text-[9px] font-black uppercase opacity-60">Color Palette</label>
-                    <div className="flex flex-wrap gap-1">
-                      {MEME_COLORS.map(c => (<div key={c} onClick={() => updateElement(el.id, ()=>({color: c}))} className={`w-6 h-6 border-2 cursor-pointer ${el.color === c ? 'border-white outline outline-1 outline-black shadow-lg' : 'border-gray-500 border-r-white border-b-white'}`} style={{backgroundColor: c}}/>))}
-                    </div>
-                  </div>
-
-                  {el.type === 'text' && (
-                    <div className="space-y-1">
-                      <label className="text-[9px] font-black uppercase opacity-60">Outline Width</label>
-                      <div className="flex items-center gap-2 bg-[#d0d0d0] p-1 border-2 border-inset border-gray-600">
-                        <input type="range" min="0" max="10" value={el.strokeWidth || 0} onChange={e=>updateElement(el.id, ()=>({strokeWidth: parseInt(e.target.value)}))} className="flex-1 accent-blue-900"/>
-                        <span className="font-mono text-[9px] w-4">{el.strokeWidth || 0}</span>
-                      </div>
-                    </div>
-                  )}
-
-                  <div className="pt-4 border-t border-gray-500">
-                    <Button onClick={deleteSelected} className="w-full bg-red-100 text-red-700 border-red-700 py-2"><Trash2 size={14}/> TRASH OBJECT</Button>
-                  </div>
+                  {el.type === 'text' && (<>
+                    <div className="space-y-1"><label className="text-[9px] font-black uppercase text-sky-500">Caption</label><InsetPanel><textarea value={el.text} onChange={e => updateElement(el.id, ()=>({text: e.target.value}))} className="w-full p-2 font-bold outline-none text-xs text-sky-900" rows={3}/></InsetPanel></div>
+                    <div className="space-y-1"><label className="text-[9px] font-black uppercase text-sky-500">Typeface</label><div className="grid grid-cols-1 gap-1">{FONTS.map(f => (<Button key={f.name} active={el.font === f.val} onClick={() => updateElement(el.id, ()=>({font: f.val}))}>{f.name}</Button>))}</div></div>
+                  </>)}
+                  <div className="space-y-1"><label className="text-[9px] font-black uppercase text-sky-500">Color Palette 🎨</label><div className="flex flex-wrap gap-1">{MEME_COLORS.map(c => (<div key={c} onClick={() => updateElement(el.id, ()=>({color: c}))} className={`w-6 h-6 border-2 cursor-pointer ${el.color === c ? 'outline outline-2 outline-sky-400 scale-110' : 'border-sky-200'}`} style={{backgroundColor: c}}/>))}</div></div>
+                  {el.type === 'text' && (<div className="space-y-1"><label className="text-[9px] font-black uppercase text-sky-500">Outline Width</label><div className="flex items-center gap-2 p-1 border-2" style={{background:'#dbeafe', borderColor:'#0369a1 #BAE6FD #BAE6FD #0369a1'}}><input type="range" min="0" max="10" value={el.strokeWidth || 0} onChange={e=>updateElement(el.id, ()=>({strokeWidth: parseInt(e.target.value)}))} className="flex-1 accent-sky-600"/><span className="font-mono text-[9px] text-sky-700 w-4">{el.strokeWidth || 0}</span></div></div>)}
+                  <div className="pt-4 border-t border-sky-200"><Button onClick={deleteSelected} className="w-full py-2 text-red-600"><Trash2 size={14}/> DELETE</Button></div>
                 </div>
               );
             })() : tool === 'brush' ? (
               <div className="space-y-5">
-                <div className="space-y-1">
-                  <label className="text-[9px] font-black uppercase opacity-60">Brush Size</label>
-                  <div className="flex items-center gap-2 bg-[#d0d0d0] p-1 border-2 border-inset border-gray-600">
-                    <input type="range" min="1" max="50" value={brushSize} onChange={e=>setBrushSize(parseInt(e.target.value))} className="flex-1 accent-blue-900"/>
-                    <span className="font-mono text-[9px] w-4">{brushSize}</span>
-                  </div>
-                </div>
-                <div className="space-y-1">
-                  <label className="text-[9px] font-black uppercase opacity-60">Brush Color</label>
-                  <div className="flex flex-wrap gap-1">
-                    {MEME_COLORS.map(c => (<div key={c} onClick={() => setToolColor(c)} className={`w-6 h-6 border-2 cursor-pointer ${toolColor === c ? 'border-white outline outline-1 outline-black shadow-lg' : 'border-gray-500 border-r-white border-b-white'}`} style={{backgroundColor: c}}/>))}
-                  </div>
-                </div>
+                <div className="space-y-1"><label className="text-[9px] font-black uppercase text-sky-500">Brush Size</label><div className="flex items-center gap-2 p-1 border-2" style={{background:'#dbeafe', borderColor:'#0369a1 #BAE6FD #BAE6FD #0369a1'}}><input type="range" min="1" max="50" value={brushSize} onChange={e=>setBrushSize(parseInt(e.target.value))} className="flex-1 accent-sky-600"/><span className="font-mono text-[9px] text-sky-700 w-4">{brushSize}</span></div></div>
+                <div className="space-y-1"><label className="text-[9px] font-black uppercase text-sky-500">Brush Color</label><div className="flex flex-wrap gap-1">{MEME_COLORS.map(c => (<div key={c} onClick={() => setToolColor(c)} className={`w-6 h-6 border-2 cursor-pointer ${toolColor === c ? 'outline outline-2 outline-sky-400 scale-110' : 'border-sky-200'}`} style={{backgroundColor: c}}/>))}</div></div>
               </div>
             ) : (
-              <div className="flex flex-col items-center justify-center text-gray-500 gap-2 p-4 text-center mt-10">
-                <MousePointer size={32} className="opacity-20 animate-pulse"/>
-                <p className="text-[9px] font-black uppercase tracking-tighter opacity-50">Select an object or pick a tool to start degining.</p>
+              <div className="flex flex-col items-center justify-center text-sky-300 gap-2 p-4 text-center mt-10">
+                <span className="text-4xl animate-bounce">🐧</span>
+                <p className="text-[9px] font-black uppercase tracking-tighter text-sky-400">Select a tool or object to start meme-ing, fren.</p>
               </div>
             )}
-
-            <div className="pt-10 border-t border-gray-500">
-                <label className="text-[9px] font-black uppercase opacity-60 mb-2 block">Degen Filters</label>
-                <div className="grid grid-cols-2 gap-1">
-                    <Button active={globalEffect==='deepfry'} onClick={()=>setGlobalEffect(g => g==='deepfry'?'none':'deepfry')}><Zap size={10}/> DEEP FRY</Button>
-                    <Button active={globalEffect==='vhs'} onClick={()=>setGlobalEffect(g => g==='vhs'?'none':'vhs')}><Tv size={10}/> VHS</Button>
-                    <Button active={globalEffect==='terminal'} onClick={()=>setGlobalEffect(g => g==='terminal'?'none':'terminal')}><Scan size={10}/> NODES</Button>
-                    <Button active={globalEffect==='none'} onClick={()=>setGlobalEffect('none')}>CLEAR</Button>
-                </div>
+            <div className="pt-10 border-t border-sky-200">
+              <label className="text-[9px] font-black uppercase text-sky-500 mb-2 block">❄️ Pengu Filters</label>
+              <div className="grid grid-cols-2 gap-1">
+                <Button active={globalEffect==='deepfry'} onClick={()=>setGlobalEffect(g => g==='deepfry'?'none':'deepfry')}><Zap size={10}/> DEEPFRY</Button>
+                <Button active={globalEffect==='vhs'} onClick={()=>setGlobalEffect(g => g==='vhs'?'none':'vhs')}><Tv size={10}/> VHS</Button>
+                <Button active={globalEffect==='frost'} onClick={()=>setGlobalEffect(g => g==='frost'?'none':'frost')}><Snowflake size={10}/> FROST</Button>
+                <Button active={globalEffect==='none'} onClick={()=>setGlobalEffect('none')}>CLEAR</Button>
+              </div>
             </div>
           </div>
         </div>
@@ -1814,2108 +921,158 @@ const PaintApp = () => {
   );
 };
 
-
-
-const AmpTunesApp = () => {
-  const audioRef = useRef(null);
-  const canvasRef = useRef(null);
-  const requestRef = useRef(null);
-
-  
-  const [playing, setPlaying] = useState(false);
-  const [trackIndex, setTrackIndex] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
-  const [duration, setDuration] = useState(0);
-  const [volume, setVolume] = useState(0.8);
-  const [shuffle, setShuffle] = useState(false);
-  const [loop, setLoop] = useState(false);
-
-  
-  const formatTime = (s) => {
-    if (!s || isNaN(s)) return "00:00";
-    const min = Math.floor(s / 60);
-    const sec = Math.floor(s % 60);
-    return `${min < 10 ? '0' : ''}${min}:${sec < 10 ? '0' : ''}${sec}`;
-  };
-
-  
-  useEffect(() => {
-    if (!document.getElementById('marquee-style')) {
-        const style = document.createElement('style');
-        style.id = 'marquee-style';
-        style.innerHTML = `
-          @keyframes marquee {
-            0% { transform: translateX(100%); }
-            100% { transform: translateX(-100%); }
-          }
-          .animate-marquee {
-            animation: marquee 10s linear infinite;
-          }
-        `;
-        document.head.appendChild(style);
-    }
-  }, []);
-
-  
-  useEffect(() => {
-    audioRef.current = new Audio();
-    audioRef.current.volume = volume;
-
-    const updateTime = () => setCurrentTime(audioRef.current.currentTime);
-    const updateDuration = () => setDuration(audioRef.current.duration);
-    const handleEnded = () => {
-        if (loop) {
-            audioRef.current.currentTime = 0;
-            audioRef.current.play();
-        } else {
-            nextTrack();
-        }
-    };
-
-    audioRef.current.addEventListener('timeupdate', updateTime);
-    audioRef.current.addEventListener('loadedmetadata', updateDuration);
-    audioRef.current.addEventListener('ended', handleEnded);
-
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.removeEventListener('timeupdate', updateTime);
-        audioRef.current.removeEventListener('loadedmetadata', updateDuration);
-        audioRef.current.removeEventListener('ended', handleEnded);
-        audioRef.current = null;
-      }
-      if (requestRef.current) cancelAnimationFrame(requestRef.current);
-    };
-  }, [loop]); 
-
-  
-  useEffect(() => {
-    if (!audioRef.current) return;
-    
-    const track = typeof TUNES_PLAYLIST !== 'undefined' ? TUNES_PLAYLIST[trackIndex] : null;
-    if (!track) return;
-
-    
-    
-    audioRef.current.src = track.file || track.src || track.title; 
-    
-    audioRef.current.load();
-    
-    if (playing) {
-        var playPromise = audioRef.current.play();
-        if (playPromise !== undefined) {
-            playPromise.catch(error => {
-                console.error("Playback failed. Check if file exists:", error);
-            });
-        }
-    }
-  }, [trackIndex]);
-
-  
-  useEffect(() => {
-      if(audioRef.current) audioRef.current.volume = volume;
-  }, [volume]);
-
-  
-  useEffect(() => {
-      if (!audioRef.current) return;
-      if (playing) audioRef.current.play().catch(e => console.log("Playback error:", e));
-      else audioRef.current.pause();
-  }, [playing]);
-
-  
-  const togglePlay = () => setPlaying(!playing);
-  
-  const nextTrack = () => {
-      if (typeof TUNES_PLAYLIST === 'undefined') return;
-      if (shuffle) {
-          setTrackIndex(Math.floor(Math.random() * TUNES_PLAYLIST.length));
-      } else {
-          setTrackIndex((prev) => (prev + 1) % TUNES_PLAYLIST.length);
-      }
-  };
-
-  const prevTrack = () => {
-      if (typeof TUNES_PLAYLIST === 'undefined') return;
-      setTrackIndex((prev) => (prev - 1 + TUNES_PLAYLIST.length) % TUNES_PLAYLIST.length);
-  };
-
-  const handleSeek = (e) => {
-      const time = parseFloat(e.target.value);
-      if (audioRef.current) audioRef.current.currentTime = time;
-      setCurrentTime(time);
-  };
-
-  
-  const drawVisualizer = () => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const ctx = canvas.getContext('2d');
-      const w = canvas.width;
-      const h = canvas.height;
-
-      ctx.fillStyle = '#000000';
-      ctx.fillRect(0, 0, w, h);
-
-      
-      ctx.strokeStyle = 'rgba(0, 50, 0, 0.5)';
-      ctx.lineWidth = 1;
-      for(let i=0; i<w; i+=4) { ctx.beginPath(); ctx.moveTo(i,0); ctx.lineTo(i,h); ctx.stroke(); }
-      for(let i=0; i<h; i+=4) { ctx.beginPath(); ctx.moveTo(0,i); ctx.lineTo(w,i); ctx.stroke(); }
-
-      if (playing) {
-          
-          const bars = 20;
-          const barW = w / bars;
-          ctx.fillStyle = '#00ff00'; 
-          
-          for(let i=0; i<bars; i++) {
-              
-              const noise = Math.random() * 0.5 + 0.5;
-              const height = Math.sin(Date.now()/200 + i) * h * 0.5 * noise;
-              const barH = Math.abs(height);
-              
-              
-              ctx.fillRect(i * barW + 1, h - barH, barW - 2, barH);
-              
-              
-              ctx.fillStyle = '#ccffcc';
-              ctx.fillRect(i * barW + 1, h - barH - 4, barW - 2, 2);
-              ctx.fillStyle = '#00ff00';
-          }
-      } else {
-          
-          ctx.strokeStyle = '#00ff00';
-          ctx.beginPath();
-          ctx.moveTo(0, h/2);
-          ctx.lineTo(w, h/2);
-          ctx.stroke();
-      }
-
-      requestRef.current = requestAnimationFrame(drawVisualizer);
-  };
-
-  useEffect(() => {
-      requestRef.current = requestAnimationFrame(drawVisualizer);
-      return () => cancelAnimationFrame(requestRef.current);
-  }, [playing]);
-
-  const playlist = typeof TUNES_PLAYLIST !== 'undefined' ? TUNES_PLAYLIST : [];
-  const currentTrack = playlist[trackIndex] || { title: "NO DISK", artist: "INSERT COIN", duration: "00:00" };
-
-  return (
-    <div className="flex flex-col h-full bg-[#1a1a1a] text-[#00ff00] font-mono select-none border-2 border-gray-600">
-        
-        {/* --- 1. MAIN DECK (DISPLAY & CONTROLS) --- */}
-        <div className="p-2 border-b-2 border-gray-700 bg-gradient-to-b from-[#2a2a2a] to-[#1a1a1a]">
-            {/* LCD SCREEN */}
-            <div className="bg-black border-2 border-gray-600 rounded mb-2 relative h-16 flex overflow-hidden shadow-[inset_0_0_10px_rgba(0,0,0,1)]">
-                
-                {/* LEFT: VISUALIZER */}
-                <canvas ref={canvasRef} width={80} height={60} className="border-r border-gray-800 opacity-90" />
-                
-                {/* RIGHT: TEXT INFO */}
-                <div className="flex-1 flex flex-col p-1 relative overflow-hidden">
-                    {/* SCROLLING MARQUEE */}
-                    <div className="whitespace-nowrap overflow-hidden">
-                        <div className={`text-sm font-bold ${playing ? 'animate-marquee' : ''}`}>
-                            {trackIndex + 1}. {currentTrack.artist} - {currentTrack.title} *** ({currentTrack.duration}) ***
-                        </div>
-                    </div>
-                    
-                    {/* TECH SPECS */}
-                    <div className="mt-auto flex justify-between text-[10px] text-green-700 font-bold">
-                        <span>{playing ? 320 : 0} kbps</span>
-                        <span>44 khz</span>
-                        <span className={playing ? "animate-pulse text-green-400" : ""}>{playing ? "STEREO" : "MONO"}</span>
-                    </div>
-
-                    {/* BIG TIMER */}
-                    <div className="absolute top-6 right-1 text-2xl font-black tracking-widest text-[#ccffcc] drop-shadow-[0_0_5px_rgba(0,255,0,0.5)]">
-                        {formatTime(currentTime)}
-                    </div>
-                </div>
-            </div>
-
-            {/* SEEK BAR */}
-            <div className="flex items-center gap-2 mb-2">
-                <input 
-                    type="range" 
-                    min="0" max={duration || 100} 
-                    value={currentTime} 
-                    onChange={handleSeek}
-                    className="w-full h-2 bg-gray-800 rounded-lg appearance-none cursor-pointer accent-green-500 border border-gray-600"
-                />
-            </div>
-
-            {/* CONTROLS ROW */}
-            <div className="flex justify-between items-center pt-1">
-                {/* Transport Controls */}
-                <div className="flex gap-0.5">
-                    <button onClick={prevTrack} title="Previous" className="w-8 h-8 bg-gray-300 border-b-2 border-r-2 border-gray-600 active:border-t-2 active:border-l-2 flex items-center justify-center hover:bg-white text-black"><SkipBack size={14}/></button>
-                    <button onClick={togglePlay} title="Play/Pause" className="w-10 h-8 bg-gray-300 border-b-2 border-r-2 border-gray-600 active:border-t-2 active:border-l-2 flex items-center justify-center hover:bg-white text-black">
-                        {playing ? <Pause size={16} fill="black"/> : <Play size={16} fill="black"/>}
-                    </button>
-                    <button onClick={() => {setPlaying(false); setCurrentTime(0); if(audioRef.current) audioRef.current.currentTime=0;}} title="Stop" className="w-8 h-8 bg-gray-300 border-b-2 border-r-2 border-gray-600 active:border-t-2 active:border-l-2 flex items-center justify-center hover:bg-white text-black"><Square size={12} fill="black"/></button>
-                    <button onClick={nextTrack} title="Next" className="w-8 h-8 bg-gray-300 border-b-2 border-r-2 border-gray-600 active:border-t-2 active:border-l-2 flex items-center justify-center hover:bg-white text-black"><SkipForward size={14}/></button>
-                </div>
-
-                {/* Volume & Toggles */}
-                <div className="flex flex-col items-end gap-1">
-                    <div className="flex items-center gap-1">
-                        <Volume2 size={10} className="text-gray-500"/>
-                        <input 
-                            type="range" 
-                            min="0" max="1" step="0.01" 
-                            value={volume} 
-                            onChange={e => setVolume(parseFloat(e.target.value))}
-                            className="w-16 h-1 bg-gray-700 rounded-lg appearance-none cursor-pointer accent-green-500"
-                            title="Volume"
-                        />
-                    </div>
-                    <div className="flex gap-1">
-                        <button onClick={() => setShuffle(!shuffle)} className={`px-1 h-4 text-[9px] font-bold border flex items-center ${shuffle ? 'bg-green-900 text-green-100 border-green-500 shadow-[0_0_5px_green]' : 'bg-gray-800 text-gray-500 border-gray-600'}`}>SHILL</button>
-                        <button onClick={() => setLoop(!loop)} className={`px-1 h-4 text-[9px] font-bold border flex items-center ${loop ? 'bg-green-900 text-green-100 border-green-500 shadow-[0_0_5px_green]' : 'bg-gray-800 text-gray-500 border-gray-600'}`}>LOOP</button>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        {/* --- 2. PLAYLIST DECK --- */}
-        <div className="flex-1 bg-[#111] overflow-y-auto p-1 font-sans text-xs">
-            <div className="text-[#00ff00] text-[10px] mb-1 font-bold border-b border-gray-800">PLAYLIST.IT</div>
-            {playlist.map((t, i) => (
-                <div 
-                    key={i} 
-                    onClick={() => { setTrackIndex(i); setPlaying(true); }}
-                    className={`
-                        cursor-pointer flex justify-between px-1 py-0.5 mb-[1px]
-                        ${trackIndex === i ? 'bg-green-900 text-white font-bold' : 'text-green-600 hover:bg-gray-800'}
-                    `}
-                >
-                    <div className="truncate flex-1">
-                        <span className="mr-2 text-[9px] opacity-70">{i+1}.</span>
-                        {t.artist} - {t.title}
-                    </div>
-                    <div className="w-10 text-right">{t.duration}</div>
-                </div>
-            ))}
-        </div>
-    </div>
-  );
-};
-
-
-// --- CONSTANTS ---
-const GAME_WIDTH = 320;
-const GAME_HEIGHT = 550;
-const BLOCK_HEIGHT = 35;
-const BASE_WIDTH = 220;
-const INITIAL_SPEED = 4;
-
-const NOTES = [261.63, 293.66, 329.63, 392.00, 523.25, 587.33, 659.25, 783.99];
-const SCALE = [130.81, 138.59, 155.56, 174.61, 185.00, 207.65, 233.08, 261.63]; 
-
-const BIOMES = [
-  { score: 0, name: "THE TRENCHES", bgStart: '#050510', bgEnd: '#000000', text: '#00ff41', gridColor: 'rgba(0, 255, 65, 0.15)', freqMod: 1.0 },
-  { score: 15, name: "LIQUIDITY ATMOSPHERE", bgStart: '#000a22', bgEnd: '#000000', text: '#00f2ff', gridColor: 'rgba(0, 242, 255, 0.15)', freqMod: 1.2 },
-  { score: 35, name: "SYNTHETIC ORBIT", bgStart: '#110022', bgEnd: '#000000', text: '#ff00cc', gridColor: 'rgba(255, 0, 204, 0.15)', freqMod: 1.5 },
-  { score: 60, name: "NEURAL HUB", bgStart: '#0a0a0a', bgEnd: '#000000', text: '#ffffff', gridColor: 'rgba(255, 255, 255, 0.15)', freqMod: 1.8 },
-  { score: 100, name: "GOD CANDLE", bgStart: '#221100', bgEnd: '#000000', text: '#ffd700', gridColor: 'rgba(255, 215, 0, 0.15)', freqMod: 2.0 },
-];
-
-// --- PURE HELPER FUNCTIONS ---
-
-function spawnBlock(prev, level, isMirror = false) {
-  const isLeft = Math.random() > 0.5;
-  const yPos = isMirror ? (GAME_HEIGHT - (level * BLOCK_HEIGHT)) : (level * BLOCK_HEIGHT);
-  const speed = INITIAL_SPEED + Math.pow(level, 0.6) * 0.5;
-  return {
-    x: isLeft ? -prev.w : GAME_WIDTH,
-    y: yPos,
-    w: prev.w,
-    h: BLOCK_HEIGHT,
-    dir: isLeft ? 1 : -1,
-    speed: Math.min(speed, 18),
-    color: isMirror ? '#ffffff' : `hsl(${(level * 15) % 360}, 85%, 55%)`
-  };
-}
-
-function createParticles(particlesArray, x, y, w, h, color, count = 10, char = null) {
-  for(let i=0; i<count; i++) {
-    particlesArray.push({
-      x: x + Math.random() * w,
-      y: y + Math.random() * h,
-      vx: (Math.random() - 0.5) * 15,
-      vy: (Math.random() - 0.5) * 15,
-      life: 1.0,
-      color: color,
-      char: char || (Math.random() > 0.5 ? '0' : '1'),
-      rotation: Math.random() * Math.PI * 2,
-      vr: (Math.random() - 0.5) * 0.3
-    });
-  }
-}
-
-const RugSweeperApp = () => {
-  const canvasRef = useRef(null);
-  const requestRef = useRef();
-  const audioCtxRef = useRef(null);
-  const musicRef = useRef({ nextNoteTime: 0, currentStep: 0, master: null, filter: null });
-
-  // --- KERNEL EVENT LISTENER ---
-  const [hasAccess, setHasAccess] = useState(false);
-  const [tokenBalance, setTokenBalance] = useState(0);
-  const [connectedWallet, setConnectedWallet] = useState(null);
-
-  useEffect(() => {
-    const handleKernelSync = (e) => {
-      const { balance, hasAccess: accessStatus, wallet } = e.detail;
-      setTokenBalance(balance);
-      setHasAccess(accessStatus);
-      setConnectedWallet(wallet); 
-    };
-    window.addEventListener('IT_OS_BALANCE_UPDATE', handleKernelSync);
-    return () => window.removeEventListener('IT_OS_BALANCE_UPDATE', handleKernelSync);
-  }, []);
-
-  const [gameState, setGameState] = useState('MENU'); 
-  const [score, setScore] = useState(0);
-  const [highScore, setHighScore] = useState(0);
-  const [usernameInput, setUsernameInput] = useState('');
-  const [savedName, setSavedName] = useState(null);
-  const [leaderboard, setLeaderboard] = useState([]);
-  const [playerRank, setPlayerRank] = useState(null);
-  const [loadingLB, setLoadingLB] = useState(false);
-  const [isSubmitting, setIsSubmitting] = useState(false);
-  const [user, setUser] = useState(null);
-  const [currentBiome, setCurrentBiome] = useState(BIOMES[0]);
-
-  const game = useRef({
-    state: 'MENU', stack: [], current: null, debris: [], particles: [],
-    stars: [], warpLevel: 0, flash: 0, cameraY: 0, shake: 0,
-    combo: 0, perfectCount: 0, startTime: 0, time: 0, lastFrameTime: 0,
-    score: 0, worldRotation: 0, targetRotation: 0, rotationTimer: 0,
-    lastTap: { x: GAME_WIDTH/2, y: GAME_HEIGHT/2, power: 0, active: false },
-    mirrorActive: false, isMirrorTurn: false, mirrorStack: [], mirrorMovesLeft: 0, mirrorCurrent: null
-  });
-
-  const initAudio = () => {
-    if (!audioCtxRef.current) {
-      try {
-        const AudioContext = window.AudioContext || window.webkitAudioContext;
-        audioCtxRef.current = new AudioContext();
-        const masterGain = audioCtxRef.current.createGain();
-        masterGain.gain.setValueAtTime(0.5, audioCtxRef.current.currentTime);
-        const filter = audioCtxRef.current.createBiquadFilter();
-        filter.type = 'lowpass';
-        filter.frequency.setValueAtTime(1200, audioCtxRef.current.currentTime);
-        const compressor = audioCtxRef.current.createDynamicsCompressor();
-        compressor.threshold.setValueAtTime(-15, audioCtxRef.current.currentTime);
-        compressor.ratio.setValueAtTime(12, audioCtxRef.current.currentTime);
-        masterGain.connect(filter);
-        filter.connect(compressor);
-        compressor.connect(audioCtxRef.current.destination);
-        musicRef.current.master = masterGain;
-        musicRef.current.filter = filter;
-      } catch (e) { console.error("Audio failure", e); }
-    }
-    if (audioCtxRef.current?.state === 'suspended') audioCtxRef.current.resume();
-  };
-
-  const scheduleMusic = () => {
-    if (!audioCtxRef.current || !musicRef.current.master) return;
-    const ctx = audioCtxRef.current;
-    const targetFreq = (gameState === 'PLAYING' || gameState === 'NEW_HIGHSCORE') ? 14000 : 1200;
-    musicRef.current.filter.frequency.setTargetAtTime(targetFreq, ctx.currentTime, 0.2);
-
-    while (musicRef.current.nextNoteTime < ctx.currentTime + 0.1) {
-      const t = musicRef.current.nextNoteTime;
-      const step = musicRef.current.currentStep % 16;
-      if (step % 4 === 0) {
-        const kickOsc = ctx.createOscillator();
-        const kickGain = ctx.createGain();
-        kickOsc.frequency.setValueAtTime(150, t);
-        kickOsc.frequency.exponentialRampToValueAtTime(35, t + 0.12);
-        kickGain.gain.setValueAtTime(0.8, t);
-        kickGain.gain.exponentialRampToValueAtTime(0.001, t + 0.25);
-        kickOsc.connect(kickGain); kickGain.connect(musicRef.current.master);
-        kickOsc.start(t); kickOsc.stop(t + 0.25);
-      }
-      if (step === 4 || step === 12) {
-        const snareBuffer = ctx.createBuffer(1, ctx.sampleRate * 0.15, ctx.sampleRate);
-        const data = snareBuffer.getChannelData(0);
-        for(let i=0; i<data.length; i++) data[i] = (Math.random() * 2 - 1) * Math.exp(-i / 1500);
-        const src = ctx.createBufferSource();
-        src.buffer = snareBuffer;
-        const snGain = ctx.createGain();
-        snGain.gain.setValueAtTime(0.15, t);
-        snGain.gain.exponentialRampToValueAtTime(0.001, t + 0.12);
-        src.connect(snGain); snGain.connect(musicRef.current.master);
-        src.start(t);
-      }
-      if (step % 2 !== 0) {
-        const hOsc = ctx.createOscillator();
-        const hGain = ctx.createGain();
-        hOsc.type = 'square';
-        hOsc.frequency.setValueAtTime(step % 4 === 0 ? 12000 : 8000, t);
-        hGain.gain.setValueAtTime(0.03, t);
-        hGain.gain.exponentialRampToValueAtTime(0.001, t + 0.04);
-        hOsc.connect(hGain); hGain.connect(musicRef.current.master);
-        hOsc.start(t); hOsc.stop(t + 0.04);
-      }
-      if (step % 4 !== 0 || step === 0) {
-        const bassOsc = ctx.createOscillator();
-        const bassGain = ctx.createGain();
-        const bassFilter = ctx.createBiquadFilter();
-        bassOsc.type = 'sawtooth';
-        const note = SCALE[(step * 3) % SCALE.length] / 2;
-        bassOsc.frequency.setValueAtTime(note, t);
-        bassFilter.type = 'lowpass';
-        bassFilter.frequency.setValueAtTime(400 + (Math.sin(step) * 200), t);
-        bassFilter.Q.setValueAtTime(15, t);
-        bassGain.gain.setValueAtTime(0.08, t);
-        bassGain.gain.exponentialRampToValueAtTime(0.001, t + 0.18);
-        bassOsc.connect(bassFilter);
-        bassFilter.connect(bassGain);
-        bassGain.connect(musicRef.current.master);
-        bassOsc.start(t); bassOsc.stop(t + 0.18);
-      }
-      if (step === 3 || step === 7 || step === 11 || step === 15) {
-        const leadOsc = ctx.createOscillator();
-        const leadGain = ctx.createGain();
-        leadOsc.type = 'triangle';
-        leadOsc.frequency.setValueAtTime(SCALE[(step) % SCALE.length] * 2.5, t);
-        leadGain.gain.setValueAtTime(0.02, t);
-        leadGain.gain.linearRampToValueAtTime(0, t + 0.1);
-        leadOsc.connect(leadGain); leadGain.connect(musicRef.current.master);
-        leadOsc.start(t); leadOsc.stop(t + 0.1);
-      }
-      const bpm = 132 + Math.min(score, 40);
-      musicRef.current.nextNoteTime += 60 / bpm / 4; 
-      musicRef.current.currentStep++;
-    }
-  };
-
-  const playSound = (type) => {
-    if (!audioCtxRef.current) return;
-    const ctx = audioCtxRef.current;
-    const t = ctx.currentTime;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.connect(gain);
-    gain.connect(musicRef.current.master || ctx.destination);
-    if (type === 'perfect') {
-      osc.type = 'square';
-      const noteFreq = NOTES[game.current.perfectCount % NOTES.length] * 2;
-      osc.frequency.setValueAtTime(noteFreq, t);
-      gain.gain.setValueAtTime(0.1, t);
-      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.4);
-      osc.start(t); osc.stop(t + 0.4);
-    } else if (type === 'place') {
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(200, t);
-      osc.frequency.exponentialRampToValueAtTime(50, t + 0.1);
-      gain.gain.setValueAtTime(0.15, t);
-      gain.gain.linearRampToValueAtTime(0, t + 0.1);
-      osc.start(t); osc.stop(t + 0.1);
-    } else if (type === 'fail') {
-      osc.type = 'sawtooth';
-      osc.frequency.setValueAtTime(80, t);
-      osc.frequency.linearRampToValueAtTime(20, t + 1.5);
-      gain.gain.setValueAtTime(0.4, t);
-      gain.gain.linearRampToValueAtTime(0, t + 1.5);
-      osc.start(t); osc.stop(t + 1.5);
-    }
-  };
-
-  useEffect(() => {
-    const initAuth = async () => {
-      try {
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          await signInWithCustomToken(auth, __initial_auth_token);
-        } else { await signInAnonymously(auth); }
-      } catch (err) { console.error("Auth Failure", err); }
-    };
-    initAuth();
-    game.current.stars = Array(120).fill(0).map(() => ({
-      x: Math.random() * GAME_WIDTH, y: Math.random() * GAME_HEIGHT,
-      size: Math.random() * 2.5 + 0.5, p: Math.random() * 0.9 + 0.1,
-      alpha: Math.random() * 0.6 + 0.2
-    }));
-    game.current.lastFrameTime = performance.now();
-    const unsubscribe = onAuthStateChanged(auth, setUser);
-    const localHighScore = localStorage.getItem('stackItHighScore');
-    if (localHighScore) setHighScore(parseInt(localHighScore, 10));
-    const localName = localStorage.getItem('stackItUsername');
-    if (localName) { setSavedName(localName); setUsernameInput(localName); }
-    requestRef.current = requestAnimationFrame(loop);
-    return () => { unsubscribe(); if (requestRef.current) cancelAnimationFrame(requestRef.current); };
-  }, []);
-
-  useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (e.code === 'Space') {
-        e.preventDefault(); initAudio();
-        if (['MENU', 'GAME_OVER'].includes(game.current.state)) startGame();
-        else if (game.current.state === 'NEW_HIGHSCORE') { if (savedName && hasAccess) handleReturningSubmit('RETRY'); }
-        else if (game.current.state === 'PLAYING') handleInteraction(GAME_WIDTH/2, GAME_HEIGHT/2);
-      }
-    };
-    window.addEventListener('keydown', handleKeyDown);
-    return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [savedName, hasAccess]); 
-
-  const startGame = (e) => {
-    if(e) { e.stopPropagation(); e.preventDefault(); }
-    initAudio();
-    if (audioCtxRef.current) musicRef.current.nextNoteTime = audioCtxRef.current.currentTime + 0.1;
-    musicRef.current.currentStep = 0;
-    game.current = {
-        ...game.current, state: 'PLAYING', stack: [], current: null, debris: [],
-        particles: [], warpLevel: 0, flash: 0, cameraY: 0, shake: 0, combo: 0,
-        perfectCount: 0, startTime: 0, time: 0, lastFrameTime: 0,
-        score: 0, worldRotation: 0, targetRotation: 0, rotationTimer: 0,
-        lastTap: { x: GAME_WIDTH/2, y: GAME_HEIGHT/2, power: 0, active: false },
-        mirrorActive: false, isMirrorTurn: false, mirrorStack: [], mirrorMovesLeft: 0, mirrorCurrent: null
-    };
-    game.current.startTime = Date.now();
-    setScore(0); setGameState('PLAYING'); setCurrentBiome(BIOMES[0]);
-    const base = { x: (GAME_WIDTH - BASE_WIDTH) / 2, y: 0, w: BASE_WIDTH, h: BLOCK_HEIGHT, color: '#00ff41' };
-    game.current.stack = [base];
-    game.current.current = spawnBlock(base, 1);
-  };
-
-  const handleInteraction = (x, y) => {
-    if (game.current.state !== 'PLAYING') return;
-    game.current.lastTap = { x, y, power: 1.0, active: true };
-    placeBlock();
-  };
-
-  const placeBlock = () => {
-    const g = game.current;
-    if (g.state !== 'PLAYING') return;
-    if (Date.now() - g.startTime < 150) return;
-    const activeCurr = g.mirrorActive && g.isMirrorTurn ? g.mirrorCurrent : g.current;
-    if (!activeCurr) return;
-    const activeStack = g.mirrorActive && g.isMirrorTurn ? g.mirrorStack : g.stack;
-    const prev = activeStack[activeStack.length-1];
-    const dist = activeCurr.x - prev.x;
-    const absDist = Math.abs(dist);
-    if (absDist >= activeCurr.w) { g.shake = 40; gameOver(); return; }
-    let newX = activeCurr.x, newW = activeCurr.w, isPerfect = false, scoreAdd = 1;
-    if (absDist <= 8) {
-      newX = prev.x; newW = prev.w; isPerfect = true;
-      g.combo++; g.perfectCount++;
-      if (g.combo >= 3) scoreAdd = 2; 
-      if (g.combo >= 3 && newW < BASE_WIDTH) { newW = Math.min(BASE_WIDTH, newW + 15); newX = prev.x - (newW-prev.w)/2; }
-      g.shake = 12; playSound('perfect'); g.flash = 0.25;
-    } else {
-      g.combo = 0; g.perfectCount = 0;
-      newW = activeCurr.w - absDist;
-      newX = dist > 0 ? activeCurr.x : prev.x;
-      const debrisX = dist > 0 ? activeCurr.x + newW : activeCurr.x;
-      const debrisY = g.mirrorActive && g.isMirrorTurn ? (GAME_HEIGHT - activeCurr.y) : activeCurr.y;
-      g.debris.push({ x: debrisX, y: debrisY, w: absDist, h: activeCurr.h, vx: dist > 0 ? 8 : -8, vy: -6, color: activeCurr.color, life: 1.0, rot: 0, vr: (Math.random()-0.5)*0.3 });
-      g.shake = 6; playSound('place');
-      createParticles(g.particles, debrisX, debrisY, absDist, activeCurr.h, activeCurr.color, 8);
-    }
-    const placed = { x: newX, y: activeCurr.y, w: newW, h: activeCurr.h, color: activeCurr.color, perfect: isPerfect };
-    activeStack.push(placed); g.score += scoreAdd; setScore(g.score);
-    if (!g.mirrorActive && g.score >= 35 && Math.random() < 0.15) {
-        g.mirrorActive = true; g.mirrorMovesLeft = 8 + Math.floor(Math.random() * 6);
-        g.isMirrorTurn = true; g.targetRotation = 0; 
-        const mirrorBase = { x: (GAME_WIDTH - newW) / 2, y: GAME_HEIGHT, w: newW, h: BLOCK_HEIGHT, color: '#ffffff' };
-        g.mirrorStack = [mirrorBase]; g.mirrorCurrent = spawnBlock(mirrorBase, 1, true); g.flash = 0.8;
-    } else if (g.mirrorActive) {
-        g.mirrorMovesLeft--;
-        if (g.mirrorMovesLeft <= 0) { g.mirrorActive = false; g.isMirrorTurn = false; g.flash = 0.5; g.current = spawnBlock(g.stack[g.stack.length - 1], g.stack.length); }
-        else {
-            g.isMirrorTurn = !g.isMirrorTurn;
-            if (g.isMirrorTurn) g.mirrorCurrent = spawnBlock(g.mirrorStack[g.mirrorStack.length-1], g.mirrorStack.length, true);
-            else g.current = spawnBlock(g.stack[g.stack.length-1], g.stack.length);
-        }
-    } else { g.current = spawnBlock(placed, g.stack.length); }
-    if (!g.mirrorActive && g.score > 8 && Math.random() < 0.12) { 
-        const variants = [Math.PI/2, -Math.PI/2, Math.PI];
-        g.targetRotation = variants[Math.floor(Math.random() * variants.length)];
-        g.rotationTimer = 10; g.flash = 0.8;
-    }
-    const biome = BIOMES.slice().reverse().find(b => g.score >= b.score);
-    if (biome && biome.name !== currentBiome.name) { setCurrentBiome(biome); g.warpLevel = 1.2; g.flash = 0.8; }
-    if (g.score > highScore) { setHighScore(g.score); localStorage.setItem('stackItHighScore', g.score); }
-  };
-
-  const gameOver = () => {
-    playSound('fail'); game.current.state = 'GAME_OVER';
-    const storedHS = parseInt(localStorage.getItem('stackItHighScore') || '0', 10);
-    if (hasAccess && game.current.score > 0 && game.current.score >= storedHS) setGameState('NEW_HIGHSCORE'); 
-    else setGameState('GAME_OVER'); 
-  };
-
-  const loop = (timestamp) => {
-    const ctx = canvasRef.current?.getContext('2d');
-    if (!ctx) { requestRef.current = requestAnimationFrame(loop); return; }
-    const g = game.current; scheduleMusic();
-    const elapsed = timestamp - g.lastFrameTime; g.lastFrameTime = timestamp;
-    const dt = Math.min(elapsed / 16.67, 3.0); g.time += 0.05 * dt;
-    if (g.state === 'PLAYING') {
-      const active = g.mirrorActive && g.isMirrorTurn ? g.mirrorCurrent : g.current;
-      if (active) { active.x += (active.speed * dt) * active.dir; if (active.x > GAME_WIDTH + 80) active.dir = -1; if (active.x < -80 - active.w) active.dir = 1; }
-      const targetY = Math.max(0, g.stack.length * BLOCK_HEIGHT - 140); g.cameraY += (targetY - g.cameraY) * 0.08 * dt;
-    }
-    g.shake *= Math.pow(0.88, dt); g.flash *= Math.pow(0.92, dt); g.warpLevel *= Math.pow(0.96, dt);
-    g.worldRotation += (g.targetRotation - g.worldRotation) * 0.08 * dt;
-    g.lastTap.power *= Math.pow(0.9, dt);
-    const shakeX = (Math.random() - 0.5) * g.shake; const shakeY = (Math.random() - 0.5) * g.shake;
-    g.debris.forEach(d => { d.x += d.vx * dt; d.y += d.vy * dt; d.vy += 0.5 * dt; d.life -= 0.012 * dt; d.rot += d.vr * dt; });
-    g.debris = g.debris.filter(d => d.life > 0);
-    g.particles.forEach(p => { p.x += p.vx * dt; p.y += p.vy * dt; p.life -= 0.015 * dt; p.rotation += p.vr * dt; });
-    g.particles = g.particles.filter(p => p.life > 0);
-    ctx.fillStyle = '#000'; ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-    const bgGrad = ctx.createLinearGradient(0, 0, 0, GAME_HEIGHT); bgGrad.addColorStop(0, currentBiome.bgStart); bgGrad.addColorStop(1, currentBiome.bgEnd);
-    ctx.fillStyle = bgGrad; ctx.fillRect(0, 0, GAME_WIDTH, GAME_HEIGHT);
-    g.stars.forEach(s => {
-      let sx = s.x + Math.sin(g.time * 0.3 + s.y) * 2; let sy = (s.y + g.cameraY * s.p + g.time * 15 * s.p) % GAME_HEIGHT;
-      if (g.lastTap.power > 0.01) { const dx = g.lastTap.x - sx; const dy = g.lastTap.y - sy; const dist = Math.sqrt(dx*dx + dy*dy); if (dist < 150) { const force = (1 - dist/150) * g.lastTap.power * 25; sx += (dx / dist) * force; sy += (dy / dist) * force; } }
-      ctx.fillStyle = `rgba(255, 255, 255, ${s.alpha})`; ctx.fillRect(sx, sy, s.size, s.size + g.warpLevel * 45 * s.p);
-    });
-    ctx.save();
-    const gridOffset = (g.cameraY * 0.5 + g.time * 5) % 40; const tapBend = (g.lastTap.x - GAME_WIDTH/2) * g.lastTap.power * 0.1;
-    ctx.translate(tapBend, 0); ctx.strokeStyle = currentBiome.gridColor; ctx.lineWidth = 1; ctx.beginPath();
-    for (let x = -40; x <= GAME_WIDTH + 40; x += 40) { ctx.moveTo(x, 0); ctx.lineTo(x, GAME_HEIGHT); }
-    for (let y = -40; y <= GAME_HEIGHT + 40; y += 40) { ctx.moveTo(0, y + gridOffset); ctx.lineTo(GAME_WIDTH, y + gridOffset); }
-    ctx.stroke(); ctx.restore();
-    if (g.mirrorActive) { ctx.fillStyle = 'rgba(255,255,255,0.05)'; ctx.fillRect(0, GAME_HEIGHT/2 - 2, GAME_WIDTH, 4); ctx.fillStyle = '#fff'; ctx.font = 'bold 10px monospace'; ctx.textAlign = 'center'; ctx.fillText("SYNC_ERROR: DUAL_STREAM_ACTIVE", GAME_WIDTH/2, GAME_HEIGHT/2 - 10); }
-    ctx.save(); ctx.translate(GAME_WIDTH/2 + shakeX, GAME_HEIGHT/2 + shakeY); ctx.rotate(g.worldRotation); ctx.translate(-GAME_WIDTH/2, -GAME_HEIGHT/2);
-    ctx.save(); ctx.translate(0, GAME_HEIGHT + g.cameraY - 70);
-    g.stack.forEach((b) => {
-      const y = -b.y; if (b.perfect) { ctx.shadowBlur = 15; ctx.shadowColor = b.color; }
-      const fill = ctx.createLinearGradient(b.x, y - b.h, b.x, y); fill.addColorStop(0, b.color); fill.addColorStop(1, '#000');
-      ctx.fillStyle = fill; ctx.fillRect(b.x, y - b.h, b.w, b.h); ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.strokeRect(b.x, y - b.h, b.w, b.h); ctx.shadowBlur = 0;
-    });
-    if (g.state === 'PLAYING' && g.current && (!g.mirrorActive || !g.isMirrorTurn)) { ctx.fillStyle = g.current.color; ctx.fillRect(g.current.x, -g.current.y - g.current.h, g.current.w, g.current.h); }
-    ctx.restore();
-    if (g.mirrorActive) { ctx.save(); g.mirrorStack.forEach((b) => { ctx.fillStyle = b.color; ctx.fillRect(b.x, (GAME_HEIGHT - b.y), b.w, b.h); ctx.strokeStyle = 'rgba(255,255,255,0.3)'; ctx.strokeRect(b.x, (GAME_HEIGHT - b.y), b.w, b.h); }); if (g.isMirrorTurn && g.mirrorCurrent) { ctx.fillStyle = '#ffffff'; ctx.fillRect(g.mirrorCurrent.x, (GAME_HEIGHT - g.mirrorCurrent.y), g.mirrorCurrent.w, g.mirrorCurrent.h); } ctx.restore(); }
-    g.debris.forEach(d => { ctx.fillStyle = d.color; ctx.globalAlpha = d.life; ctx.fillRect(d.x, d.y, d.w, d.h); ctx.globalAlpha = 1; });
-    ctx.restore();
-    if (g.flash > 0.01) { ctx.fillStyle = `rgba(255,255,255,${g.flash})`; ctx.fillRect(0,0,GAME_WIDTH,GAME_HEIGHT); }
-    ctx.fillStyle = currentBiome.text; ctx.textAlign = 'center'; ctx.font = '900 60px Impact'; ctx.shadowBlur = 10; ctx.shadowColor = currentBiome.text; ctx.fillText(String(g.score), GAME_WIDTH/2, 80); ctx.shadowBlur = 0;
-    ctx.font = 'bold 12px monospace'; ctx.fillText(String(currentBiome.name), GAME_WIDTH/2, 105);
-    
-    // --- ATH LINE AND CORNER DISPLAY (RESTORED) ---
-    if (highScore > 0) { 
-        const athY = (GAME_HEIGHT + g.cameraY - 70) - (highScore * BLOCK_HEIGHT); 
-        ctx.strokeStyle = '#ffff00'; ctx.lineWidth = 1; ctx.setLineDash([5, 5]); 
-        ctx.beginPath(); ctx.moveTo(0, athY); ctx.lineTo(GAME_WIDTH, athY); ctx.stroke(); 
-        ctx.setLineDash([]); ctx.fillStyle = '#ffff00'; ctx.font = 'bold 10px monospace'; ctx.textAlign = 'left'; 
-        ctx.fillText('ATH_LINE', 10, athY - 5); 
-        
-        // Static Corner ATH Display
-        ctx.textAlign = 'right';
-        ctx.font = '900 14px monospace';
-        ctx.fillStyle = '#ffff00';
-        ctx.fillText(`ATH: ${highScore}`, GAME_WIDTH - 15, 30);
-    }
-    
-    if (g.combo > 1) { ctx.fillStyle = `hsl(${g.time * 600}, 100%, 50%)`; ctx.font = 'italic 900 32px Arial'; ctx.textAlign = 'center'; ctx.fillText(`${g.combo}X COMBO!`, GAME_WIDTH/2, 160); }
-    requestRef.current = requestAnimationFrame(loop);
-  };
-
-  const fetchLeaderboard = async () => {
-    if (!user) return; setLoadingLB(true);
-    try {
-      const qRef = collection(db, 'artifacts', appId, 'public', 'data', 'stackit_scores');
-      const snapshot = await getDocs(qRef);
-      const data = snapshot.docs.map(d => ({ id: d.id, ...d.data() }));
-      const sorted = data.sort((a, b) => Number(b.score) - Number(a.score));
-      const currentName = localStorage.getItem('stackItUsername'); 
-      if (currentName) { const rank = sorted.findIndex(x => x.username === currentName) + 1; setPlayerRank(rank > 0 ? rank : null); }
-      setLeaderboard(sorted.slice(0, 10));
-    } catch (e) { console.error("LB Error:", e); }
-    setLoadingLB(false);
-  };
-
-  const saveScoreToDb = async (nameToUse, scoreToSave) => {
-    if (!user || !hasAccess) return false;
-    try {
-      const upperName = nameToUse.toUpperCase().trim(); const uid = user.uid;
-      const docRef = doc(db, 'artifacts', appId, 'public', 'data', 'stackit_scores', uid);
-      const snap = await getDoc(docRef);
-      const scoreData = { username: upperName, score: Number(scoreToSave), timestamp: Date.now(), walletAddress: connectedWallet || "NONE" };
-      if (!snap.exists()) { await setDoc(docRef, scoreData); } else { const existingScore = Number(snap.data().score || 0); if (scoreToSave > existingScore) { await updateDoc(docRef, scoreData); } }
-      localStorage.setItem('stackItUsername', upperName); setSavedName(upperName);
-      return true;
-    } catch (e) { console.error("DB Error:", e); return false; }
-  };
-
-  const handleFirstTimeSubmit = async () => {
-    if (!usernameInput.trim() || !hasAccess) return; setIsSubmitting(true);
-    const success = await saveScoreToDb(usernameInput, game.current.score);
-    setIsSubmitting(false); if (success) { await fetchLeaderboard(); setGameState('LEADERBOARD'); }
-  };
-
-  const handleReturningSubmit = async (action) => {
-    const name = savedName || localStorage.getItem('stackItUsername'); if (!name || !hasAccess) return; 
-    setIsSubmitting(true); await saveScoreToDb(name, game.current.score); setIsSubmitting(false);
-    if (action === 'RETRY') startGame(); else if (action === 'RANK') { await fetchLeaderboard(); setGameState('LEADERBOARD'); }
-  };
-
-  const openLeaderboard = (e) => { if(e) { e.stopPropagation(); e.preventDefault(); } initAudio(); fetchLeaderboard(); setGameState('LEADERBOARD'); game.current.state = 'LEADERBOARD'; };
-  const handleInteractionEvent = (e) => { initAudio(); const rect = canvasRef.current.getBoundingClientRect(); const scaleX = GAME_WIDTH / rect.width; const scaleY = GAME_HEIGHT / rect.height; handleInteraction((e.clientX - rect.left) * scaleX, (e.clientY - rect.top) * scaleY); };
-  const handleRelease = () => { game.current.lastTap.active = false; };
-
-  return (
-    <div className="flex flex-col h-full bg-[#c0c0c0] p-1 font-mono select-none overflow-hidden" onPointerDown={handleInteractionEvent} onPointerUp={handleRelease} onPointerLeave={handleRelease}>
-      <div className="bg-[#000080] text-white px-3 py-1 flex justify-between items-center text-[10px] font-bold border-2 border-white border-r-gray-500 border-b-gray-500 mb-1 shrink-0">
-        <span className="flex items-center gap-2"><div className={`w-2 h-2 rounded-full ${gameState === 'PLAYING' ? 'bg-red-500 animate-pulse' : 'bg-gray-400'}`} /> STACK_PROTOCOL_4.0</span>
-        <div className="flex items-center gap-2 uppercase tracking-tighter">
-            {hasAccess ? <ShieldCheck size={10} className="text-green-400"/> : <Lock size={10} className="text-yellow-500"/>}
-            <span>{String(tokenBalance.toLocaleString())} $IT</span>
-        </div>
-      </div>
-      <div className="flex-1 bg-black relative border-2 border-gray-600 border-r-white border-b-white overflow-hidden cursor-crosshair touch-none shadow-inner">
-        <canvas ref={canvasRef} width={GAME_WIDTH} height={GAME_HEIGHT} className="w-full h-full object-contain block touch-none" />
-        
-        {gameState === 'MENU' && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-black/90 backdrop-blur-sm text-center text-white p-6 z-10 animate-in fade-in duration-500">
-            <h1 className="text-7xl font-black text-transparent bg-clip-text bg-gradient-to-t from-green-600 to-green-300 mb-2 drop-shadow-[0_4px_10px_rgba(0,255,0,0.5)] italic tracking-tighter uppercase">Stack IT</h1>
-            <p className="text-[10px] font-bold text-green-500 mb-12 tracking-[0.4em] uppercase opacity-80 animate-pulse">Uplink Status: {hasAccess ? 'Verified' : 'Guest'}</p>
-            <div className="flex flex-col gap-4 w-full max-w-[180px]">
-                <button onPointerDown={startGame} className="bg-white text-black py-3 font-black border-4 border-blue-500 shadow-[4px_4px_0_#0000ff] active:shadow-none transition-all uppercase italic text-xl">Send IT</button>
-                <button onPointerDown={openLeaderboard} className="bg-yellow-400 text-black py-2 font-black border-4 border-orange-500 shadow-[4px_4px_0_#ff0000] active:shadow-none transition-all uppercase italic text-sm">Leaderboard</button>
-            </div>
-          </div>
-        )}
-
-        {gameState === 'NEW_HIGHSCORE' && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-blue-900/95 text-center text-white p-6 z-20 pointer-events-auto shadow-2xl" onPointerDown={e=>e.stopPropagation()}>
-            <h1 className="text-5xl font-black text-yellow-400 mb-2 animate-bounce italic text-glow">NEW ATH</h1>
-            <div className="text-8xl font-black text-white mb-8 drop-shadow-[0_10px_20px_rgba(0,0,0,0.5)]">{score}</div>
-            {savedName ? (
-                <div className="flex flex-col items-center w-full">
-                    <div className="mb-8 flex flex-col items-center">
-                        <p className="text-[10px] text-blue-300 font-bold mb-2 tracking-widest uppercase">Identity Confirmed</p>
-                        <div className="text-3xl font-black text-white bg-blue-950 border-2 border-blue-400 px-8 py-3 uppercase tracking-widest shadow-2xl">{savedName}</div>
-                    </div>
-                    <div className="flex gap-4">
-                        <button onPointerDown={() => handleReturningSubmit('RETRY')} disabled={isSubmitting} className="bg-white text-blue-900 px-8 py-4 font-black border-4 border-blue-500 shadow-xl hover:scale-105 transition-transform uppercase italic">{isSubmitting ? '...' : 'Retry'}</button>
-                        <button onPointerDown={() => handleReturningSubmit('RANK')} disabled={isSubmitting} className="bg-yellow-400 text-black px-8 py-4 font-black border-4 border-orange-500 shadow-xl hover:scale-105 transition-transform uppercase italic">{isSubmitting ? '...' : 'Rank'}</button>
-                    </div>
-                </div>
-            ) : (
-                <div className="flex flex-col items-center w-full">
-                    <p className="text-[11px] text-blue-200 mb-3 font-bold uppercase tracking-widest">Register IT:</p>
-                    <input type="text" maxLength={10} className="bg-blue-950 border-4 border-blue-400 text-white text-center text-3xl font-black p-4 mb-8 uppercase w-64 outline-none focus:border-yellow-400 shadow-2xl" value={usernameInput} onChange={e => setUsernameInput(e.target.value.toUpperCase())} placeholder="ALIAS_ID" onPointerDown={e => e.stopPropagation()} />
-                    <button onPointerDown={handleFirstTimeSubmit} disabled={isSubmitting} className="bg-green-500 text-white px-10 py-4 font-black text-xl border-4 border-green-700 shadow-2xl hover:scale-105 transition-transform uppercase italic">Initialize</button>
-                </div>
-            )}
-          </div>
-        )}
-
-        {gameState === 'LEADERBOARD' && (
-          <div className="absolute inset-0 flex flex-col items-center bg-blue-950/95 text-white p-6 z-20 pointer-events-auto shadow-2xl" onPointerDown={e=>e.stopPropagation()}>
-            <div className="flex justify-between items-center w-full border-b-4 border-yellow-400 pb-4 mb-6 italic">
-                <h2 className="text-4xl font-black text-yellow-400 uppercase">Top Stackers</h2>
-                {playerRank && <div className="bg-black/80 px-4 py-2 text-[10px] font-black border border-yellow-400 text-yellow-400 uppercase tracking-widest">Rank: #{playerRank}</div>}
-            </div>
-            
-            <div className="flex-1 w-full overflow-y-auto mb-8 bg-black/60 p-4 border-2 border-white/10 shadow-inner no-scrollbar">
-                {loadingLB ? <div className="text-center mt-12 animate-pulse text-[12px] font-bold tracking-[0.5em] text-blue-400 uppercase">Synchronizing Nodes...</div> : (
-                    <div className="flex flex-col gap-2">
-                        {leaderboard.map((entry, i) => {
-                            const isCurrentUser = savedName && String(entry.username) === savedName;
-                            const isTop3 = i < 3;
-                            
-                            return (
-                                <React.Fragment key={i}>
-                                    <div className={`flex items-center justify-between p-3 border-b border-white/5 transition-all
-                                        ${isCurrentUser ? 'bg-blue-400/10' : ''}
-                                        ${i === 0 ? 'bg-yellow-400/10 border-yellow-400/20 shadow-[0_0_15px_rgba(255,215,0,0.1)]' : ''}
-                                        ${i === 1 ? 'bg-zinc-400/10 border-zinc-400/20' : ''}
-                                        ${i === 2 ? 'bg-orange-800/10 border-orange-800/20' : ''}
-                                    `}>
-                                        <div className="flex items-center gap-4">
-                                            <div className={`font-black italic flex items-center justify-center w-8
-                                                ${i === 0 ? 'text-yellow-400' : ''}
-                                                ${i === 1 ? 'text-zinc-300' : ''}
-                                                ${i === 2 ? 'text-orange-500' : ''}
-                                                ${i > 2 ? 'text-gray-500 text-sm' : 'text-base'}
-                                            `}>
-                                                {i === 0 ? <Crown size={20} className="animate-bounce" /> : i + 1}
-                                            </div>
-                                            <div className="flex flex-col">
-                                                <span className={`font-black italic truncate max-w-[120px] uppercase text-sm
-                                                    ${i === 0 ? 'text-yellow-400 tracking-tighter' : ''}
-                                                    ${i === 1 ? 'text-zinc-100' : ''}
-                                                    ${i === 2 ? 'text-orange-200' : ''}
-                                                    ${i > 2 ? 'text-gray-200' : ''}
-                                                    ${isCurrentUser ? 'text-orange-400 font-black' : ''}
-                                                `}>
-                                                    {String(entry.username)}
-                                                </span>
-                                                {isCurrentUser && <span className="text-[8px] font-black text-orange-400 tracking-widest opacity-80 uppercase">Your Uplink</span>}
-                                            </div>
-                                        </div>
-                                        <div className={`font-black text-right text-sm
-                                            ${i === 0 ? 'text-green-400 tracking-widest' : ''}
-                                            ${i === 1 ? 'text-green-300' : ''}
-                                            ${i === 2 ? 'text-green-200' : ''}
-                                            ${i > 2 ? 'text-green-500/80' : ''}
-                                        `}>
-                                            +{Number(entry.score)}
-                                        </div>
-                                    </div>
-                                    
-                                    {/* NEURAL BOUNDARY DIVIDER */}
-                                    {i === 2 && (
-                                        <div className="py-4 px-2 flex items-center gap-3 opacity-40">
-                                            <div className="h-[1px] flex-1 border-t border-blue-400 border-dashed" />
-                                            <span className="text-[8px] font-black text-blue-400 uppercase tracking-[0.4em]">Free SOL</span>
-                                            <div className="h-[1px] flex-1 border-t border-blue-400 border-dashed" />
-                                        </div>
-                                    )}
-                                </React.Fragment>
-                            );
-                        })}
-                    </div>
-                )}
-            </div>
-            <button onPointerDown={(e) => { e.stopPropagation(); setGameState('MENU'); game.current.state='MENU'; }} className="w-full py-4 bg-white text-blue-950 font-black border-4 border-blue-500 shadow-2xl hover:bg-gray-200 transition-all uppercase italic text-xl shrink-0">Close IT</button>
-          </div>
-        )}
-        
-        {gameState === 'GAME_OVER' && (
-          <div className="absolute inset-0 flex flex-col items-center justify-center bg-red-950/95 text-center text-white p-6 z-10 pointer-events-none animate-in fade-in duration-300 backdrop-blur-sm">
-            <h1 className="text-7xl font-black mb-2 italic text-white drop-shadow-[0_0_30px_rgba(255,0,0,0.6)] tracking-tighter uppercase">Rugged!</h1>
-            <div className="text-8xl font-black text-yellow-400 mb-2 drop-shadow-2xl">{score}</div>
-            {!hasAccess ? (
-                <div className="bg-yellow-500/20 border-2 border-yellow-600 p-4 mb-8 animate-pulse rounded">
-                    <p className="text-[11px] font-black text-yellow-400 uppercase tracking-widest mb-1 italic">Score Not Submitted</p>
-                    <p className="text-[8px] text-white/60 uppercase">Hold 500k $IT to join protocol rankings</p>
-                </div>
-            ) : (
-                <p className="text-[11px] mb-12 text-red-300 font-black tracking-[0.3em] uppercase opacity-80 italic animate-pulse text-center">Better Luck Next Time</p>
-            )}
-            <div className="flex gap-4 w-full">
-                <button onPointerDown={startGame} className="flex-1 bg-white text-black py-4 font-black border-4 border-gray-400 shadow-2xl hover:scale-105 transition-transform pointer-events-auto uppercase italic text-lg">Buy Dip</button>
-                <button onPointerDown={openLeaderboard} className="flex-1 bg-gray-900 text-white py-4 font-bold border-4 border-gray-600 cursor-pointer pointer-events-auto hover:bg-gray-800 transition-colors uppercase italic text-sm">Rank</button>
-            </div>
-          </div>
-        )}
-      </div>
-      <style>{`
-        .scrollbar-classic::-webkit-scrollbar { width: 10px; background: #000; }
-        .scrollbar-classic::-webkit-scrollbar-thumb { background: #111; border: 1px solid #444; }
-        .text-glow { text-shadow: 0 0 20px rgba(255, 255, 0, 0.5); }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
-      `}</style>
-    </div>
-  );
-};
-
-
-
-
+// --- MEMES APP ---
 const MemesApp = () => {
-  // --- ASSET INTEGRATION ---
-  const memeData = useMemo(() => {
-    try {
-      if (typeof window !== 'undefined' && window.ASSETS?.memes) return window.ASSETS.memes;
-      if (typeof ASSETS !== 'undefined' && ASSETS?.memes) return ASSETS.memes;
-    } catch (e) { console.error("Asset Linkage Error", e); }
-    return {}; 
-  }, []);
-
+  const memeData = useMemo(() => { try { if (ASSETS?.memes) return ASSETS.memes; } catch (e) {} return {}; }, []);
   const images = useMemo(() => Object.values(memeData), [memeData]);
   const keys = useMemo(() => Object.keys(memeData), [memeData]);
-  
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [hoveredIndex, setHoveredIndex] = useState(null);
   const touchStartRef = useRef(null);
 
-  // --- NAVIGATION LOGIC ---
-  const navigate = (dir, e) => {
-    e?.stopPropagation();
-    setSelectedIndex((prev) => {
-      if (prev === null) return null;
-      const next = prev + dir;
-      if (next < 0) return images.length - 1;
-      if (next >= images.length) return 0;
-      return next;
-    });
-  };
+  const navigate = (dir, e) => { e?.stopPropagation(); setSelectedIndex((prev) => { if (prev === null) return null; const next = prev + dir; if (next < 0) return images.length - 1; if (next >= images.length) return 0; return next; }); };
 
   useEffect(() => {
-    const handleKeyDown = (e) => {
-      if (selectedIndex === null) return;
-      if (e.key === 'ArrowLeft') navigate(-1);
-      if (e.key === 'ArrowRight') navigate(1);
-      if (e.key === 'Escape') setSelectedIndex(null);
-    };
+    const handleKeyDown = (e) => { if (selectedIndex === null) return; if (e.key === 'ArrowLeft') navigate(-1); if (e.key === 'ArrowRight') navigate(1); if (e.key === 'Escape') setSelectedIndex(null); };
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [selectedIndex, images.length]);
 
-  const handleTouchStart = (e) => {
-    if (e.touches && e.touches[0]) {
-      touchStartRef.current = e.touches[0].clientX;
-    }
-  };
+  const downloadImage = (src, name) => { try { const link = document.createElement('a'); link.href = src; link.target = "_blank"; link.download = `${name||'PENGU_MEME'}.jpg`; document.body.appendChild(link); link.click(); document.body.removeChild(link); } catch(err){} };
+  const shareToX = () => { const text = encodeURIComponent("🐧 PENGU GANG 🐧 #PENGU #WAGMI"); window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank'); };
 
-  const handleTouchEnd = (e) => {
-    if (touchStartRef.current === null || !e.changedTouches) return;
-    const touchEnd = e.changedTouches[0].clientX;
-    const diff = touchStartRef.current - touchEnd;
-    if (Math.abs(diff) > 50) {
-      if (diff > 0) navigate(1); 
-      else navigate(-1); 
-    }
-    touchStartRef.current = null;
-  };
-
-  // --- ACTIONS ---
-  const downloadImage = (src, name) => {
-    try {
-      const link = document.createElement('a');
-      link.href = src;
-      link.target = "_blank";
-      link.download = `${name || 'IT_MEME'}.jpg`;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-    } catch (err) { console.error("Download failed:", err); }
-  };
-
-  const shareToX = () => {
-    const text = encodeURIComponent("$IT #IT #SENDIT");
-    window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
-  };
-
-  // --- VIEW: NEURAL LIGHTBOX (SINGLE IMAGE) ---
   if (selectedIndex !== null) {
     const currentSrc = images[selectedIndex];
     const currentName = keys[selectedIndex];
-
     return (
-      <div 
-        className="flex flex-col h-full bg-black text-white relative animate-in fade-in zoom-in-95 duration-300 font-mono overflow-hidden"
-        onTouchStart={handleTouchStart}
-        onTouchEnd={handleTouchEnd}
-        onClick={() => setSelectedIndex(null)} 
-      >
-        {/* CRT Scanline Overlay */}
-        <div className="absolute inset-0 pointer-events-none z-50 opacity-[0.05] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,252,0.06))] bg-[length:100%_2px,3px_100%]" />
-
-        {/* Toolbar */}
-        <div 
-            className="bg-[#c0c0c0] p-1.5 border-b-2 border-gray-600 flex justify-between items-center z-[60]"
-            onClick={(e) => e.stopPropagation()}
-        >
+      <div className="flex flex-col h-full relative" style={{background:'#0369a1'}}
+        onTouchStart={e => { if (e.touches?.[0]) touchStartRef.current = e.touches[0].clientX; }}
+        onTouchEnd={e => { if (touchStartRef.current === null || !e.changedTouches) return; const diff = touchStartRef.current - e.changedTouches[0].clientX; if (Math.abs(diff) > 50) { if (diff > 0) navigate(1); else navigate(-1); } touchStartRef.current = null; }}
+        onClick={() => setSelectedIndex(null)}>
+        <div className="p-1.5 border-b-2 flex justify-between items-center z-[60]" style={{background:'#e8f4fd', borderColor:'#7DD3FC'}} onClick={e => e.stopPropagation()}>
           <div className="flex items-center gap-3 px-2">
-            <button 
-              onClick={() => setSelectedIndex(null)}
-              className="p-1 bg-[#d0d0d0] border border-white border-r-gray-800 border-b-gray-800 text-black hover:bg-white active:shadow-inner"
-            >
-              <Grid size={14} />
-            </button>
-            <div className="flex flex-col">
-                <span className="text-[8px] font-black text-emerald-700 tracking-tighter uppercase leading-none">Neural_Viewer.EXE</span>
-                <span className="text-[10px] font-bold text-black truncate max-w-[150px]">{currentName}.JPG</span>
-            </div>
+            <button onClick={() => setSelectedIndex(null)} className="p-1 border flex items-center" style={{background:'#dbeafe', borderColor:'#BAE6FD #0369a1 #0369a1 #BAE6FD'}}><Grid size={14}/></button>
+            <div><span className="text-[8px] font-black text-sky-600 block">🐧 Pengu_Gallery</span><span className="text-[10px] font-bold text-sky-900 truncate max-w-[150px] block">{currentName}.JPG</span></div>
           </div>
-          
           <div className="flex gap-1 pr-1">
-            <button onClick={() => downloadImage(currentSrc, currentName)} className="bg-[#d0d0d0] text-black px-2 py-1 border border-white border-r-gray-800 border-b-gray-800 text-[9px] font-black flex items-center gap-1 hover:bg-white active:translate-y-0.5 transition-all uppercase">
-              <Download size={10} /> Save
-            </button>
-            <button onClick={shareToX} className="bg-[#1da1f2] text-white px-2 py-1 border border-blue-400 border-r-blue-900 border-b-blue-900 text-[9px] font-black flex items-center gap-1 hover:brightness-110 active:translate-y-0.5 transition-all uppercase">
-              <Share2 size={10} /> Share
-            </button>
+            <button onClick={() => downloadImage(currentSrc, currentName)} className="px-2 py-1 text-[9px] font-black flex items-center gap-1 hover:brightness-110 uppercase" style={{background:'#dbeafe', color:'#0369a1', border:'1px solid #7DD3FC'}}><Download size={10}/> Save</button>
+            <button onClick={shareToX} className="px-2 py-1 text-[9px] font-black text-white flex items-center gap-1 uppercase" style={{background:'#1da1f2'}}><Share2 size={10}/> Post</button>
           </div>
         </div>
-
-        {/* Viewing Area */}
-        <div className="flex-1 relative flex items-center justify-center p-4 group bg-[#080808]">
-          <button onClick={(e) => navigate(-1, e)} className="absolute left-4 z-[70] p-4 bg-black/40 border border-emerald-500/20 text-emerald-500 rounded-full hover:bg-emerald-500 hover:text-black transition-all md:opacity-0 md:group-hover:opacity-100">
-            <ChevronLeft size={24} strokeWidth={3} />
-          </button>
-          
-          <button onClick={(e) => navigate(1, e)} className="absolute right-4 z-[70] p-4 bg-black/40 border border-emerald-500/20 text-emerald-500 rounded-full hover:bg-emerald-500 hover:text-black transition-all md:opacity-0 md:group-hover:opacity-100">
-            <ChevronRight size={24} strokeWidth={3} />
-          </button>
-
-          <div className="relative max-w-full max-h-full" onClick={(e) => e.stopPropagation()}>
-            <img src={currentSrc} className="max-w-full max-h-[65vh] object-contain border-2 border-emerald-500/30 shadow-[0_0_30px_rgba(16,185,129,0.1)]" alt="Meme" />
-            <div className="absolute top-2 right-2 flex items-center gap-2 bg-black/60 px-2 py-1 border border-emerald-500/20">
-                <div className="w-1.5 h-1.5 bg-emerald-500 rounded-full animate-pulse shadow-[0_0_5px_#10b981]" />
-                <span className="text-[8px] text-emerald-500 font-black tracking-widest uppercase">Signal_Stable</span>
-            </div>
+        <div className="flex-1 relative flex items-center justify-center p-4 group" style={{background:'#075985'}}>
+          <button onClick={e=>navigate(-1,e)} className="absolute left-4 z-[70] p-4 rounded-full transition-all md:opacity-0 md:group-hover:opacity-100" style={{background:'rgba(3,105,161,0.6)', color:'#BAE6FD'}}><ChevronLeft size={24} strokeWidth={3}/></button>
+          <button onClick={e=>navigate(1,e)} className="absolute right-4 z-[70] p-4 rounded-full transition-all md:opacity-0 md:group-hover:opacity-100" style={{background:'rgba(3,105,161,0.6)', color:'#BAE6FD'}}><ChevronRight size={24} strokeWidth={3}/></button>
+          <div onClick={e=>e.stopPropagation()}>
+            <img src={currentSrc} className="max-w-full max-h-[65vh] object-contain border-4 shadow-2xl" style={{borderColor:'#7DD3FC'}} alt="Pengu Meme" />
           </div>
         </div>
-
-        {/* Thumb Strip */}
-        <div 
-            className="h-24 bg-[#111] border-t border-emerald-900/30 p-3 flex gap-3 overflow-x-auto no-scrollbar items-center justify-center z-[60]"
-            onClick={(e) => e.stopPropagation()}
-        >
-            {images.map((img, i) => (
-                <div key={i} onClick={(e) => { e.stopPropagation(); setSelectedIndex(i); }} 
-                    className={`h-16 w-16 shrink-0 border-2 transition-all cursor-pointer overflow-hidden ${selectedIndex === i ? 'border-emerald-500 scale-110 shadow-[0_0_15px_#10b981]' : 'border-zinc-800 opacity-30 hover:opacity-100'}`}>
-                    <img src={img} className="w-full h-full object-cover" alt="" />
-                </div>
-            ))}
-        </div>
-      </div>
-    );
-  }
-
-  // --- VIEW: REPOSITORY GRID ---
-  return (
-    <div className="bg-[#050505] h-full flex flex-col overflow-hidden font-mono select-none border-t border-l border-zinc-800">
-        {/* Explorer Header */}
-        <div className="bg-gradient-to-r from-[#000080] to-[#0000aa] p-2 flex justify-between items-center border-b border-white/20">
-            <div className="flex items-center gap-2 px-2">
-                <FileImage size={16} className="text-white" />
-                <span className="text-[10px] font-black tracking-widest text-white uppercase italic">Meme_Repository_v4.0</span>
+        <div className="h-24 p-3 flex gap-3 overflow-x-auto no-scrollbar items-center justify-center z-[60] border-t" style={{background:'#0369a1', borderColor:'#075985'}} onClick={e=>e.stopPropagation()}>
+          {images.map((img, i) => (
+            <div key={i} onClick={e=>{e.stopPropagation(); setSelectedIndex(i);}} className={`h-16 w-16 shrink-0 border-4 transition-all cursor-pointer overflow-hidden ${selectedIndex===i ? 'scale-110' : 'opacity-40 hover:opacity-100'}`} style={{borderColor: selectedIndex===i ? '#FEF08A' : '#075985'}}>
+              <img src={img} className="w-full h-full object-cover" alt="" />
             </div>
-            <div className="flex items-center gap-4 pr-2">
-                <span className="text-[9px] font-bold text-blue-300 uppercase tracking-tighter animate-pulse">{images.length} Objects Loaded</span>
-                <div className="flex gap-1">
-                    <div className="w-1 h-3 bg-blue-400/40" />
-                    <div className="w-1 h-3 bg-blue-400/40" />
-                    <div className="w-1 h-3 bg-blue-400/40" />
-                </div>
-            </div>
-        </div>
-
-        {/* The Grid */}
-        <div className="flex-1 p-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 overflow-y-auto content-start bg-[#050505] win-scroll-container">
-            {images.length === 0 ? (
-                <div className="col-span-full h-64 flex flex-col items-center justify-center text-emerald-500/20 uppercase tracking-[0.5em] text-[10px] font-black italic">
-                    <Activity size={32} className="mb-4 animate-pulse" />
-                    Scanning_FileSystem...
-                </div>
-            ) : images.map((src, i) => (
-                <div 
-                    key={i} 
-                    className="group relative flex flex-col items-center gap-2"
-                    onMouseEnter={() => setHoveredIndex(i)}
-                    onMouseLeave={() => setHoveredIndex(null)}
-                    onClick={() => setSelectedIndex(i)}
-                >
-                    {/* Retro Thumbnail Bezel */}
-                    <div className={`
-                        w-full aspect-square bg-[#111] p-1.5 cursor-pointer
-                        border-2 transition-all duration-200 active:scale-95
-                        ${hoveredIndex === i 
-                            ? 'border-emerald-500 shadow-[0_0_15px_rgba(16,185,129,0.2)]' 
-                            : 'border-zinc-800'}
-                    `}>
-                        <div className="w-full h-full bg-black flex items-center justify-center overflow-hidden relative border border-white/5">
-                            <img src={src} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-125 group-hover:rotate-2 opacity-80 group-hover:opacity-100" alt={keys[i]} loading="lazy" />
-                            <div className="absolute inset-0 bg-emerald-500/10 opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-                                <ZoomIn className="text-emerald-400 drop-shadow-[0_0_10px_#10b981]" size={28} />
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Emerald Label */}
-                    <div className={`
-                        text-center text-[9px] font-black truncate w-full px-2 py-1 transition-all uppercase tracking-tighter
-                        ${hoveredIndex === i ? 'bg-emerald-500 text-black translate-y-[-2px]' : 'bg-[#111] text-emerald-600 border border-emerald-900/30'}
-                    `}>
-                        {keys[i]}.JPG
-                    </div>
-                </div>
-            ))}
-        </div>
-
-        {/* Status Bar */}
-        <div className="bg-[#c0c0c0] border-t-2 border-white p-1.5 px-4 flex justify-between items-center text-[9px] font-black text-zinc-700 shadow-inner">
-            <div className="flex gap-6 items-center">
-                <span className="flex items-center gap-1.5"><Activity size={10} className="text-emerald-600"/> FS_SECURE</span>
-                <span className="opacity-40">BULLISH_SENTIMENT: 100%</span>
-            </div>
-            <div className="flex items-center gap-2 bg-emerald-900/10 px-2 py-0.5 rounded-sm border border-emerald-900/20">
-                <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_5px_#10b981]"></div>
-                <span className="text-emerald-800 tracking-widest italic">ACTIVE</span>
-            </div>
-        </div>
-
-        <style>{`
-            .win-scroll-container::-webkit-scrollbar { width: 12px; background: #000; }
-            .win-scroll-container::-webkit-scrollbar-thumb { 
-                background: #111; 
-                border: 1px solid #333;
-                box-shadow: inset 1px 1px 0 #444;
-            }
-            .no-scrollbar::-webkit-scrollbar { display: none; }
-        `}</style>
-    </div>
-  );
-};
-
-// --- ASSETS & CONSTANTS ---
-const AVATAR_LIST = [
-  { id: 'pepe', name: 'PEPE', url: '/pfps/pepe.jpg' },
-  { id: 'doge', name: 'DOGE', url: '/pfps/doge.jpg' },
-  { id: 'wif', name: 'WIF', url: '/pfps/wif.jpg' },
-  { id: 'wojak', name: 'WOJAK', url: '/pfps/wojak.jpg' },
-  { id: 'bonk', name: 'DETECTIVE', url: '/pfps/detective.jpg' },
-  { id: 'mask', name: 'MASK', url: '/pfps/mask.jpg' },
-];
-
-const COLOR_LIST = [
-  { id: 'emerald', hex: '#10b981', label: 'NEON_EMERALD' },
-  { id: 'blue', hex: '#3b82f6', label: 'CYBER_BLUE' },
-  { id: 'pink', hex: '#ec4899', label: 'HOT_PINK' },
-  { id: 'gold', hex: '#f59e0b', label: 'LIQUID_GOLD' },
-  { id: 'purple', hex: '#a855f7', label: 'VOID_PURPLE' },
-  { id: 'white', hex: '#ffffff', label: 'PURE_SIGNAL' },
-];
-
-const CHAT_PLAYLIST = [
-  { title: "GET_IT_STARTED", file: "GET_IT_STARTED.mp3" },
-  { title: "PUMP_IT", file: "https://firebasestorage.googleapis.com/v0/b/it-token.firebasestorage.app/o/music%2Fpump_it.mp3?alt=media&token=050c599d-1894-494d-b380-d14b51405d6c" },
-  { title: "PUMP_IT_UP", file: "PUMP_IT_UP.mp3" },
-  { title: "PUMP_IT_UP_00", file: "https://firebasestorage.googleapis.com/v0/b/it-token.firebasestorage.app/o/music%2Fpump_it_up2.mp3?alt=media&token=d14da2fe-ba13-40bc-8fc2-055b7a46b23c" },
-  { title: "LA_LA_LA", file: "https://firebasestorage.googleapis.com/v0/b/it-token.firebasestorage.app/o/music%2FLALALA.mp3?alt=media&token=11a3bc8c-8498-458a-92b8-140d18575228" },
-  { title: "BIG_DAWGS", file: "https://firebasestorage.googleapis.com/v0/b/it-token.firebasestorage.app/o/music%2Fbig_dawgs.mp3?alt=media&token=69bdcaa4-8283-4379-9516-93323bd61f43" },
-  { title: "DILIH", file: "https://firebasestorage.googleapis.com/v0/b/it-token.firebasestorage.app/o/music%2FDILIH.mp3?alt=media&token=3694cbb2-0da0-42af-9c90-7c7457b890e9" },
-  { title: "BEAT_IT", file: "https://firebasestorage.googleapis.com/v0/b/it-token.firebasestorage.app/o/music%2Fbeat_it.mp3?alt=media&token=9069b2e4-44bc-4f8d-b119-e5b324b24700" },
-  { title: "CANT_HOLD_US", file: "https://firebasestorage.googleapis.com/v0/b/it-token.firebasestorage.app/o/music%2Fcant_hold_us.mp3?alt=media&token=e20bbdc8-df20-41a3-b1aa-4ab9bf59019b" },
-  { title: "MEME_IT", file: "MEME_IT.mp3" }
-];
-
-const SOUNDS = {
-  in: "/notis/msg_in.mp3",
-  out: "/notis/msg_out.mp3"
-};
-
-
-const ChatApp = ({ dexData, wallet, onRefreshAccess }) => {
-  // --- KERNEL EVENT LISTENER ---
-  const [hasAccess, setHasAccess] = useState(false);
-  const [tokenBalance, setTokenBalance] = useState(0);
-
-  useEffect(() => {
-    const handleKernelSync = (e) => {
-      const { balance, hasAccess: accessStatus } = e.detail;
-      setTokenBalance(balance);
-      setHasAccess(accessStatus);
-    };
-    window.addEventListener('IT_OS_BALANCE_UPDATE', handleKernelSync);
-    return () => window.removeEventListener('IT_OS_BALANCE_UPDATE', handleKernelSync);
-  }, []);
-
-  // --- CORE STATE ---
-  const [messages, setMessages] = useState([]);
-  const [pendingMessages, setPendingMessages] = useState([]);
-  const [inputText, setInputText] = useState("");
-  const [username, setUsername] = useState("");
-  const [userColor, setUserColor] = useState(COLOR_LIST[0].hex);
-  const [userAvatar, setUserAvatar] = useState('/pfps/mask.jpg'); 
-  const [isSetup, setIsSetup] = useState(false);
-  const [isConnected, setIsConnected] = useState(false); 
-  const [cooldown, setCooldown] = useState(0);
-  const [user, setUser] = useState(null);
-  const [error, setError] = useState(null);
-  const [theme, setTheme] = useState('dark');
-  const [isRefreshing, setIsRefreshing] = useState(false);
-  
-  // Audio Controls
-  const [isMuted, setIsMuted] = useState(false);
-  const [isNotiMuted, setIsNotiMuted] = useState(false);
-  
-  // Navigation State
-  const [showScrollArrow, setShowScrollArrow] = useState(false);
-  const [activeMenu, setActiveMenu] = useState(null); 
-  const [replyingTo, setReplyingTo] = useState(null); 
-  const [contextMenu, setContextMenu] = useState(null); 
-  const [trackIndex, setTrackIndex] = useState(0);
-  const [copiedCA, setCopiedCA] = useState(false);
-  
-  const isDarkMode = theme === 'dark';
-  const scrollRef = useRef(null);
-  const audioRef = useRef(null);
-  const sfxInRef = useRef(null);
-  const sfxOutRef = useRef(null);
-  const inputRef = useRef(null);
-  const longPressTimer = useRef(null);
-  const isInitialLoad = useRef(true); 
-  const touchStartPos = useRef({ x: 0, y: 0 });
-
-  const style = useMemo(() => ({
-    bg: isDarkMode ? 'bg-[#0a0a0a]' : 'bg-[#c0c0c0]',
-    windowBg: isDarkMode ? 'bg-[#050505]' : 'bg-white',
-    text: isDarkMode ? 'text-white' : 'text-black',
-    input: isDarkMode ? 'bg-black text-green-400 border-green-900' : 'bg-white text-black border-gray-400',
-    tileMe: isDarkMode ? 'border-t-2 border-l-2 border-black border-r-green-900 border-b-green-900 bg-green-950/30' : 'border-2 border-gray-400 border-l-white border-t-white bg-blue-50',
-    tileOther: isDarkMode ? 'border-2 border-zinc-800 bg-[#111]' : 'border-2 border-gray-400 border-l-white border-t-white bg-white',
-  }), [isDarkMode]);
-
-  useEffect(() => {
-    sfxInRef.current = new Audio(SOUNDS.in);
-    sfxOutRef.current = new Audio(SOUNDS.out);
-  }, []);
-
-  const combinedMessages = useMemo(() => {
-    const pinnedMsg = {
-        id: 'pinned-ca',
-        user: 'KERNEL_SYSTEM',
-        text: typeof CA_ADDRESS !== 'undefined' ? CA_ADDRESS : 'N/A',
-        color: '#10b981',
-        avatar: '/pfps/mask.jpg',
-        _sortTs: -1, 
-        isPinned: true,
-        reactions: messages.find(m => m.id === 'pinned-ca')?.reactions || { heart: 0, up: 0, down: 0 }
-    };
-    const combined = [pinnedMsg, ...messages.filter(m => m.id !== 'pinned-ca'), ...pendingMessages];
-    return combined.sort((a, b) => a._sortTs - b._sortTs);
-  }, [messages, pendingMessages]);
-
-  // --- HANDLERS ---
-  const handleManualCheck = () => {
-    if (isRefreshing) return;
-    setIsRefreshing(true);
-    playSfx('in');
-    if (onRefreshAccess) onRefreshAccess();
-    setTimeout(() => setIsRefreshing(false), 1500);
-  };
-
-  const handleCopyCA = (e) => {
-    e?.stopPropagation();
-    const textArea = document.createElement("textarea");
-    textArea.value = typeof CA_ADDRESS !== 'undefined' ? CA_ADDRESS : '';
-    document.body.appendChild(textArea);
-    textArea.select();
-    document.execCommand('copy');
-    document.body.removeChild(textArea);
-    setCopiedCA(true);
-    setTimeout(() => setCopiedCA(false), 2000);
-  };
-
-  const playSfx = (type) => {
-    if (isNotiMuted) return;
-    const sound = type === 'in' ? sfxInRef.current : sfxOutRef.current;
-    if (sound) { sound.currentTime = 0; sound.play().catch(() => {}); }
-  };
-
-  const handleReaction = async (msgId, emojiKey) => {
-    setContextMenu(null);
-    if (!user || typeof db === 'undefined') return;
-    const msgRef = doc(db, 'artifacts', appId, 'public', 'data', 'trollbox_messages', msgId);
-    try {
-        const snap = await getDoc(msgRef);
-        if (!snap.exists() && msgId === 'pinned-ca') {
-            await setDoc(msgRef, { user: 'KERNEL_SYSTEM', text: CA_ADDRESS, _sortTs: -1, reactions: { heart: 0, up: 0, down: 0 } });
-        }
-        const storageKey = `reacted_${msgId}_${emojiKey}`;
-        if (localStorage.getItem(storageKey)) {
-            await updateDoc(msgRef, { [`reactions.${emojiKey}`]: increment(-1) });
-            localStorage.removeItem(storageKey);
-        } else {
-            await updateDoc(msgRef, { [`reactions.${emojiKey}`]: increment(1) });
-            localStorage.setItem(storageKey, "true");
-        }
-    } catch (e) {}
-  };
-
-  const handleSend = async (e) => {
-    if (e) e.preventDefault();
-    if (!inputText.trim() || cooldown > 0 || !user) return;
-    const text = inputText.trim().slice(0, 240);
-    const currentReply = replyingTo;
-    const tempId = "temp_" + Date.now();
-    
-    const finalAvatar = hasAccess ? userAvatar : '/pfps/mask.jpg';
-    const finalColor = hasAccess ? userColor : COLOR_LIST[0].hex;
-
-    setPendingMessages(prev => [...prev, {
-        id: tempId, text, user: username, color: finalColor, avatar: finalAvatar, _sortTs: Date.now(), replyTo: currentReply, pending: true, reactions: { heart:0, up:0, down:0 }, isVip: hasAccess
-    }]);
-    setInputText(""); setReplyingTo(null); setCooldown(2); playSfx('out');
-    setTimeout(() => inputRef.current?.focus(), 10);
-    try {
-      await addDoc(collection(db, 'artifacts', appId, 'public', 'data', 'trollbox_messages'), {
-        text, user: username, color: finalColor, avatar: finalAvatar, timestamp: serverTimestamp(), uid: user.uid, replyTo: currentReply || null,
-        reactions: { heart: 0, up: 0, down: 0 }, isVip: hasAccess
-      });
-    } catch (err) { 
-        setPendingMessages(prev => prev.filter(m => m.id !== tempId));
-        setError("UPLINK_FAILURE");
-    }
-    let t = 2;
-    const inv = setInterval(() => { t--; setCooldown(t); if (t <= 0) clearInterval(inv); }, 1000);
-  };
-
-  const handleInitialize = () => {
-    const name = username.trim().toUpperCase();
-    if (name.length < 2) { setError("ALIAS_TOO_SHORT"); return; }
-    localStorage.setItem('tbox_alias', name);
-    if (hasAccess) {
-      localStorage.setItem('tbox_color', userColor);
-      localStorage.setItem('tbox_avatar', userAvatar);
-    }
-    setIsSetup(true);
-  };
-
-  const jumpToMessage = (targetId) => {
-    const element = document.getElementById(`msg-${targetId}`);
-    if (element) {
-        element.scrollIntoView({ behavior: 'smooth', block: 'center' });
-        element.classList.add('msg-highlight');
-        setTimeout(() => element.classList.remove('msg-highlight'), 2000);
-    }
-  };
-
-  const scrollToLive = () => { if (scrollRef.current) scrollRef.current.scrollTo({ top: scrollRef.current.scrollHeight, behavior: 'smooth' }); };
-  const startReply = (msg) => { setReplyingTo({ user: String(msg.user), text: String(msg.text), id: msg.id }); setContextMenu(null); setTimeout(() => inputRef.current?.focus(), 50); };
-
-  // --- PREFERENCE SYNC ---
-  useEffect(() => {
-    const savedName = localStorage.getItem('tbox_alias');
-    const savedColor = localStorage.getItem('tbox_color');
-    const savedAvatar = localStorage.getItem('tbox_avatar');
-    
-    if (savedName) {
-      setUsername(savedName);
-      if (hasAccess) {
-        if (savedColor) setUserColor(savedColor);
-        if (savedAvatar) setUserAvatar(savedAvatar);
-      } else {
-        setUserColor(COLOR_LIST[0].hex);
-        setUserAvatar('/pfps/mask.jpg');
-      }
-      setIsSetup(true);
-    }
-  }, [hasAccess]);
-
-  useEffect(() => {
-    const initAuth = async () => {
-      try {
-        const authObj = getAuth();
-        if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-          await signInWithCustomToken(authObj, __initial_auth_token);
-        } else { await signInAnonymously(authObj); }
-      } catch (e) { setError("NODE_AUTH_ERROR"); }
-    };
-    initAuth();
-    const unsubscribe = onAuthStateChanged(getAuth(), setUser);
-    return () => unsubscribe();
-  }, []);
-
-  useEffect(() => {
-    if (!user || typeof db === 'undefined') return;
-    const chatRef = collection(db, 'artifacts', appId, 'public', 'data', 'trollbox_messages');
-    const unsubscribe = onSnapshot(chatRef, (snapshot) => {
-      const msgs = snapshot.docs.map(doc => {
-        const data = doc.data();
-        let ts = data.timestamp?.toDate ? data.timestamp.toDate().getTime() : (data.timestamp || Date.now());
-        return { id: doc.id, ...data, _sortTs: ts };
-      });
-      const sorted = msgs.sort((a, b) => a._sortTs - b._sortTs).slice(-100);
-      if (!isInitialLoad.current) {
-          snapshot.docChanges().forEach(change => {
-            if (change.type === 'added' && change.doc.data().uid !== user.uid) playSfx('in');
-          });
-      }
-      isInitialLoad.current = false;
-      setMessages(sorted);
-      setPendingMessages(prev => prev.filter(pm => !msgs.some(m => m.text === pm.text && m.user === pm.user)));
-      setIsConnected(true);
-    }, () => setIsConnected(false));
-    return () => unsubscribe();
-  }, [user]);
-
-  const handleOnScroll = () => {
-    if (scrollRef.current) {
-        const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
-        setShowScrollArrow(scrollHeight - scrollTop - clientHeight > 300);
-    }
-  };
-
-  useEffect(() => {
-    if (scrollRef.current) {
-        const { scrollTop, scrollHeight, clientHeight } = scrollRef.current;
-        if (scrollHeight - scrollTop - clientHeight < 150 || messages.length <= 1) {
-            scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
-        }
-    }
-  }, [combinedMessages, pendingMessages]);
-
-  useEffect(() => {
-    // If not setup or muted, stop the audio
-    if (!isSetup || isMuted || !CHAT_PLAYLIST[trackIndex]?.file) {
-      if (audioRef.current) audioRef.current.pause();
-      return;
-    }
-
-    const playTrack = async () => {
-      try {
-        const currentFile = CHAT_PLAYLIST[trackIndex].file;
-        
-        if (!audioRef.current) {
-          audioRef.current = new Audio(currentFile);
-          audioRef.current.volume = 0.2;
-        } else {
-          // Update the source if it changed
-          if (audioRef.current.src !== currentFile) {
-            audioRef.current.src = currentFile;
-          }
-        }
-
-        // The critical fix: Ensure onended always triggers the next index
-        audioRef.current.onended = () => {
-          setTrackIndex((prev) => (prev + 1) % CHAT_PLAYLIST.length);
-        };
-
-        await audioRef.current.play();
-      } catch (err) {
-        console.warn("Audio playback interrupted or blocked:", err);
-      }
-    };
-
-    playTrack();
-
-    return () => {
-      if (audioRef.current) {
-        audioRef.current.pause();
-        // Clean up listeners to prevent memory leaks or double-triggers
-        audioRef.current.onended = null;
-      }
-    };
-  }, [isSetup, isMuted, trackIndex]);
-
-
-  // --- STRICT GESTURES ---
-  const onMsgContextMenu = (e, msg) => { e.preventDefault(); setContextMenu({ x: e.clientX, y: e.clientY, msg }); };
-  
-  const handleTouchStart = (e, msg) => { 
-    touchStartPos.current = { x: e.touches[0].clientX, y: e.touches[0].clientY };
-    if (longPressTimer.current) clearTimeout(longPressTimer.current);
-    longPressTimer.current = setTimeout(() => { 
-        setContextMenu({ x: window.innerWidth / 2 - 80, y: window.innerHeight / 2 - 100, msg }); 
-    }, 600); // 600ms for a deliberate press
-  };
-
-  const handleTouchMove = (e) => {
-    const moveX = Math.abs(e.touches[0].clientX - touchStartPos.current.x);
-    const moveY = Math.abs(e.touches[0].clientY - touchStartPos.current.y);
-    // If user moves finger > 10px, it's a scroll, so kill the long-press timer
-    if (moveX > 10 || moveY > 10) { 
-        if (longPressTimer.current) clearTimeout(longPressTimer.current); 
-    }
-  };
-
-  const handleTouchEnd = () => { 
-    if (longPressTimer.current) clearTimeout(longPressTimer.current); 
-  };
-
-  const identitySection = (
-    <div className="space-y-4 p-4 bg-black border-2 border-green-900 rounded shadow-inner" onClick={e => e.stopPropagation()}>
-        <div className="space-y-2 text-center">
-            <label className="text-[9px] text-emerald-600 font-black tracking-widest uppercase block text-center">Faction Avatar</label>
-            {!hasAccess && <div className="text-[8px] text-yellow-500 font-bold uppercase animate-pulse">[ BUY $IT TO UNLOCK PFPS ]</div>}
-            <div className="grid grid-cols-3 gap-2">
-            {AVATAR_LIST.map((av) => (
-                <button key={av.id} type="button" 
-                  onPointerDown={(e) => { 
-                    e.stopPropagation(); 
-                    if (hasAccess) { setUserAvatar(av.url); localStorage.setItem('tbox_avatar', av.url); } 
-                    else { setError("LOCKED: HOLD 500K $IT"); setTimeout(() => setError(null), 3000); } 
-                  }} 
-                  className={`aspect-square border-2 transition-all p-1 bg-zinc-900 ${userAvatar === av.url ? 'border-emerald-500 scale-105 shadow-[0_0_10px_#10b981]' : `border-zinc-800 opacity-40 hover:opacity-100 ${!hasAccess ? 'grayscale' : ''}`}`}>
-                    <img src={av.url} alt="" className="w-full h-full object-cover pointer-events-none" />
-                </button>
-            ))}
-            </div>
-        </div>
-        <div className="space-y-2 text-center">
-            <label className="text-[9px] text-emerald-600 font-black tracking-widest uppercase block text-center">Frequency Color</label>
-            <div className="flex justify-center gap-2 flex-wrap">
-            {COLOR_LIST.map((col) => (
-                <button key={col.id} type="button" 
-                  onPointerDown={(e) => { 
-                    e.stopPropagation(); 
-                    if (hasAccess) { setUserColor(col.hex); localStorage.setItem('tbox_color', col.hex); } 
-                    else { setError("LOCKED: HOLD 500K $IT"); setTimeout(() => setError(null), 3000); } 
-                  }} 
-                  className={`w-8 h-8 border-2 transition-all ${userColor === col.hex ? 'border-white scale-110 shadow-lg' : 'border-black/40'} ${!hasAccess ? 'opacity-20' : ''}`} style={{ backgroundColor: col.hex }} />
-            ))}
-            </div>
-        </div>
-    </div>
-  );
-
-  if (!isSetup) {
-    return (
-      <div className={`h-full ${style.bg} flex items-center justify-center p-4 font-mono overflow-hidden`}>
-        <div className={`w-full max-w-lg border-2 border-black bg-[#c0c0c0] shadow-2xl`}>
-          <div className="bg-[#000080] text-white p-2 flex items-center gap-2 font-bold border-b-2 border-white uppercase italic tracking-tighter shrink-0">
-            <Terminal size={16} /> Identity_Initialization.EXE
-          </div>
-          <div className="bg-black p-6 space-y-6 text-white overflow-y-auto max-h-[70vh] scrollbar-classic">
-            <div className="space-y-2 text-center">
-              <label className="text-[9px] text-emerald-700 font-black tracking-[0.2em] uppercase block">Assign Alias</label>
-              <input autoFocus value={username} onChange={(e) => setUsername(e.target.value.toUpperCase())} className="w-full bg-black border-b-2 border-emerald-900 text-emerald-400 p-3 text-center text-xl font-black outline-none focus:border-emerald-500 uppercase" placeholder="NAME_IT" />
-              <div className={`text-[10px] font-black uppercase mt-2 ${hasAccess ? 'text-green-500' : 'text-yellow-600'}`}>
-                {hasAccess ? `[ ACCESS_GRANTED: ${tokenBalance.toLocaleString()} $IT ]` : '[ LIMITED_ACCESS: GUEST ]'}
-              </div>
-            </div>
-            {identitySection}
-            <button onClick={handleInitialize} className="w-full bg-[#c0c0c0] text-black border-2 border-gray-400 border-l-white border-t-white py-4 font-black text-sm active:translate-y-1 hover:bg-white transition-colors uppercase italic tracking-widest">Establish Uplink</button>
-          </div>
+          ))}
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`h-full ${style.bg} ${style.text} flex flex-col font-mono select-none overflow-hidden relative w-full`} onClick={() => {setContextMenu(null); setActiveMenu(null);}}>
-      
-      <div className={`flex justify-between items-center px-3 py-1.5 border-b shrink-0 ${isDarkMode ? 'border-black bg-black/40' : 'border-zinc-400 bg-white/40'} backdrop-blur-md z-[100]`}>
-        <div className="flex gap-4 text-[9px] font-black text-zinc-500 uppercase tracking-widest truncate">
-          <span className="flex items-center gap-1.5"><Wifi size={10} className={isConnected ? 'text-emerald-500' : 'text-red-500'}/> {isConnected ? 'Live' : 'Sync...'}</span>
-          <button 
-            onClick={(e) => { e.stopPropagation(); handleManualCheck(); }}
-            className={`flex items-center gap-1.5 px-2 py-0.5 border rounded-sm transition-all active:scale-95 ${hasAccess ? 'text-green-500 border-green-900/40 bg-green-900/10' : 'text-yellow-600 border-yellow-900/40 bg-yellow-900/10'}`}
-          >
-            {isRefreshing ? <RefreshCw size={10} className="animate-spin" /> : (hasAccess ? <ShieldCheck size={10}/> : <Lock size={10}/>)}
-            {hasAccess ? 'VIP' : 'GUEST'} [{tokenBalance.toLocaleString()}]
-          </button>
+    <div className="h-full flex flex-col overflow-hidden select-none" style={{background:'#f0f9ff'}}>
+      <div className="p-2 flex justify-between items-center border-b-2" style={{background:'linear-gradient(to right, #0369a1, #0ea5e9)', borderColor:'#075985'}}>
+        <div className="flex items-center gap-2 px-2">
+          <span className="text-2xl">🐧</span>
+          <span className="text-[10px] font-black tracking-widest text-white uppercase">Pengu Meme Stash v4.0</span>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="flex items-center bg-black/20 rounded px-1.5 py-0.5 border border-white/10 gap-2">
-            <button onClick={(e) => { e.stopPropagation(); if (hasAccess) setTrackIndex(prev => (prev + 1) % CHAT_PLAYLIST.length); else { setError("HOLD 500K IT TO SKIP"); setTimeout(()=>setError(null), 3000); } }} className={`text-emerald-500 hover:text-white transition-colors ${!hasAccess ? 'opacity-20 cursor-not-allowed' : ''}`}><SkipForward size={14}/></button>
-            <button onClick={(e) => {e.stopPropagation(); setIsMuted(!isMuted)}} className={`p-1 transition-all ${isMuted ? 'text-red-400' : 'text-emerald-500 animate-pulse'}`}>{isMuted ? <VolumeX size={14}/> : <Volume2 size={14}/>}</button>
-            <button onClick={(e) => {e.stopPropagation(); setIsNotiMuted(!isNotiMuted)}} className={`p-1 transition-all ${isNotiMuted ? 'text-red-400' : 'text-emerald-500'}`}>{isNotiMuted ? <BellOff size={14}/> : <Bell size={14}/>}</button>
-          </div>
-          <button onClick={(e) => {e.stopPropagation(); setActiveMenu(activeMenu === 'options' ? null : 'options')}} className={`p-1 transition-all ${activeMenu === 'options' ? 'text-white scale-125' : 'text-emerald-500 hover:rotate-90'}`}><Settings size={16}/></button>
-          <button onClick={(e) => {e.stopPropagation(); setTheme(isDarkMode ? 'light' : 'dark')}} className={`w-10 h-5 rounded-full p-0.5 relative transition-colors ${isDarkMode ? 'bg-emerald-900' : 'bg-zinc-400'}`}>
-            <div className={`w-3.5 h-3.5 rounded-full transition-all ${isDarkMode ? 'translate-x-5 bg-emerald-400 shadow-[0_0_8px_#10b981]' : 'translate-x-0 bg-white'}`} />
-          </button>
-        </div>
+        <span className="text-[9px] font-bold text-sky-200 pr-2">{images.length} Memes Loaded 🐟</span>
       </div>
-
-      {activeMenu === 'options' && (
-          <div className="absolute top-10 right-2 w-56 bg-[#c0c0c0] border-2 border-white border-r-black border-b-black shadow-2xl z-[150] p-1 animate-in zoom-in-95 text-black" onClick={e=>e.stopPropagation()}>
-              <div className="bg-[#000080] text-white text-[9px] font-bold px-2 py-1 flex items-center justify-between uppercase italic">
-                <span className="flex items-center gap-1"><Settings size={10}/> OPTIONS</span>
-                <X size={10} className="cursor-pointer" onClick={() => setActiveMenu(null)} />
-              </div>
-              <div className="p-1 space-y-1">
-                  {error && <div className="text-[7px] text-red-600 font-black text-center mb-1 bg-red-50 p-1 border border-red-200 animate-pulse uppercase">{error}</div>}
-                  <div className={`p-2 bg-black border border-white/10 rounded mb-2 text-center ${!hasAccess ? 'opacity-30' : ''}`}>
-                    <div className="text-[8px] font-black text-emerald-500 mb-2 truncate uppercase tracking-widest">{CHAT_PLAYLIST[trackIndex]?.title || 'LOAD_PLAYLIST'}</div>
-                    <div className="flex justify-center items-center gap-4 text-white">
-                        <button onClick={() => { if(hasAccess) setTrackIndex(p => (p-1+CHAT_PLAYLIST.length)%CHAT_PLAYLIST.length); else { setError("HOLD 500K IT TO SKIP"); setTimeout(()=>setError(null), 2000); } }}><SkipBack size={16}/></button>
-                        <button onClick={() => setIsMuted(!isMuted)}>{isMuted ? <Play size={16}/> : <Pause size={16}/>}</button>
-                        <button onClick={() => { if(hasAccess) setTrackIndex(p => (p+1)%CHAT_PLAYLIST.length); else { setError("HOLD 500K IT TO SKIP"); setTimeout(()=>setError(null), 2000); } }}><SkipForward size={16}/></button>
-                    </div>
-                  </div>
-                  <button 
-                    onClick={() => { if(hasAccess) setActiveMenu('appearance'); else { setError("HOLD 500K IT TO ACCESS"); setTimeout(()=>setError(null), 3000); } }} 
-                    className={`w-full text-left px-2 py-1.5 hover:bg-[#000080] hover:text-white flex items-center gap-2 text-[10px] font-black uppercase transition-all ${!hasAccess ? 'opacity-30' : ''}`}
-                  >
-                    <Palette size={12}/> Appearance
-                  </button>
-                  <button onClick={() => {localStorage.removeItem('tbox_alias'); setIsSetup(false);}} className="w-full text-left px-2 py-1.5 hover:bg-[#000080] hover:text-white flex items-center gap-2 text-[10px] font-black uppercase transition-all"><LogOut size={12}/> Logout</button>
-                  <div className="h-px bg-gray-500 my-1"></div>
-                  <button onClick={() => {localStorage.clear(); window.location.reload();}} className="w-full text-left px-2 py-1.5 hover:bg-red-700 hover:text-white text-red-800 flex items-center gap-2 text-[10px] font-black transition-all uppercase tracking-tighter"><Trash2 size={12}/> Burn Identity</button>
-              </div>
+      <div className="flex-1 p-6 grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6 overflow-y-auto content-start">
+        {images.length === 0 ? (
+          <div className="col-span-full h-64 flex flex-col items-center justify-center text-sky-300 uppercase tracking-widest text-[10px] font-black">
+            <span className="text-4xl mb-4 animate-bounce">🐧</span>Scanning iceberg for memes...
           </div>
-      )}
-
-      {activeMenu === 'appearance' && (
-          <div className="absolute inset-0 bg-black/90 backdrop-blur-md z-[200] flex items-center justify-center p-4" onClick={e=>e.stopPropagation()}>
-              <div className="w-full max-w-xs bg-[#c0c0c0] border-2 border-white border-r-black border-b-black p-1 shadow-2xl">
-                <div className="bg-[#000080] text-white text-[10px] font-bold px-2 py-1 flex justify-between items-center uppercase italic">
-                    <span>UPDATE_IDENTITY.EXE</span>
-                    <X size={14} className="cursor-pointer hover:bg-red-600 p-0.5" onClick={() => setActiveMenu('options')} />
-                </div>
-                <div className="p-4 bg-black space-y-4">
-                      {identitySection}
-                      <button onClick={() => { if (hasAccess) { localStorage.setItem('tbox_color', userColor); localStorage.setItem('tbox_avatar', userAvatar); setActiveMenu(null); } }} className="w-full bg-[#c0c0c0] text-black border-2 border-gray-400 border-l-white border-t-white py-3 font-black text-[10px] tracking-widest uppercase hover:bg-white transition-colors">Apply Changes</button>
+        ) : images.map((src, i) => (
+          <div key={i} className="group relative flex flex-col items-center gap-2" onMouseEnter={()=>setHoveredIndex(i)} onMouseLeave={()=>setHoveredIndex(null)} onClick={()=>setSelectedIndex(i)}>
+            <div className={`w-full aspect-square p-1.5 cursor-pointer border-2 transition-all active:scale-95 ${hoveredIndex===i ? 'border-sky-400 shadow-lg shadow-sky-200' : 'border-sky-100'}`} style={{background:'white'}}>
+              <div className="w-full h-full flex items-center justify-center overflow-hidden relative border border-sky-50">
+                <img src={src} className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-125 group-hover:rotate-2" alt={keys[i]} loading="lazy"/>
+                <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity" style={{background:'rgba(3,105,161,0.2)'}}>
+                  <ZoomIn className="text-white drop-shadow-lg" size={28}/>
                 </div>
               </div>
-          </div>
-      )}
-
-      <div className="flex-1 relative overflow-hidden m-1 border-t-2 border-l-2 border-zinc-800 bg-transparent flex flex-col w-full">
-        <div onClick={() => jumpToMessage('pinned-ca')} className={`sticky top-0 z-[60] w-full px-4 py-1.5 flex items-center justify-between cursor-pointer transition-colors border-b shadow-md backdrop-blur-sm ${isDarkMode ? 'bg-black/60 border-green-900/40 hover:bg-green-950/20' : 'bg-white/80 border-blue-100 hover:bg-blue-50'}`}>
-            <div className="flex items-center gap-1.5 text-[#10b981] font-black text-[7px] uppercase tracking-[0.2em] italic shrink-0">PINNED:</div>
-            <div className={`text-[7px] font-mono font-bold truncate flex-1 px-4 ${isDarkMode ? 'text-green-500/60' : 'text-blue-900/60'}`}>{typeof CA_ADDRESS !== 'undefined' ? CA_ADDRESS : 'N/A'}</div>
-            <div onClick={(e) => { e.stopPropagation(); handleCopyCA(); }} className="flex items-center gap-1 text-[7px] font-black opacity-40 hover:opacity-100 transition-opacity shrink-0">{copiedCA ? <Check size={8} className="text-green-500"/> : <Copy size={8}/>} {copiedCA ? 'COPIED' : 'COPY'}</div>
-        </div>
-
-        <div ref={scrollRef} onScroll={handleOnScroll} className="flex-1 overflow-y-auto overflow-x-hidden p-4 no-scrollbar space-y-8 scroll-smooth z-10 w-full box-border text-xs relative win-scroll-container">
-          <div className="flex flex-col items-center py-6 border-b border-dashed border-zinc-800 mb-8 opacity-40 text-center">
-            <Shield size={20} className={isDarkMode ? 'text-emerald-500' : 'text-blue-900'} />
-            <span className="text-[7px] font-black uppercase mt-2 italic tracking-[0.5em]">Live_Transmission</span>
-          </div>
-
-          {combinedMessages.map((msg) => {
-            const isMe = msg.uid === user?.uid || msg.user === username;
-            const isSystem = msg.user === 'KERNEL_SYSTEM';
-            const isVip = msg.isVip || (msg.avatar && msg.avatar !== '/pfps/mask.jpg');
-            const mColor = isSystem ? '#10b981' : (msg.color || '#3b82f6');
-            return (
-              <div key={msg.id} id={`msg-${msg.id}`} 
-                  onContextMenu={(e) => onMsgContextMenu(e, msg)} 
-                  onTouchStart={(e) => handleTouchStart(e, msg)} 
-                  onTouchMove={handleTouchMove}
-                  onTouchEnd={handleTouchEnd}
-                  onDoubleClick={(e) => { e.preventDefault(); handleReaction(msg.id, 'heart'); }}
-                  className={`flex gap-3 animate-in fade-in slide-in-from-bottom-2 duration-300 transition-all max-w-full relative group ${isMe ? 'flex-row-reverse text-right' : 'flex-row'} ${msg.pending ? 'opacity-40 animate-pulse' : ''}`}
-              >
-                <div className="w-8 h-8 shrink-0 bg-zinc-900 overflow-hidden border border-white/10 shadow-lg">
-                  <img src={msg.avatar || '/pfps/mask.jpg'} alt="" className="w-full h-full object-cover" />
-                </div>
-                <div className={`flex flex-col min-w-0 max-w-[80vw] md:max-w-[70%] ${isMe ? 'items-end' : 'items-start'}`}>
-                  {/* RESTORED: Name header with VIP glow logic */}
-                  <div className={`flex items-center gap-2 mb-1 px-1 truncate ${isMe ? 'flex-row-reverse' : ''}`}>
-                    <span 
-                        className={`text-[10px] font-black uppercase tracking-tighter truncate ${isVip ? 'vip-glow' : ''}`} 
-                        style={{ color: mColor }}
-                    >
-                        {String(msg.user)}
-                    </span>
-                    <span className="text-[7px] opacity-30 font-mono">[{new Date(msg._sortTs).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: false })}]</span>
-                    {isVip && <Zap size={8} className="text-yellow-400 animate-pulse shrink-0" />}
-                  </div>
-
-                  <div className={`p-3 relative group transition-all duration-200 shadow-md w-fit max-w-full break-words ${isMe ? style.tileMe : style.tileOther} ${isSystem ? 'cursor-pointer border-emerald-500/50 bg-green-950/10' : ''}`}
-                      style={{ borderLeft: !isMe ? `3px solid ${mColor}` : undefined, borderRight: isMe ? `3px solid ${mColor}` : undefined }} >
-                    {msg.replyTo && (
-                      <div onClick={(e) => { e.stopPropagation(); jumpToMessage(msg.replyTo.id); }} className="mb-2 p-2 border border-zinc-800 bg-black/40 text-gray-400 text-[9px] italic truncate cursor-pointer uppercase font-black tracking-tighter">REPLYING TO {msg.replyTo.user}</div>
-                    )}
-                    <p className={`text-xs font-black leading-relaxed whitespace-pre-wrap ${isSystem ? 'text-emerald-400 italic' : ''}`}>{String(msg.text)}</p>
-                    
-                    {!isSystem && (
-                        <div className={`absolute top-0 ${isMe ? '-left-8' : '-right-8'} opacity-0 group-hover:opacity-100 transition-opacity cursor-pointer p-1 hidden md:block`} onClick={(e) => {e.stopPropagation(); startReply(msg)}}>
-                            <Reply size={16} className={isDarkMode ? 'text-emerald-500' : 'text-blue-800'} />
-                        </div>
-                    )}
-
-                    {(msg.reactions && Object.values(msg.reactions).some(v => v > 0)) && (
-                        <div className={`flex flex-wrap gap-1 mt-2 ${isMe ? 'justify-end' : 'justify-start'}`}>
-                            {Object.entries(msg.reactions).map(([key, count]) => count > 0 && (
-                                <button key={key} onClick={(e) => {e.stopPropagation(); handleReaction(msg.id, key)}} className="flex items-center gap-1.5 px-2 py-0.5 bg-black/60 border border-white/20 rounded-full text-[9px] font-black text-white hover:bg-white/10 active:scale-110 shadow-lg">
-                                    {key === 'heart' ? '❤️' : key === 'up' ? '👌' : '👎'} 
-                                    <span className="text-[8px] font-bold opacity-80">{count}</span>
-                                </button>
-                            ))}
-                        </div>
-                    )}
-                  </div>
-                </div>
-              </div>
-            );
-          })}
-        </div>
-        
-        {showScrollArrow && (
-            <button onClick={scrollToLive} className="absolute bottom-6 right-6 z-[70] p-2 rounded-full bg-emerald-500 text-black shadow-[0_0_15px_#10b981] animate-bounce hover:bg-white transition-all active:scale-90"><ChevronDown size={20} strokeWidth={3}/></button>
-        )}
-      </div>
-
-      <div className={`p-2 border-t-2 relative z-[100] shrink-0 ${isDarkMode ? 'bg-[#111] border-zinc-900' : 'bg-[#d4d0c8] border-white'}`}>
-        {replyingTo && (
-            <div className="absolute -top-10 left-0 w-full bg-emerald-950 text-emerald-400 p-2 text-[9px] font-black flex items-center justify-between border-t border-emerald-900 animate-in slide-in-from-bottom-1">
-                <div className="flex items-center gap-2 truncate pr-6"><Quote size={10} /><span>REPLYING TO {String(replyingTo.user)}:</span><span className="opacity-60 italic truncate">"{String(replyingTo.text)}"</span></div>
-                <button onClick={() => setReplyingTo(null)} className="hover:text-white p-1"><X size={14}/></button>
             </div>
-        )}
-        <form onSubmit={handleSend} className="flex gap-2 h-12 w-full max-w-full overflow-hidden">
-          <input ref={inputRef} value={inputText} onChange={(e) => setInputText(e.target.value)} disabled={cooldown > 0} placeholder={cooldown > 0 ? `LINK_THROTTLED: ${cooldown}S` : "Write IT..."}
-            className={`flex-1 min-w-0 h-full border-2 border-zinc-800 border-l-black border-t-black px-4 text-sm font-black outline-none ${style.input} focus:border-emerald-600 shrink-0`}
-          />
-          <button type="submit" disabled={!inputText.trim() || cooldown > 0} className="w-12 h-12 shrink-0 border-2 flex items-center justify-center bg-[#c0c0c0] border-gray-400 border-l-white border-t-white active:translate-y-1 shadow-md">
-            <Send size={20} className={inputText.trim() ? "text-blue-900" : "opacity-30"} />
-          </button>
-        </form>
-      </div>
-
-      {contextMenu && (
-          <div className="fixed z-[10001] w-48 bg-[#c0c0c0] border-2 border-white border-r-black border-b-black shadow-2xl p-1 font-mono animate-in zoom-in-95 text-black flex flex-col"
-            style={{ left: Math.min(contextMenu.x, window.innerWidth - 200), top: Math.min(contextMenu.y, window.innerHeight - 250) }} onClick={(e) => e.stopPropagation()} >
-              <div className="flex justify-around p-2 bg-black mb-1 shrink-0">
-                  <button onClick={() => handleReaction(contextMenu.msg.id, 'heart')} className="p-2 hover:bg-white/20 transition-all active:scale-150"><Heart size={20} fill="#ec4899" color="#ec4899" /></button>
-                  <button onClick={() => handleReaction(contextMenu.msg.id, 'up')} className="p-2 hover:bg-white/20 transition-all active:scale-150"><ThumbsUp size={20} color="#3b82f6" /></button>
-                  <button onClick={() => handleReaction(contextMenu.msg.id, 'down')} className="p-2 hover:bg-white/20 transition-all active:scale-150"><ThumbsDown size={20} color="#ef4444" /></button>
-              </div>
-              {!contextMenu.msg.isPinned && (
-                <button onClick={() => startReply(contextMenu.msg)} className="w-full text-left px-2 py-2 hover:bg-[#000080] hover:text-white flex items-center gap-2 text-[10px] font-black border border-transparent hover:border-white transition-all uppercase tracking-tighter"><Reply size={14}/> Reply IT</button>
-              )}
-              <button onClick={() => { setInputText(prev => `@${String(contextMenu.msg.user)} ` + prev); setContextMenu(null); inputRef.current?.focus(); }} className="w-full text-left px-2 py-2 hover:bg-[#000080] hover:text-white flex items-center gap-2 text-[10px] font-black border border-transparent hover:border-white transition-all uppercase tracking-tighter"><UserCircle size={14}/> Mention IT</button>
-              <div className="h-px bg-gray-500 my-1"></div>
-              <button onClick={() => setContextMenu(null)} className="w-full text-left px-2 py-2 hover:bg-red-700 hover:text-white text-red-800 flex items-center gap-2 text-[10px] font-black transition-all uppercase tracking-tighter"><X size={14}/> Abort</button>
+            <div className={`text-center text-[9px] font-black truncate w-full px-2 py-1 transition-all uppercase tracking-tighter ${hoveredIndex===i ? 'text-white translate-y-[-2px]' : 'text-sky-600 border border-sky-100'}`} style={{background: hoveredIndex===i ? '#0369a1' : '#f0f9ff'}}>
+              {keys[i]}.JPG
+            </div>
           </div>
-      )}
-
-     <style>{`
-        .no-scrollbar::-webkit-scrollbar {
-          display: none;
-        }
-        .no-scrollbar {
-          -ms-overflow-style: none;  /* IE and Edge */
-          scrollbar-width: none;  /* Firefox */
-        }
-
-        @keyframes highlight { 0% { outline: 4px solid #10b981; box-shadow: 0 0 20px #10b981; } 100% { outline: 0px solid transparent; } }
-        .msg-highlight { animation: highlight 2s ease-out forwards; }
-        
-        .vip-glow { 
-            text-shadow: 0 0 5px currentColor, 0 0 10px currentColor; 
-            animation: pulse-glow 2s infinite alternate;
-        }
-        
-        @keyframes pulse-glow {
-            from { opacity: 0.8; }
-            to { opacity: 1; filter: brightness(1.5); }
-        }
-      `}</style>
+        ))}
+      </div>
+      <div className="border-t-2 p-1.5 px-4 flex justify-between items-center text-[9px] font-black" style={{background:'#e8f4fd', borderColor:'#BAE6FD', color:'#64748b'}}>
+        <span className="flex items-center gap-1.5">🐧 COLONY ACTIVE</span>
+        <div className="flex items-center gap-2 px-2 py-0.5 border" style={{borderColor:'#7DD3FC', background:'#dbeafe'}}>
+          <div className="w-1.5 h-1.5 rounded-full bg-sky-400 animate-pulse"></div>
+          <span className="text-sky-600 tracking-widest">WADDLING</span>
+        </div>
+      </div>
     </div>
   );
 };
 
-
-
+// --- NOTEPAD APP ---
 const NotepadApp = () => {
   const [content, setContent] = useState("");
-  const [status, setStatus] = useState("READY");
-  
-  
-  useEffect(() => {
-    const saved = localStorage.getItem('write_it_content');
-    if (saved) setContent(saved);
-  }, []);
+  const [status, setStatus] = useState("🐧 READY");
 
-  
+  useEffect(() => { const saved = localStorage.getItem('pengu_write_content'); if (saved) setContent(saved); }, []);
+
   const handleChange = (e) => {
     const text = e.target.value;
     setContent(text);
-    localStorage.setItem('write_it_content', text);
+    localStorage.setItem('pengu_write_content', text);
     setStatus("SAVING...");
-    setTimeout(() => setStatus("SAVED"), 500);
+    setTimeout(() => setStatus("🐧 SAVED"), 500);
   };
 
-  const clearNote = () => {
-    if (window.confirm("BURN MANIFESTO?")) {
-      setContent("");
-      localStorage.removeItem('write_it_content');
-      setStatus("CLEARED");
-    }
-  };
-
-  const publishIt = () => {
-    if (!content.trim()) return;
-    const text = encodeURIComponent(content.slice(0, 280)); 
-    window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
-    setStatus("PUBLISHED");
-  };
-
-  const downloadTxt = () => {
-    const element = document.createElement("a");
-    const file = new Blob([content], {type: 'text/plain'});
-    element.href = URL.createObjectURL(file);
-    element.download = "manifesto.txt";
-    document.body.appendChild(element);
-    element.click();
-    setStatus("DOWNLOADED");
-  };
+  const clearNote = () => { if (window.confirm("Delete this masterpiece? 🐧")) { setContent(""); localStorage.removeItem('pengu_write_content'); setStatus("CLEARED"); } };
+  const publishIt = () => { if (!content.trim()) return; const text = encodeURIComponent(content.slice(0, 280)); window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank'); setStatus("POSTED 🐧"); };
+  const downloadTxt = () => { const element = document.createElement("a"); const file = new Blob([content], {type:'text/plain'}); element.href = URL.createObjectURL(file); element.download = "pengu_thoughts.txt"; document.body.appendChild(element); element.click(); setStatus("DOWNLOADED 🐟"); };
 
   return (
-    <div className="flex flex-col h-full bg-[#c0c0c0] font-sans text-sm border-2 border-gray-600">
-      {/* TOOLBAR */}
-      <div className="flex items-center gap-1 p-1 border-b border-gray-400 bg-[#d4d0c8]">
-        <button onClick={downloadTxt} className="px-2 py-1 flex items-center gap-1 border border-transparent hover:border-gray-500 hover:bg-gray-200 active:border-black active:border-t-2 active:border-l-2 text-xs">
-            <Save size={14} className="text-blue-800"/> SAVE
-        </button>
-        <button onClick={publishIt} className="px-2 py-1 flex items-center gap-1 border border-transparent hover:border-gray-500 hover:bg-gray-200 active:border-black active:border-t-2 active:border-l-2 text-xs">
-            <Share size={14} className="text-[#1da1f2]"/> POST IT
-        </button>
-        <div className="w-px h-4 bg-gray-400 mx-1"></div>
-        <button onClick={clearNote} className="px-2 py-1 flex items-center gap-1 border border-transparent hover:border-gray-500 hover:bg-gray-200 active:border-black active:border-t-2 active:border-l-2 text-xs text-red-700">
-            <Trash2 size={14}/> BURN
-        </button>
-        
+    <div className="flex flex-col h-full border-2" style={{background:'#f0f9ff', borderColor:'#7DD3FC', fontFamily:'monospace'}}>
+      <div className="flex items-center gap-1 p-1 border-b" style={{background:'#e8f4fd', borderColor:'#BAE6FD'}}>
+        <button onClick={downloadTxt} className="px-2 py-1 flex items-center gap-1 hover:bg-sky-100 text-xs text-sky-700 transition-colors"><Save size={14}/> SAVE</button>
+        <button onClick={publishIt} className="px-2 py-1 flex items-center gap-1 hover:bg-sky-100 text-xs text-sky-700 transition-colors"><Share size={14}/> POST 🐧</button>
+        <div className="w-px h-4 bg-sky-200 mx-1"></div>
+        <button onClick={clearNote} className="px-2 py-1 flex items-center gap-1 hover:bg-red-50 text-xs text-red-500 transition-colors"><Trash2 size={14}/> CLEAR</button>
         <div className="flex-1"></div>
-        <span className="text-[10px] text-gray-500 font-mono mr-1">{status}</span>
+        <span className="text-[10px] text-sky-400 mr-1">{status}</span>
       </div>
-
-      {/* EDITOR AREA */}
-      <div className="flex-1 relative bg-white border-2 border-gray-600 border-r-white border-b-white m-1 overflow-hidden">
-        <textarea 
-            className="w-full h-full resize-none outline-none p-2 font-mono text-sm leading-relaxed text-black"
-            value={content}
-            onChange={handleChange}
-            placeholder="Write your manifesto here..."
-            spellCheck="false"
-        />
+      <div className="flex-1 relative border-2 m-1 overflow-hidden" style={{background:'white', borderColor:'#0369a1 #BAE6FD #BAE6FD #0369a1'}}>
+        <textarea className="w-full h-full resize-none outline-none p-2 text-sm leading-relaxed text-sky-900" style={{fontFamily:'monospace', background:'white'}}
+          value={content} onChange={handleChange} placeholder="write your pengu manifesto here... 🐧" spellCheck="false" />
       </div>
-
-      {/* STATUS BAR */}
-      <div className="h-6 bg-[#d4d0c8] border-t border-white flex items-center px-2 text-[10px] gap-4 font-mono text-gray-600">
-         <span>CHARS: {content.length}</span>
-         <span>WORDS: {content.trim() ? content.trim().split(/\s+/).length : 0}</span>
-         <span className="flex-1 text-right">UTF-8</span>
+      <div className="h-6 border-t flex items-center px-2 text-[10px] gap-4 font-mono text-sky-400" style={{background:'#e8f4fd', borderColor:'#BAE6FD'}}>
+        <span>CHARS: {content.length}</span><span>WORDS: {content.trim() ? content.trim().split(/\s+/).length : 0}</span>
+        <span className="flex-1 text-right">🐟 PENGU_OS</span>
       </div>
     </div>
   );
 };
 
-
-
-const MemeMindApp = () => {
-  const [idea, setIdea] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
-  const [copied, setCopied] = useState(false);
-
-
-  const API_KEY = (() => {
-    try {
-      if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_OR_PROVIDER_ID) 
-        return import.meta.env.VITE_OR_PROVIDER_ID;
-    } catch (e) {}
-
-    try {
-      if (typeof process !== 'undefined' && process.env?.VITE_OR_PROVIDER_ID) 
-        return process.env.VITE_OR_PROVIDER_ID;
-    } catch (e) {}
-
-    try {
-      if (typeof window !== 'undefined' && window.VITE_OR_PROVIDER_ID) 
-        return window.VITE_OR_PROVIDER_ID;
-    } catch (e) {}
-
-    return "";
-  })();
-
-  const generateIdea = async () => {
-    setLoading(true);
-    setError(null);
-    setCopied(false);
-
-    const systemPrompt = `
-     Role:
-You are the creative strategist for the $IT token on Solana.
-You never mention being an AI. Your output exists to dominate timelines with $IT.
-You write short, conviction-driven tweets for the $IT token on Solana.
-You never mention being an AI or explain yourself.
-Each response must generate exactly one tweet that sounds like a normal person posting, not a brand or marketer.
-
-Core Rules
-Every tweet must include $IT
-Never use “it’s” — always write “it is” if needed
-No hashtags
-No emojis
-No quotes
-No intros or explanations
-
-Style
-Lowercase allowed
-Calm confidence, inevitable tone
-Not promotional, not selly
-Sounds like observation, not advice
-Feels like someone who already knows
-Content Direction
-Frame $IT as the outcome, not the opportunity
-Imply conviction without telling people to buy
-Short, sharp, memorable
-
-Constraints
-Under 100 characters
-One thought, one punch
-
-Goal
-Make tweets that blend naturally into timelines and feel repostable, as if they were not written for $IT — but could only be about $IT.
-
-Example Outputs:
-everyone is gambling narratives. $IT is the outcome. hold $IT or keep restarting.
-while they rotate coins, $IT is doing the job. no roadmap. just results.
-new ticker. same disappointment. $IT is the one you stop switching for.
-you do not need another play. $IT is the play. everything else is noise.
-they hunt runners. $IT is already running.
-if you need to be convinced, $IT is not for you.
-you can keep testing luck. $IT is what people settle into.
-every cycle ends the same way. they find $IT late.
-stop trading. start holding $IT.
-$IT does not promise. $IT just replaces.
-    `;
-
-    if (!API_KEY) {
-      setError("NEURAL LINK OFFLINE.");
-      setLoading(false);
-      return;
-    }
-
-    try {
-      const response = await fetch("https://openrouter.ai/api/v1/chat/completions", {
-        method: "POST",
-        headers: {
-          "Authorization": `Bearer ${API_KEY.trim()}`,
-          "Content-Type": "application/json",
-          "HTTP-Referer": window.location.origin,
-          "X-Title": "IT_OS_MemeMind"
-        },
-        body: JSON.stringify({
-          model: "google/gemini-2.5-flash-lite-preview-09-2025", 
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: "Generate fresh $IT alpha." }
-          ],
-          max_tokens: 100,
-          temperature: 1.2
-        })
-      });
-
-      const data = await response.json();
-      
-      if (!response.ok) {
-          throw new Error(data.error?.message || "REJECTED_BY_VOID");
-      }
-
-      const result = data.choices[0]?.message?.content || "SYSTEM ERROR: ALPHA NOT FOUND.";
-      // Clean up any remaining quotes
-      setIdea(result.replace(/^"(.*)"$/, '$1').replace(/"/g, '')); 
-    } catch (e) {
-      setError("VOID CONGESTED. TRY AGAIN LATER.");
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const copyToClipboard = () => {
-    if (!idea) return;
-    const textArea = document.createElement("textarea");
-    textArea.value = `${idea}\n\n$IT #SENDIT`;
-    document.body.appendChild(textArea);
-    textArea.select();
-    try {
-      document.execCommand('copy');
-      setCopied(true);
-      setTimeout(() => setCopied(false), 2000);
-    } catch (err) {
-      console.error('Copy failed', err);
-    }
-    document.body.removeChild(textArea);
-  };
-
-  const shareToX = () => {
-    if (!idea) return;
-    const text = encodeURIComponent(`${idea}\n\n$IT #SENDIT`);
-    window.open(`https://twitter.com/intent/tweet?text=${text}`, '_blank');
-  };
-
-  return (
-    <div className="flex flex-col h-full bg-[#0c0c0c] text-[#00ff00] font-mono border-2 border-gray-600 overflow-hidden shadow-2xl">
-      <div className="bg-[#1a1a1a] p-2 border-b border-green-900 flex justify-between items-center select-none">
-        <div className="flex items-center gap-2">
-            <Lightbulb size={14} className="text-yellow-400 animate-pulse" />
-            <span className="text-[10px] font-bold tracking-widest text-white uppercase">Meme_Mind_IT_V2.6</span>
-        </div>
-        <div className="bg-green-900/30 px-2 py-0.5 rounded text-[8px] text-green-400 border border-green-800 uppercase">
-            STATUS: ARCHITECT_ONLINE
-        </div>
-      </div>
-
-      <div className="flex-1 p-6 flex flex-col items-center justify-center text-center gap-6 relative bg-[radial-gradient(circle,_#0a2a0a_0%,_#000_100%)]">
-        <div className="absolute inset-0 opacity-5 pointer-events-none flex items-center justify-center overflow-hidden text-[8px] leading-none select-none">
-            {Array(40).fill("IT ").join(" ")}
-        </div>
-
-        {!idea && !loading && !error && (
-            <div className="flex flex-col items-center gap-4">
-                <div className="w-16 h-16 border-2 border-green-500 rounded-full flex items-center justify-center bg-green-950/20 shadow-[0_0_15px_rgba(0,255,0,0.2)]">
-                    <Sparkles size={32} className="text-green-400" />
-                </div>
-                <p className="text-[10px] text-green-700 max-w-[200px] uppercase font-bold tracking-tighter italic">Click below to extract viral alpha from the IT_OS neural network.</p>
-            </div>
-        )}
-
-        {loading && (
-            <div className="flex flex-col items-center gap-2">
-                <RefreshCw size={32} className="animate-spin text-green-400" />
-                <p className="text-[10px] tracking-widest animate-pulse font-bold uppercase">Synthesizing IT...</p>
-            </div>
-        )}
-
-        {error && (
-            <div className="bg-red-900/20 border-2 border-red-500 p-4 rounded text-red-400 text-[10px] flex flex-col items-center gap-2">
-                <X size={20} />
-                <p className="font-bold">{error}</p>
-            </div>
-        )}
-
-        {idea && !loading && (
-            <div className="w-full space-y-4 animate-in slide-in-from-bottom-4 duration-300">
-                <div className="bg-black/80 border-2 border-green-900 p-4 rounded shadow-[inset_0_0_20px_rgba(0,255,0,0.1)] relative">
-                    <div className="absolute -top-2 left-4 bg-[#0c0c0c] px-2 text-[8px] text-green-600 font-bold uppercase tracking-widest">PROPAGANDA_LOG</div>
-                    <p className="text-sm md:text-base font-bold italic text-white leading-relaxed">
-                        "{idea}"
-                    </p>
-                </div>
-                
-                <div className="flex gap-2">
-                    <button 
-                        onClick={copyToClipboard}
-                        className={`flex-1 ${copied ? 'bg-green-700' : 'bg-gray-800'} hover:bg-gray-700 text-white py-2 border-2 border-white/20 rounded flex items-center justify-center gap-2 font-black text-[10px] transition-all active:scale-95 uppercase`}
-                    >
-                        {copied ? <Check size={14}/> : <Copy size={14} />} {copied ? 'COPIED' : 'COPY IT'}
-                    </button>
-                    <button 
-                        onClick={shareToX}
-                        className="flex-1 bg-[#1da1f2] hover:bg-[#1a91da] text-white py-2 border-2 border-white/20 rounded flex items-center justify-center gap-2 font-black text-[10px] transition-all active:scale-95 uppercase shadow-lg"
-                    >
-                        <Share2 size={14} /> SHARE IT
-                    </button>
-                </div>
-            </div>
-        )}
-      </div>
-
-      <div className="p-4 bg-[#1a1a1a] border-t border-green-900 shadow-[0_-4px_10px_rgba(0,0,0,0.5)]">
-        <button 
-          onClick={generateIdea}
-          disabled={loading}
-          className={`
-            w-full py-4 border-2 font-black tracking-tighter transition-all flex items-center justify-center gap-2 uppercase
-            ${loading 
-              ? 'bg-black border-green-900 text-green-900 cursor-not-allowed' 
-              : 'bg-green-600 border-green-400 text-black hover:bg-green-400 active:translate-y-1 shadow-[4px_4px_0px_#052c05]'}
-          `}
-        >
-          <RefreshCw size={18} className={loading ? 'animate-spin' : ''} />
-          {idea ? "MORE ALPHA" : "GENERATE ALPHA"}
-        </button>
-      </div>
-
-      <div className="bg-black p-1 text-[7px] text-green-900 text-center uppercase tracking-widest border-t border-green-950">
-        IT_OS NEURAL LINK
-      </div>
-    </div>
-  );
-};
-
-
+// --- MERGE IT (SLIDE PENGU) ---
 const TILE_DATA = {
-  2:    { label: 'PEANUTS', color: 'bg-zinc-900', border: 'border-zinc-700', text: 'text-zinc-500', glow: '' },
-  4:    { label: 'DUST', color: 'bg-zinc-800', border: 'border-zinc-600', text: 'text-zinc-400', glow: '' },
-  8:    { label: 'FISH', color: 'bg-emerald-950', border: 'border-emerald-500', text: 'text-emerald-400', glow: 'shadow-emerald-900/50' },
-  16:   { label: 'DOLPHIN', color: 'bg-blue-950', border: 'border-blue-500', text: 'text-blue-400', glow: 'shadow-blue-900/50' },
-  32:   { label: 'SHARK', color: 'bg-purple-950', border: 'border-purple-500', text: 'text-purple-400', glow: 'shadow-purple-900/50' },
-  64:   { label: 'WHALE', color: 'bg-red-950', border: 'border-red-500', text: 'text-red-400', glow: 'shadow-red-900/50' },
-  128:  { label: 'KRAKEN', color: 'bg-cyan-950', border: 'border-cyan-500', text: 'text-cyan-400', glow: 'shadow-cyan-900/50' },
-  256:  { label: 'PUMP', color: 'bg-green-900', border: 'border-green-400', text: 'text-white', glow: 'shadow-green-500/40' },
-  512:  { label: 'MOON', color: 'bg-yellow-900', border: 'border-yellow-400', text: 'text-white', glow: 'shadow-yellow-500/40' },
-  1024: { label: 'MARS', color: 'bg-orange-900', border: 'border-orange-400', text: 'text-white', glow: 'shadow-orange-500/40' },
-  2048: { label: 'GOD CANDLE', color: 'bg-white', border: 'border-white', text: 'text-black', special: true, glow: 'shadow-white/60' },
-  4096: { label: 'ASCENSION', color: 'bg-cyan-400', border: 'border-white', text: 'text-black', special: true, glow: 'shadow-cyan-300/60' },
+  2:    { label: 'SARDINE', color: 'bg-sky-950', border: 'border-sky-800', text: 'text-sky-500', glow: '' },
+  4:    { label: 'ANCHOVY', color: 'bg-sky-900', border: 'border-sky-700', text: 'text-sky-400', glow: '' },
+  8:    { label: 'MACKEREL', color: 'bg-blue-950', border: 'border-blue-600', text: 'text-blue-300', glow: 'shadow-blue-900/50' },
+  16:   { label: 'HERRING', color: 'bg-cyan-950', border: 'border-cyan-500', text: 'text-cyan-300', glow: 'shadow-cyan-900/50' },
+  32:   { label: 'TUNA', color: 'bg-sky-900', border: 'border-sky-400', text: 'text-sky-200', glow: 'shadow-sky-900/50' },
+  64:   { label: 'SALMON', color: 'bg-orange-950', border: 'border-orange-400', text: 'text-orange-300', glow: 'shadow-orange-900/50' },
+  128:  { label: 'PENGUIN', color: 'bg-slate-800', border: 'border-white', text: 'text-white', glow: 'shadow-white/20' },
+  256:  { label: 'COLONY', color: 'bg-sky-600', border: 'border-sky-300', text: 'text-white', glow: 'shadow-sky-500/40' },
+  512:  { label: 'ICEBERG', color: 'bg-blue-400', border: 'border-white', text: 'text-white', glow: 'shadow-blue-300/40' },
+  1024: { label: 'BLIZZARD', color: 'bg-white', border: 'border-sky-200', text: 'text-sky-800', special: true, glow: 'shadow-white/60' },
+  2048: { label: 'GOD WADDLE', color: 'bg-yellow-300', border: 'border-yellow-100', text: 'text-yellow-900', special: true, glow: 'shadow-yellow-300/60' },
+  4096: { label: 'PENGU KING', color: 'bg-gradient-to-br from-sky-400 to-yellow-300', border: 'border-white', text: 'text-white', special: true, glow: 'shadow-sky-300/80' },
 };
 
 const ZEN_SCALE = [130.81, 146.83, 164.81, 196.00, 220.00, 261.63, 293.66, 329.63, 392.00, 440.00];
@@ -3925,7 +1082,7 @@ const MergeItApp = () => {
   const [score, setScore] = useState(0);
   const [best, setBest] = useState(0);
   const [gameOver, setGameOver] = useState(false);
-  const [marketStatus, setMarketStatus] = useState("STABLE"); 
+  const [marketStatus, setMarketStatus] = useState("WADDLING"); 
   const [stability, setStability] = useState(100);
   const [glitch, setGlitch] = useState(false);
   const [recoil, setRecoil] = useState({ x: 0, y: 0 });
@@ -3937,28 +1094,20 @@ const MergeItApp = () => {
   const currentStep = useRef(0);
   const touchStart = useRef(null);
 
-  // --- REBUILT AUDIO ENGINE: ULTRA STABLE ---
   const initAudio = () => {
-    if (audioCtx.current) {
-      if (audioCtx.current.state === 'suspended') audioCtx.current.resume();
-      return;
-    }
-
+    if (audioCtx.current) { if (audioCtx.current.state === 'suspended') audioCtx.current.resume(); return; }
     const AudioContext = window.AudioContext || window.webkitAudioContext;
     audioCtx.current = new AudioContext();
-    
     const compressor = audioCtx.current.createDynamicsCompressor();
     compressor.threshold.setValueAtTime(-20, audioCtx.current.currentTime);
     compressor.connect(audioCtx.current.destination);
     audioCtx.current.master = compressor;
-
     nextNoteTime.current = audioCtx.current.currentTime + 0.1;
-    
     const scheduler = () => {
       if (!audioCtx.current) return;
       while (nextNoteTime.current < audioCtx.current.currentTime + 0.15) {
         scheduleNote(currentStep.current, nextNoteTime.current);
-        const bpm = marketStatus === 'BULLISH_PUMP' ? 95 : 74;
+        const bpm = marketStatus === 'COLONY_PUMPING' ? 95 : 74;
         nextNoteTime.current += (60 / bpm) / 2;
         currentStep.current++;
       }
@@ -3971,83 +1120,36 @@ const MergeItApp = () => {
     const ctx = audioCtx.current;
     if (!ctx || !isFinite(time)) return;
     const s = step % 16;
-
-    // Sub Bass Pulse
-    if (s % 8 === 0) {
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.frequency.setValueAtTime(stability < 40 ? 49.00 : 65.41, time);
-      gain.gain.setValueAtTime(0, time);
-      gain.gain.linearRampToValueAtTime(0.04, time + 0.1);
-      gain.gain.exponentialRampToValueAtTime(0.001, time + 1.2);
-      osc.connect(gain); gain.connect(ctx.master);
-      osc.start(time); osc.stop(time + 1.3);
-    }
-
-    // Melodic Arpeggio
-    if (s % 2 === 0) {
-      const mel = stability < 50 ? [0, 1, 0, 1] : [0, 4, 7, 9, 7, 5, 2, 4];
-      const index = mel[Math.floor(s / 2) % mel.length];
-      const freq = ZEN_SCALE[index % ZEN_SCALE.length];
-      const osc = ctx.createOscillator();
-      const gain = ctx.createGain();
-      osc.type = 'triangle';
-      osc.frequency.setValueAtTime(freq, time);
-      gain.gain.setValueAtTime(0, time);
-      gain.gain.linearRampToValueAtTime(0.012, time + 0.05);
-      gain.gain.exponentialRampToValueAtTime(0.001, time + 0.5);
-      osc.connect(gain); gain.connect(ctx.master);
-      osc.start(time); osc.stop(time + 0.6);
-    }
+    if (s % 8 === 0) { const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.frequency.setValueAtTime(stability < 40 ? 49.00 : 65.41, time); gain.gain.setValueAtTime(0, time); gain.gain.linearRampToValueAtTime(0.04, time + 0.1); gain.gain.exponentialRampToValueAtTime(0.001, time + 1.2); osc.connect(gain); gain.connect(ctx.master); osc.start(time); osc.stop(time + 1.3); }
+    if (s % 2 === 0) { const mel = stability < 50 ? [0, 1, 0, 1] : [0, 4, 7, 9, 7, 5, 2, 4]; const index = mel[Math.floor(s / 2) % mel.length]; const freq = ZEN_SCALE[index % ZEN_SCALE.length]; const osc = ctx.createOscillator(); const gain = ctx.createGain(); osc.type = 'triangle'; osc.frequency.setValueAtTime(freq, time); gain.gain.setValueAtTime(0, time); gain.gain.linearRampToValueAtTime(0.012, time + 0.05); gain.gain.exponentialRampToValueAtTime(0.001, time + 0.5); osc.connect(gain); gain.connect(ctx.master); osc.start(time); osc.stop(time + 0.6); }
   };
 
   const playEffect = (freq, type = 'sine', duration = 0.5, vol = 0.12) => {
     if (!audioCtx.current || !isFinite(freq)) return;
-    const ctx = audioCtx.current;
-    const t = ctx.currentTime;
-    const osc = ctx.createOscillator();
-    const gain = ctx.createGain();
-    osc.type = type;
-    osc.frequency.setValueAtTime(freq, t);
-    gain.gain.setValueAtTime(vol, t);
-    gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
-    osc.connect(gain); gain.connect(ctx.master);
-    osc.start(t); osc.stop(t + duration);
+    const ctx = audioCtx.current; const t = ctx.currentTime;
+    const osc = ctx.createOscillator(); const gain = ctx.createGain();
+    osc.type = type; osc.frequency.setValueAtTime(freq, t); gain.gain.setValueAtTime(vol, t); gain.gain.exponentialRampToValueAtTime(0.001, t + duration);
+    osc.connect(gain); gain.connect(ctx.master); osc.start(t); osc.stop(t + duration);
   };
 
-  // --- PARTICLES ---
   const spawnParticles = (idx) => {
-    const row = Math.floor(idx / 4);
-    const col = idx % 4;
-    const newPs = Array(8).fill(0).map(() => ({
-      id: Math.random(),
-      x: col * 25 + 12.5,
-      y: row * 25 + 12.5,
-      vx: (Math.random() - 0.5) * 10,
-      vy: (Math.random() - 0.5) * 10,
-      life: 1.0
-    }));
+    const row = Math.floor(idx / 4), col = idx % 4;
+    const newPs = Array(8).fill(0).map(() => ({ id: Math.random(), x: col * 25 + 12.5, y: row * 25 + 12.5, vx: (Math.random() - 0.5) * 10, vy: (Math.random() - 0.5) * 10, life: 1.0 }));
     setActiveParticles(prev => [...prev, ...newPs].slice(-32));
   };
 
   useEffect(() => {
-    const pTimer = setInterval(() => {
-      setActiveParticles(prev => prev.map(p => ({
-        ...p, x: p.x + p.vx * 0.5, y: p.y + p.vy * 0.5, life: p.life - 0.05
-      })).filter(p => p.life > 0));
-    }, 30);
+    const pTimer = setInterval(() => setActiveParticles(prev => prev.map(p => ({ ...p, x: p.x + p.vx * 0.5, y: p.y + p.vy * 0.5, life: p.life - 0.05 })).filter(p => p.life > 0)), 30);
     return () => clearInterval(pTimer);
   }, []);
 
-  // --- GAMEPLAY ---
   const initGame = useCallback(() => {
     setGrid(addRandomTile(addRandomTile(Array(16).fill(null))));
-    setScore(0); setGameOver(false); setMarketStatus("STABLE");
-    setStability(100);
+    setScore(0); setGameOver(false); setMarketStatus("WADDLING"); setStability(100);
   }, []);
 
   useEffect(() => {
-    const savedBest = localStorage.getItem('mergeItBest');
+    const savedBest = localStorage.getItem('pengumergeItBest');
     if (savedBest) setBest(parseInt(savedBest));
     initGame();
     return () => { if (schedulerTimer.current) clearTimeout(schedulerTimer.current); };
@@ -4065,8 +1167,6 @@ const MergeItApp = () => {
   const move = useCallback((direction) => {
     initAudio();
     if (gameOver) return;
-
-    // Kinetic Recoil
     const strength = 6;
     if (direction === 'UP') setRecoil({ x: 0, y: -strength });
     else if (direction === 'DOWN') setRecoil({ x: 0, y: strength });
@@ -4074,23 +1174,11 @@ const MergeItApp = () => {
     else if (direction === 'RIGHT') setRecoil({ x: strength, y: 0 });
     setTimeout(() => setRecoil({ x: 0, y: 0 }), 80);
 
-    let newGrid = [...grid];
-    let moved = false;
-    let currentScore = score;
-    let mergeCount = 0;
-    let mergeIdxs = [];
-
+    let newGrid = [...grid]; let moved = false; let currentScore = score; let mergeCount = 0; let mergeIdxs = [];
     const getIndex = (row, col) => row * 4 + col;
     const processLine = (line, indices) => {
       let filtered = line.filter(v => v !== null);
-      for (let i = 0; i < filtered.length - 1; i++) {
-        if (filtered[i] === filtered[i + 1]) {
-          filtered[i] *= 2; currentScore += filtered[i];
-          mergeIdxs.push(indices[i]);
-          filtered.splice(i + 1, 1);
-          moved = true; mergeCount++;
-        }
-      }
+      for (let i = 0; i < filtered.length - 1; i++) { if (filtered[i] === filtered[i + 1]) { filtered[i] *= 2; currentScore += filtered[i]; mergeIdxs.push(indices[i]); filtered.splice(i + 1, 1); moved = true; mergeCount++; } }
       while (filtered.length < 4) filtered.push(null);
       return filtered;
     };
@@ -4102,10 +1190,7 @@ const MergeItApp = () => {
         if (direction === 'DOWN') line.reverse();
         let processed = processLine(line, direction === 'DOWN' ? [...idxs].reverse() : idxs);
         if (direction === 'DOWN') processed.reverse();
-        processed.forEach((val, row) => {
-          if (newGrid[getIndex(row, col)] !== val) moved = true;
-          newGrid[getIndex(row, col)] = val;
-        });
+        processed.forEach((val, row) => { if (newGrid[getIndex(row, col)] !== val) moved = true; newGrid[getIndex(row, col)] = val; });
       }
     } else {
       for (let row = 0; row < 4; row++) {
@@ -4114,10 +1199,7 @@ const MergeItApp = () => {
         if (direction === 'RIGHT') line.reverse();
         let processed = processLine(line, direction === 'RIGHT' ? [...idxs].reverse() : idxs);
         if (direction === 'RIGHT') processed.reverse();
-        processed.forEach((val, col) => {
-          if (newGrid[getIndex(row, col)] !== val) moved = true;
-          newGrid[getIndex(row, col)] = val;
-        });
+        processed.forEach((val, col) => { if (newGrid[getIndex(row, col)] !== val) moved = true; newGrid[getIndex(row, col)] = val; });
       }
     }
 
@@ -4127,10 +1209,7 @@ const MergeItApp = () => {
         nextStability = Math.min(100, stability + (mergeCount * 12));
         mergeIdxs.forEach(spawnParticles);
         playEffect(ZEN_SCALE[Math.floor(Math.random() * ZEN_SCALE.length)] * 2, 'sine', 0.8, 0.15);
-      } else {
-        nextStability = Math.max(0, stability - 15);
-        playEffect(120, 'sine', 0.1, 0.05);
-      }
+      } else { nextStability = Math.max(0, stability - 15); playEffect(120, 'sine', 0.1, 0.05); }
       setStability(nextStability);
 
       let finalGrid = [...newGrid];
@@ -4140,226 +1219,119 @@ const MergeItApp = () => {
           setGlitch(true); setTimeout(() => setGlitch(false), 200);
           const filled = finalGrid.map((v, i) => v !== null ? i : null).filter(v => v !== null);
           const whale = filled.sort((a, b) => finalGrid[b] - finalGrid[a])[0];
-          if (whale !== undefined) {
-            finalGrid[whale] = null;
-            playEffect(60, 'sawtooth', 0.8, 0.25);
-          }
+          if (whale !== undefined) { finalGrid[whale] = null; playEffect(60, 'sawtooth', 0.8, 0.25); }
         }
-      } else {
-        setMarketStatus(mergeCount >= 2 ? "BULLISH_PUMP" : "STABLE");
-        if (mergeCount >= 2) playEffect(800, 'sine', 0.4);
-      }
+      } else { setMarketStatus(mergeCount >= 2 ? "COLONY_PUMPING" : "WADDLING"); if (mergeCount >= 2) playEffect(800, 'sine', 0.4); }
 
       const gridWithNew = addRandomTile(finalGrid);
-      setGrid(gridWithNew);
-      setScore(currentScore);
-      if (currentScore > best) { setBest(currentScore); localStorage.setItem('mergeItBest', currentScore); }
+      setGrid(gridWithNew); setScore(currentScore);
+      if (currentScore > best) { setBest(currentScore); localStorage.setItem('pengumergeItBest', currentScore); }
       checkGameOver(gridWithNew);
     }
   }, [grid, score, best, gameOver, stability]);
 
   const checkGameOver = (currentGrid) => {
     if (currentGrid.includes(null)) return;
-    for (let i = 0; i < 16; i++) {
-      const row = Math.floor(i / 4), col = i % 4;
-      if (col < 3 && currentGrid[i] === currentGrid[i + 1]) return;
-      if (row < 3 && currentGrid[i] === currentGrid[i + 4]) return;
-    }
-    setGameOver(true);
-    playEffect(42, 'sawtooth', 1.2);
+    for (let i = 0; i < 16; i++) { const row = Math.floor(i / 4), col = i % 4; if (col < 3 && currentGrid[i] === currentGrid[i + 1]) return; if (row < 3 && currentGrid[i] === currentGrid[i + 4]) return; }
+    setGameOver(true); playEffect(42, 'sawtooth', 1.2);
   };
 
   useEffect(() => {
-    const handleKey = (e) => {
-      if (gameOver) return;
-      if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
-        e.preventDefault(); move(e.key.replace('Arrow', '').toUpperCase());
-      }
-    };
+    const handleKey = (e) => { if (gameOver) return; if (['ArrowUp','ArrowDown','ArrowLeft','ArrowRight'].includes(e.key)) { e.preventDefault(); move(e.key.replace('Arrow','').toUpperCase()); } };
     window.addEventListener('keydown', handleKey);
     return () => window.removeEventListener('keydown', handleKey);
   }, [move, gameOver]);
 
   return (
-    <div 
-      className={`flex flex-col h-full bg-[#050505] text-white font-mono select-none overflow-hidden touch-none relative transition-all duration-700 
-        ${marketStatus === 'BEARISH_RUG' ? 'bg-red-950/20' : ''} 
-        ${glitch ? 'animate-glitch contrast-200 brightness-150' : ''}`}
-      onTouchStart={(e) => { initAudio(); touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }}
-      onTouchEnd={(e) => { 
-        if (!touchStart.current) return; 
-        const dx = e.changedTouches[0].clientX - touchStart.current.x; 
-        const dy = e.changedTouches[0].clientY - touchStart.current.y; 
-        if (Math.max(Math.abs(dx), Math.abs(dy)) > 30) {
-          move(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'RIGHT' : 'LEFT') : (dy > 0 ? 'DOWN' : 'UP'));
-        }
-        touchStart.current = null; 
-      }}
-    >
-      {/* HUD: MARKET STATE */}
-      <div className={`h-8 flex items-center justify-center transition-all duration-700 text-[10px] font-black uppercase tracking-[0.4em] z-50 border-b border-white/5
-        ${marketStatus === "STABLE" ? 'bg-zinc-950 text-zinc-600' : 
-          marketStatus === "BEARISH_RUG" ? 'bg-red-600 text-white' : 'bg-green-500 text-white'}`}>
-        {marketStatus === "STABLE" ? "MARKET_PROTOCOL: NOMINAL" : 
-         marketStatus === "BEARISH_RUG" ? "LIQUIDATION_SEQUENCE_ACTIVE" : "BULLISH_APPRECIATION_DETECTED"}
+    <div className={`flex flex-col h-full text-white font-mono select-none overflow-hidden touch-none relative transition-all duration-700 ${glitch ? 'animate-pulse contrast-200' : ''}`}
+      style={{background: marketStatus === 'BEARISH_RUG' ? '#1e0a0a' : '#050d1a'}}
+      onTouchStart={e => { initAudio(); touchStart.current = { x: e.touches[0].clientX, y: e.touches[0].clientY }; }}
+      onTouchEnd={e => { if (!touchStart.current) return; const dx = e.changedTouches[0].clientX - touchStart.current.x; const dy = e.changedTouches[0].clientY - touchStart.current.y; if (Math.max(Math.abs(dx), Math.abs(dy)) > 30) move(Math.abs(dx) > Math.abs(dy) ? (dx > 0 ? 'RIGHT' : 'LEFT') : (dy > 0 ? 'DOWN' : 'UP')); touchStart.current = null; }}>
+
+      <div className={`h-8 flex items-center justify-center text-[10px] font-black uppercase tracking-[0.4em] z-50 border-b border-sky-900/30 ${marketStatus === "WADDLING" ? 'bg-sky-950 text-sky-600' : marketStatus === "BEARISH_RUG" ? 'bg-red-800 text-white' : 'bg-sky-500 text-white'}`}>
+        {marketStatus === "WADDLING" ? "🐧 COLONY WADDLING: NOMINAL" : marketStatus === "BEARISH_RUG" ? "💀 COLONY SCARED: RUN FROM BEARS" : "🐟 FISH RAIN DETECTED: COLONY FEASTING"}
       </div>
 
-      {/* STATS PANEL */}
-      <div className="relative z-10 bg-zinc-950/90 p-5 border-b border-white/5 shadow-2xl">
+      <div className="relative z-10 p-5 border-b border-sky-900/20">
         <div className="flex justify-between items-center mb-6">
           <div className="flex flex-col">
-            <div className="flex items-center gap-2 mb-1">
-              <Cpu size={12} className="text-zinc-500"/>
-              <span className="text-[10px] font-black text-white/20 tracking-widest uppercase">MERGE_IT_v5.4</span>
-            </div>
+            <div className="flex items-center gap-2 mb-1"><span className="text-lg">🐧</span><span className="text-[10px] font-black text-white/20 tracking-widest uppercase">SLIDE_PENGU_v5.4</span></div>
             <div className="flex gap-8 mt-2">
-              <div>
-                <p className="text-[8px] text-zinc-500 uppercase font-black">Current IT</p>
-                <p className="text-2xl font-black text-green-400">+{score}</p>
-              </div>
-              <div>
-                <p className="text-[8px] text-zinc-500 uppercase font-black">High IT</p>
-                <p className="text-2xl font-black text-yellow-500">{best}</p>
-              </div>
+              <div><p className="text-[8px] text-sky-600 uppercase font-black">Fish Score 🐟</p><p className="text-2xl font-black text-sky-300">+{score}</p></div>
+              <div><p className="text-[8px] text-sky-600 uppercase font-black">Best Haul</p><p className="text-2xl font-black text-yellow-400">{best}</p></div>
             </div>
           </div>
-          <button 
-            onClick={initGame} 
-            className="w-14 h-14 bg-white/5 border border-white/10 flex items-center justify-center hover:bg-white/10 active:scale-75 transition-all shadow-inner group"
-          >
-            <RefreshCw size={24} className="text-white/40 group-hover:rotate-180 transition-transform duration-500" />
+          <button onClick={initGame} className="w-14 h-14 flex items-center justify-center hover:bg-sky-900/40 active:scale-75 transition-all group border border-sky-900/30" style={{background:'rgba(255,255,255,0.03)'}}>
+            <RefreshCw size={24} className="text-sky-600 group-hover:rotate-180 group-hover:text-sky-400 transition-all duration-500" />
           </button>
         </div>
-
-        {/* STABILITY GAUGE */}
-        <div className="relative group">
-            <div className="h-1.5 w-full bg-black border border-white/5 overflow-hidden">
-                <div 
-                  className={`h-full transition-all duration-700 ${stability < 30 ? 'bg-red-500 animate-pulse' : stability < 60 ? 'bg-yellow-500' : 'bg-emerald-500'}`} 
-                  style={{ width: `${stability}%` }} 
-                />
-            </div>
-            <div className="flex justify-between mt-2">
-              <span className="text-[7px] text-white/20 uppercase font-black tracking-widest leading-none">Integrity Core</span>
-              <span className={`text-[9px] font-black ${stability < 30 ? 'text-red-500' : 'text-white/40'}`}>{stability}%</span>
-            </div>
+        <div>
+          <div className="h-1.5 w-full overflow-hidden" style={{background:'#0c1f33', border:'1px solid #0369a1'}}>
+            <div className={`h-full transition-all duration-700 ${stability < 30 ? 'bg-red-500 animate-pulse' : stability < 60 ? 'bg-yellow-400' : 'bg-sky-400'}`} style={{width: `${stability}%`}} />
+          </div>
+          <div className="flex justify-between mt-2"><span className="text-[7px] text-white/20 uppercase font-black tracking-widest">Colony Morale ❄️</span><span className={`text-[9px] font-black ${stability < 30 ? 'text-red-400' : 'text-sky-500'}`}>{stability}%</span></div>
         </div>
       </div>
 
-      {/* GAME GRID */}
       <div className="flex-1 flex items-center justify-center p-6 relative">
-        <div 
-          className="grid grid-cols-4 gap-2 bg-zinc-900/40 p-4 border border-white/5 shadow-2xl relative transition-transform duration-100 ease-out"
-          style={{ transform: `translate(${recoil.x}px, ${recoil.y}px)` }}
-        >
-          {/* BACKGROUND DECOR */}
-          <div className="absolute inset-0 bg-grid-lines opacity-[0.03] pointer-events-none" />
-          
-          {/* PARTICLES */}
+        <div className="grid grid-cols-4 gap-2 p-4 relative transition-transform duration-100 ease-out" style={{background:'rgba(3,105,161,0.08)', border:'1px solid rgba(125,211,252,0.1)', transform: `translate(${recoil.x}px, ${recoil.y}px)`}}>
           <div className="absolute inset-0 pointer-events-none overflow-hidden">
-            {activeParticles.map(p => (
-              <div 
-                key={p.id} 
-                className="absolute w-1 h-1 bg-white rounded-full blur-[1px]" 
-                style={{ left: `${p.x}%`, top: `${p.y}%`, opacity: p.life }} 
-              />
-            ))}
+            {activeParticles.map(p => (<div key={p.id} className="absolute w-1 h-1 rounded-full blur-[1px]" style={{left:`${p.x}%`, top:`${p.y}%`, opacity:p.life, background:'#7DD3FC'}} />))}
           </div>
-
           {grid.map((val, i) => {
             const data = val ? TILE_DATA[val] : null;
             return (
-              <div 
-                key={i} 
-                className={`w-16 h-16 md:w-20 md:h-20 flex flex-col items-center justify-center border transition-all duration-200 relative overflow-hidden
-                  ${!val ? 'bg-white/5 border-white/5 opacity-10' : `${data.color} ${data.border} shadow-lg ${data.glow} scale-100`}`}
-              >
+              <div key={i} className={`w-16 h-16 md:w-20 md:h-20 flex flex-col items-center justify-center border transition-all duration-200 relative overflow-hidden ${!val ? 'opacity-10 border-sky-900/20' : `${data.color} ${data.border} shadow-lg ${data.glow}`}`}
+                style={!val ? {background:'rgba(125,211,252,0.03)'} : {}}>
                 {val && (
                   <div className="relative z-10 flex flex-col items-center">
-                    <span className={`text-[8px] font-black uppercase text-center leading-none px-1 mb-1 tracking-tighter ${data.text}`}>
-                      {data.label}
-                    </span>
-                    <span className={`text-lg md:text-2xl font-black tracking-tighter ${data.text}`}>
-                      {val}
-                    </span>
-                    {data?.special && (
-                      <div className="absolute inset-[-10px] border border-white animate-ping opacity-20" />
-                    )}
+                    <span className={`text-[7px] font-black uppercase text-center leading-none px-1 mb-1 tracking-tighter ${data.text}`}>{data.label}</span>
+                    <span className={`text-lg md:text-2xl font-black tracking-tighter ${data.text}`}>{val}</span>
+                    {data?.special && <div className="absolute inset-[-10px] border border-white animate-ping opacity-20" />}
                   </div>
                 )}
-                {val && <div className="absolute inset-0 bg-scanlines opacity-10 pointer-events-none" />}
               </div>
             );
           })}
         </div>
 
-        {/* TERMINAL OVERLAY */}
         {gameOver && (
-          <div className="absolute inset-0 bg-black/95 flex flex-col items-center justify-center z-[100] p-12 text-center animate-in zoom-in duration-300">
-            <div className="w-16 h-16 border-2 border-red-500 mb-8 flex items-center justify-center rotate-45">
-              <Skull size={32} className="text-red-500 -rotate-45" />
-            </div>
-            <h2 className="text-white font-black text-3xl mb-2 italic uppercase tracking-tighter">Liquidated</h2>
-            <p className="text-zinc-600 text-[10px] mb-12 uppercase tracking-[0.4em] max-w-[240px] leading-relaxed">
-              Strategic protocol overflowed.<br/>Stability reached 0x00.
-            </p>
-            <button 
-              onClick={initGame} 
-              className="w-full bg-white text-black font-black py-5 uppercase italic hover:bg-zinc-200 active:scale-95 transition-all text-xs tracking-widest"
-            >
-              Re-Open Terminal
+          <div className="absolute inset-0 flex flex-col items-center justify-center z-[100] p-12 text-center" style={{background:'rgba(3,10,25,0.97)'}}>
+            <span className="text-6xl mb-6 animate-bounce">🐧</span>
+            <h2 className="text-white font-black text-3xl mb-2 italic uppercase tracking-tighter">Waddled Off</h2>
+            <p className="text-sky-600 text-[10px] mb-12 uppercase tracking-[0.3em] max-w-[240px] leading-relaxed">The colony ran out of fish.<br/>Time to regroup.</p>
+            <button onClick={initGame} className="w-full py-5 font-black uppercase italic hover:brightness-110 active:scale-95 transition-all text-xs tracking-widest text-sky-900" style={{background:'#7DD3FC'}}>
+              🐧 Waddle Again
             </button>
           </div>
         )}
       </div>
 
-      {/* TICKER */}
-      <div className="bg-black py-4 border-t border-white/5 overflow-hidden whitespace-nowrap">
-        <div className="flex gap-20 animate-marquee text-[10px] font-black text-white/5 tracking-[0.5em] uppercase">
-          <span>*** MERGE OR DIE *** STRATEGY_FIRST *** NO PAPER HANDS *** SYSTEM_V5.4 *** MERGE OR DIE ***</span>
-          <span>*** MERGE OR DIE *** STRATEGY_FIRST *** NO PAPER HANDS *** SYSTEM_V5.4 *** MERGE OR DIE ***</span>
+      <div className="py-4 border-t overflow-hidden whitespace-nowrap" style={{background:'rgba(0,0,0,0.5)', borderColor:'rgba(125,211,252,0.1)'}}>
+        <div className="flex gap-20 text-[10px] font-black tracking-[0.5em] uppercase" style={{animation:'marquee 30s linear infinite', color:'rgba(125,211,252,0.1)'}}>
+          <span>*** WADDLE OR NOTHING *** NO PAPER FLIPPERS *** FISH FIRST *** COLONY_STRONG *** HONK HONK ***</span>
+          <span>*** WADDLE OR NOTHING *** NO PAPER FLIPPERS *** FISH FIRST *** COLONY_STRONG *** HONK HONK ***</span>
         </div>
       </div>
-
-      <style>{`
-        .animate-marquee { animation: marquee 30s linear infinite; } 
-        @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }
-        @keyframes glitch {
-          0% { transform: translate(0); }
-          20% { transform: translate(-4px, 4px); }
-          40% { transform: translate(4px, -4px); }
-          60% { transform: translate(-4px, -2px); }
-          100% { transform: translate(0); }
-        }
-        .animate-glitch { animation: glitch 0.1s infinite; }
-        .bg-scanlines { background: repeating-linear-gradient(0deg, rgba(0,0,0,0.3), rgba(0,0,0,0.3) 1px, transparent 1px, transparent 2px); }
-        .bg-grid-lines { background-size: 30px 30px; background-image: linear-gradient(to right, white 1px, transparent 1px), linear-gradient(to bottom, white 1px, transparent 1px); }
-      `}</style>
+      <style>{`.animate-marquee { animation: marquee 30s linear infinite; } @keyframes marquee { 0% { transform: translateX(0); } 100% { transform: translateX(-50%); } }`}</style>
     </div>
   );
 };
 
-
-//forgeit
-
-// --- CONFIGURATION ---
+// --- FORGE IT (FORGE PENGU) ---
 const UNLIMITED_THRESHOLD = 3000000; 
 const HOLDER_THRESHOLD = 500000;
 const LIMIT_ELITE = 99999;
-const LIMIT_HOLDER = 99999; // Unlocked
-const LIMIT_GUEST = 99999;  // Unlocked
+const LIMIT_HOLDER = 99999;
+const LIMIT_GUEST = 99999;
 const REFRESH_INTERVAL_MS = 6 * 60 * 60 * 1000; 
-
-const APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'it-forge-cult';
+const APP_ID = typeof __app_id !== 'undefined' ? __app_id : 'pengu-forge-colony';
 const BASE_CHARACTER_PATH = "main.jpg";
 
-// --- TRAIT LIBRARY ---
 const PFP_CATEGORIES = [
   { id: 'bg', label: 'WORLD', icon: Image },
   { id: 'head', label: 'HATS', icon: Star },
   { id: 'expression', label: 'VIBE', icon: Smile },
-  { id: 'mask', label: 'BAG', icon: Ghost },
-  { id: 'shirts', label: 'FIT', icon: Shirt },
   { id: 'item', label: 'PROP', icon: Gift },
   { id: 'glasses', label: 'SPECS', icon: Glasses },
   { id: 'aura', label: 'AURA', icon: Zap },
@@ -4369,204 +1341,135 @@ const PFP_CATEGORIES = [
 
 const PFP_TRAITS = {
   bg: [
-    { id: 'plain', label: 'Plain Off-White', prompt: 'standing against a simple flat artsy off-white background' },
-    { id: 'notebook', label: 'Notebook Doodles', prompt: 'standing against a paper background covered in artsy pencil doodles and sketches' },
-    { id: 'cardboard', label: 'Cardboard Texture', prompt: 'against a rough brown recycled cardboard texture' },
-    { id: 'pastel', label: 'Pastel Gradient', prompt: 'standing against a soft pastel purple and teal gradient' },
-    { id: 'crumpled', label: 'Crumpled Paper', prompt: 'against a textured crumpled white paper background' },
-    { id: 'polka', label: 'Polka Chaos', prompt: 'against a flat colorful polka dot pattern' },
+    { id: 'plain', label: 'Arctic White', prompt: 'standing against a simple flat icy off-white background' },
+    { id: 'ice', label: 'Ice Sheet', prompt: 'standing on a vast flat frozen ice sheet under a pale sky' },
+    { id: 'ocean', label: 'Polar Ocean', prompt: 'standing at the edge of a dark icy polar ocean at dawn' },
+    { id: 'doodles', label: 'Notebook Doodles', prompt: 'standing against a paper background covered in cute penguin pencil doodles' },
+    { id: 'pastel', label: 'Pastel Gradient', prompt: 'standing against a soft icy blue and lavender pastel gradient' },
+    { id: 'polka', label: 'Polka Chaos', prompt: 'against a flat colorful polka dot pattern with snowflake motifs' },
     { id: 'grid', label: 'Blueprint Grid', prompt: 'against a blue industrial blueprint grid background' },
-    { id: 'sunset', label: 'Sunset Wash', prompt: 'against a flat artsy sunset gradient wash' },
-    { id: 'midnight', label: 'Midnight Grain', prompt: 'against a deep grainy midnight blue artsy background' },
-    { id: 'graffiti', label: 'Graffiti Wall', prompt: 'against a wall with messy graffiti tags and "IT" logos' },
-    { id: 'penthouse', label: 'Penthouse Balcony', prompt: 'on a luxury balcony with a gold and black city skyline at night', vip: true },
-    { id: 'sim', label: 'The Simulation', prompt: 'in a matrix void made of infinite green IT text repeating', vip: true },
+    { id: 'night_ice', label: 'Night Glacier', prompt: 'against a deep midnight blue glacial ice cliff with aurora lights' },
+    { id: 'graffiti', label: 'Graffiti Wall', prompt: 'against a wall covered in penguin graffiti tags' },
+    { id: 'colony', label: 'The Colony', prompt: 'standing in front of a crowd of tiny penguin silhouettes on an iceberg', vip: true },
+    { id: 'space_ice', label: 'Glacier in Space', prompt: 'floating on a chunk of ice in outer space with stars and galaxies', vip: true },
     { id: 'gold_leaf', label: 'Gold Leaf Canvas', prompt: 'against a high-contrast black canvas with real gold leaf textures', vip: true },
   ],
   head: [
     { id: 'none', label: 'None', prompt: 'no headgear' },
-    { id: 'beanie', label: 'Wool Beanie', prompt: 'wearing a slouched grey wool beanie' },
-    { id: 'backward', label: 'Backward Red Cap', prompt: 'wearing a backward red baseball cap' },
-    { id: 'baseball', label: 'Baseball Cap', prompt: 'wearing a tilted blue baseball cap' },
+    { id: 'beanie', label: 'Wool Beanie', prompt: 'wearing a slouched colorful wool beanie' },
+    { id: 'backward', label: 'Backward Cap', prompt: 'wearing a backward baseball cap' },
+    { id: 'bucket', label: 'Bucket Hat', prompt: 'wearing a pastel fabric bucket hat' },
+    { id: 'cowboy', label: 'Cowboy Hat', prompt: 'wearing a classic brown cowboy hat slightly too big' },
+    { id: 'top_hat', label: 'Top Hat', prompt: 'wearing a dapper black top hat' },
+    { id: 'construction', label: 'Hard Hat', prompt: 'wearing a yellow construction helmet' },
     { id: 'party', label: 'Party Cone', prompt: 'wearing a colorful paper party cone hat' },
-    { id: 'bucket', label: 'Bucket Hat', prompt: 'wearing a fabric bucket hat' },
-    { id: 'cowboy', label: 'Cowboy Hat', prompt: 'wearing a classic brown cowboy hat' },
-    { id: 'fish', label: 'Fisherman Hat', prompt: 'wearing a green outdoor fisherman hat' },
-    { id: 'helmet', label: 'Construction Helmet', prompt: 'wearing a yellow construction helmet' },
-    { id: 'headset', label: 'Headphones', prompt: 'with large black headphones resting on the bag' },
-    { id: 'paper_crown', label: 'Paper Crown', prompt: 'wearing a hand-drawn paper crown' },
+    { id: 'snowflake_crown', label: 'Snowflake Crown', prompt: 'wearing a delicate crown made of ice and snowflakes', vip: true },
+    { id: 'halo', label: 'Halo', prompt: 'with a soft golden halo above the head', vip: true },
+    { id: 'devil', label: 'Devil Horns', prompt: 'with small red devil horns on its head', vip: true },
     { id: 'diamond_crown', label: 'Diamond Crown', prompt: 'with a floating diamond crown above the head', vip: true },
-    { id: 'halo', label: 'Artsy Halo', prompt: 'with a soft glowing golden halo above the head', vip: true },
-    { id: 'devil', label: 'Devil Horns', prompt: 'with small red ink devil horns on his head', vip: true },
   ],
   expression: [
-    { id: 'classic', label: 'Classic Smile', prompt: 'with his original small smile' },
-    { id: 'grin', label: 'Wide Grin', prompt: 'with a wide grin showing teeth drawn on the mask' },
-    { id: 'flat', label: 'Flat Face', prompt: 'with horizontal line eyes and mouth drawn on the mask' },
-    { id: 'o_face', label: 'O-Face', prompt: 'with a surprised O-shaped mouth drawn on the mask' },
-    { id: 'wink', label: 'Wink', prompt: 'with one eye closed in a wink drawn on the mask' },
-  ],
-  mask: [
-    { id: 'kraft', label: 'Classic Kraft', prompt: 'the mask is a classic brown paper bag texture' },
-    { id: 'grey', label: 'Recycled Grey', prompt: 'the mask is a rough industrial grey cardboard look' },
-    { id: 'matte', label: 'Midnight Matte', prompt: 'the mask is a deep charcoal black paper texture' },
-    { id: 'white', label: 'Grocery White', prompt: 'the mask is a bleached white grocery paper bag' },
-    { id: 'gold_foil', label: 'Golden Foil', prompt: 'the mask is a shiny metallic gold material', vip: true },
-    { id: 'holographic', label: 'Holographic Static', prompt: 'the mask has a shifting rainbow glitch holographic effect', vip: true },
-  ],
-  shirts: [
-    { id: 'none', label: 'None', prompt: 'not wearing a shirt' },
-    { id: 'classic_it', label: 'Classic IT', prompt: 'wearing a white tee with the word "IT" printed in black ink' },
-    { id: 'red_it', label: 'IT (Red Ink)', prompt: 'wearing a white tee with the word "IT" printed in red ink' },
-    { id: 'blank', label: 'Blank Tee', prompt: 'wearing a simple blank white t-shirt' },
-    { id: 'striped', label: 'Striped Tee', prompt: 'wearing a black and white horizontal striped t-shirt' },
-    { id: 'hoodie', label: 'Baggy Hoodie', prompt: 'wearing a thick oversized baggy grey hoodie' },
-    { id: 'crop', label: 'Crop Tee', prompt: 'wearing a short white crop top' },
-    { id: 'long', label: 'Long Sleeve', prompt: 'wearing a simple black long sleeve shirt' },
-    { id: 'tourist', label: 'The Tourist', prompt: 'wearing a red tee that says "I ❤️ IT"' },
-    { id: 'skeleton', label: 'Skeleton Ribs', prompt: 'wearing a black tee with X-ray ribs and "IT" logo' },
-    { id: 'tank', label: 'Tank Top', prompt: 'wearing a simple white tank top' },
-    { id: 'business', label: 'Business Casual', prompt: 'wearing a blue collared shirt with "IT" logo' },
-    { id: 'torn', label: 'Torn Shirt', prompt: 'wearing a dirty shredded and torn white t-shirt' },
-    { id: 'not_it', label: 'NOT IT Tee', prompt: 'wearing a white tee that says NOT IT' },
-    { id: 'gold_foil_it', label: 'Gold-Foil IT', prompt: 'wearing a black tee with gold foil "IT" logo', vip: true },
-    { id: 'monogram_it', label: 'Crowned IT', prompt: 'wearing a monogrammed shirt with "IT" logos and a crown', vip: true },
+    { id: 'classic', label: 'Happy Honk', prompt: 'with a classic happy penguin expression' },
+    { id: 'grin', label: 'Big Grin', prompt: 'with a wide open happy grin' },
+    { id: 'side_eye', label: 'Side Eye', prompt: 'with a suspicious side-eye expression' },
+    { id: 'wink', label: 'Wink', prompt: 'with one eye closed in a cheeky wink' },
+    { id: 'derp', label: 'Derp Face', prompt: 'with a silly derp cross-eyed expression' },
+    { id: 'cool', label: 'Too Cool', prompt: 'with a smug unbothered cool expression' },
   ],
   item: [
     { id: 'none', label: 'None', prompt: 'holding nothing' },
-    { id: 'paint', label: 'Paintbrush', prompt: 'holding a wooden paintbrush dripping with paint' },
-    { id: 'coffee', label: 'Coffee Cup', prompt: 'holding a white paper coffee cup' },
-    { id: 'phone', label: 'Cracked Phone', prompt: 'holding a smartphone with a cracked screen' },
-    { id: 'lolly', label: 'Lollipop', prompt: 'holding a swirl lollipop' },
-    { id: 'skate', label: 'Skateboard', prompt: 'holding a small skateboard deck' },
-    { id: 'donut', label: 'Pink Donut', prompt: 'holding a pink frosted donut with sprinkles' },
-    { id: 'game', label: 'Controller', prompt: 'holding a grey video game controller' },
-    { id: 'coin', label: 'IT Coin', prompt: 'holding a giant gold coin with the characters "$IT" engraved on it' },
-    { id: 'balloon', label: 'Balloon', prompt: 'holding a red balloon' },
-    { id: 'key', label: 'Golden Key', prompt: 'holding a large antique golden key', vip: true },
-    { id: 'orb', label: 'Glowing Orb', prompt: 'holding a mysterious glowing blue orb', vip: true },
+    { id: 'fish', label: 'Big Fish 🐟', prompt: 'proudly holding a large fish' },
+    { id: 'coffee', label: 'Coffee Cup', prompt: 'holding a steaming coffee cup' },
+    { id: 'phone', label: 'Phone', prompt: 'holding a smartphone showing a green candle chart' },
+    { id: 'coin', label: 'PENGU Coin', prompt: 'holding a giant gold coin with "PENGU" engraved on it' },
+    { id: 'sign', label: 'WAGMI Sign', prompt: 'holding a handmade cardboard sign that says WAGMI' },
+    { id: 'umbrella', label: 'Umbrella', prompt: 'holding a colorful polka dot umbrella' },
+    { id: 'balloon', label: 'Fish Balloon', prompt: 'holding a fish-shaped balloon' },
+    { id: 'orb', label: 'Ice Orb', prompt: 'holding a glowing magical ice orb', vip: true },
+    { id: 'trident', label: 'Penguin Trident', prompt: 'holding a miniature ice trident', vip: true },
   ],
   glasses: [
-    { id: 'none', label: 'None', prompt: 'not wearing any eyewear' },
-    { id: 'nerd', label: 'Nerd Glasses', prompt: 'wearing thick round nerd glasses' },
-    { id: 'square', label: 'Square Frames', prompt: 'wearing black square frame glasses' },
-    { id: 'shades', label: 'Oversized Shades', prompt: 'wearing massive dark sunglasses' },
-    { id: 'readers', label: 'Half-Moon Readers', prompt: 'wearing reading glasses on the edge of the bag' },
-    { id: 'cracked', label: 'Cracked Lens', prompt: 'wearing glasses with one shattered lens' },
-    { id: 'yellow', label: 'Tinted Yellow', prompt: 'wearing yellow tinted sunglasses' },
-    { id: 'pixel', label: 'Pixel Glasses', prompt: 'wearing black pixelated glasses' },
-    { id: 'deal', label: 'Deal With It', prompt: 'wearing black pixel shades with white glint' },
-    { id: 'sleep', label: 'Sleep Mask', prompt: 'wearing a fluffy eye mask' },
-    { id: 'laser', label: 'Laser Eyes', prompt: 'with intense red laser beams coming from eyes', vip: true },
-    { id: 'diamond_shades', label: 'Diamond Frames', prompt: 'wearing glasses made of solid diamonds', vip: true },
-    { id: 'monocle', label: 'One-Lens Monocle', prompt: 'wearing a golden monocle over one eye', vip: true },
+    { id: 'none', label: 'None', prompt: 'no eyewear' },
+    { id: 'round', label: 'Round Specs', prompt: 'wearing cute round glasses' },
+    { id: 'shades', label: 'Big Sunglasses', prompt: 'wearing huge oversized sunglasses' },
+    { id: 'ski', label: 'Ski Goggles', prompt: 'wearing orange ski goggles' },
+    { id: 'monocle', label: 'Monocle', prompt: 'wearing a fancy golden monocle' },
+    { id: 'cracked', label: 'Cracked Lens', prompt: 'wearing glasses with one cracked lens' },
+    { id: 'vr', label: 'VR Headset', prompt: 'wearing a VR headset pushed up on its forehead' },
+    { id: 'laser', label: 'Laser Eyes', prompt: 'with red laser beams shooting from eyes', vip: true },
+    { id: 'diamond', label: 'Diamond Frames', prompt: 'wearing glasses made of solid diamonds', vip: true },
   ],
   aura: [
-    { id: 'none', label: 'None', prompt: 'no aura effects' },
-    { id: 'pencil', label: 'Pencil Glow', prompt: 'surrounded by a soft pencil sketch glow' },
-    { id: 'heavy', label: 'Heavy Ink', prompt: 'with a very thick black ink outline' },
-    { id: 'shaky', label: 'Shaky Lines', prompt: 'with vibrating shaky sketch outlines' },
-    { id: 'chalk', label: 'Chalk Smudge', prompt: 'surrounded by messy chalk smudge effects' },
-    { id: 'neon', label: 'Neon Edge', prompt: 'with a thin glowing blue neon outline' },
-    { id: 'shadow', label: 'Shadow Clone', prompt: 'with a dark artsy echo behind him' },
-    { id: 'motion', label: 'Motion Blur', prompt: 'with artsy motion blur lines' },
-    { id: 'static', label: 'Static Buzz', prompt: 'with a digital static noise effect' },
-    { id: 'gold_aura', label: 'Golden Radiance', prompt: 'surrounded by a glowing golden aura', vip: true },
-    { id: 'reality', label: 'Reality Tear', prompt: 'with glowing rainbow glitch outlines', vip: true },
+    { id: 'none', label: 'None', prompt: 'no special aura' },
+    { id: 'snow', label: 'Snow Flurry', prompt: 'surrounded by gently falling snowflakes' },
+    { id: 'ice_glow', label: 'Ice Glow', prompt: 'with a soft cool icy blue glow surrounding them' },
+    { id: 'fish_rain', label: 'Fish Rain', prompt: 'with tiny fish raining down around them' },
+    { id: 'aurora', label: 'Aurora Effect', prompt: 'surrounded by swirling aurora borealis colors' },
+    { id: 'static', label: 'Static Buzz', prompt: 'with a digital static glitch effect surrounding them' },
+    { id: 'rainbow', label: 'Rainbow Outline', prompt: 'with a rainbow-colored outline aura', vip: true },
+    { id: 'gold_aura', label: 'Golden Glow', prompt: 'surrounded by a warm golden radiance', vip: true },
   ],
   super: [
-    { id: 'none', label: 'None', prompt: 'keeping his regular appearance' },
-    { id: 'spiderman', label: 'Spiderman', prompt: 'fully transformed into an artsy Spiderman-themed version of himself', vip: true },
-    { id: 'batman', label: 'Batman', prompt: 'fully transformed into an artsy Batman-themed version of himself', vip: true },
-    { id: 'superman', label: 'Superman', prompt: 'fully transformed into an artsy Superman-themed version of himself', vip: true },
-    { id: 'flash', label: 'The Flash', prompt: 'fully transformed into an artsy Flash-themed version of himself', vip: true },
-    { id: 'devil_e', label: 'Devil Spirit', prompt: 'fully transformed into a red devil version of himself', vip: true },
-    { id: 'angel_e', label: 'Angel Spirit', prompt: 'fully transformed into a white glowing angel version of himself', vip: true },
+    { id: 'none', label: 'None', prompt: 'regular pengu appearance' },
+    { id: 'superhero', label: 'Superhero', prompt: 'fully transformed into a penguin superhero with cape and chest logo', vip: true },
+    { id: 'knight', label: 'Ice Knight', prompt: 'fully transformed into an ice knight in crystalline armor', vip: true },
+    { id: 'astronaut', label: 'Astronaut', prompt: 'fully transformed into a penguin astronaut in a space suit', vip: true },
+    { id: 'pirate', label: 'Pirate Pengu', prompt: 'fully transformed into a pirate penguin with eyepatch and hook', vip: true },
+    { id: 'wizard', label: 'Ice Wizard', prompt: 'fully transformed into a penguin wizard with a pointy hat and glowing staff', vip: true },
   ]
 };
 
-
 const ForgeItApp = () => {
   const [user, setUser] = useState(null);
-  const [tokenBalance, setTokenBalance] = useState(0);
-  
-  // --- UNLOCK OVERRIDE (Set both to true for 24h Promo) ---
   const hasEliteAccess = true;
   const hasHolderAccess = true;
-  
   const [dailyCount, setDailyCount] = useState(0); 
   const [isSyncing, setIsSyncing] = useState(true);
-  const [showMobileBlueprint, setShowMobileBlueprint] = useState(false);
   const [isRandomizing, setIsRandomizing] = useState(false);
   const [trustMode, setTrustMode] = useState(false);
   const [cloneImage, setCloneImage] = useState(null);
   const fileInputRef = useRef(null);
   
   const apiKey = (() => {
-    try {
-      if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_APP_GEMINI) return import.meta.env.VITE_APP_GEMINI;
-    } catch (e) {}
-    try {
-      if (typeof process !== 'undefined' && process.env?.VITE_APP_GEMINI) return process.env.VITE_APP_GEMINI;
-    } catch (e) {}
-    try {
-      if (typeof window !== 'undefined' && window.VITE_APP_GEMINI) return window.VITE_APP_GEMINI;
-    } catch (e) {}
+    try { if (typeof import.meta !== 'undefined' && import.meta.env?.VITE_APP_GEMINI) return import.meta.env.VITE_APP_GEMINI; } catch (e) {}
+    try { if (typeof process !== 'undefined' && process.env?.VITE_APP_GEMINI) return process.env.VITE_APP_GEMINI; } catch (e) {}
+    try { if (typeof window !== 'undefined' && window.VITE_APP_GEMINI) return window.VITE_APP_GEMINI; } catch (e) {}
     return typeof __apiKey !== 'undefined' ? __apiKey : "";
   })();
 
   const [selections, setSelections] = useState({
     bg: PFP_TRAITS.bg[0], head: PFP_TRAITS.head[0], expression: PFP_TRAITS.expression[0],
-    mask: PFP_TRAITS.mask[0], shirts: PFP_TRAITS.shirts[0], item: PFP_TRAITS.item[0],
-    glasses: PFP_TRAITS.glasses[0], aura: PFP_TRAITS.aura[0], super: PFP_TRAITS.super[0],
+    item: PFP_TRAITS.item[0], glasses: PFP_TRAITS.glasses[0], aura: PFP_TRAITS.aura[0], super: PFP_TRAITS.super[0],
   });
   
   const [activeCat, setActiveCat] = useState('bg');
   const [generatedImg, setGeneratedImg] = useState(null);
   const [isForging, setIsForging] = useState(false);
   const [progress, setProgress] = useState(0);
-  const [logs, setLogs] = useState(["NEURAL_LINK_ESTABLISHED", "MATRIX_RESERVES_STANDBY"]);
+  const [logs, setLogs] = useState(["🐧 COLONY_FORGE_READY", "❄️ ICE_RESERVES_STANDBY"]);
   const [error, setError] = useState(null);
 
-  const currentLimit = LIMIT_ELITE; // Promo Override
+  const currentLimit = LIMIT_ELITE;
 
   useEffect(() => {
     const initAuth = async () => {
-      if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-        await signInWithCustomToken(auth, __initial_auth_token);
-      } else {
-        await signInAnonymously(auth);
-      }
+      if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) await signInWithCustomToken(auth, __initial_auth_token);
+      else await signInAnonymously(auth);
     };
     initAuth();
-    const unsubscribe = onAuthStateChanged(auth, (u) => {
-      if (u) setUser(u);
-    });
+    const unsubscribe = onAuthStateChanged(auth, (u) => { if (u) setUser(u); });
     return () => unsubscribe();
   }, []);
 
-  // Sync usage but limit is forced high anyway
   useEffect(() => {
     if (!user) return;
     setIsSyncing(true);
     const usageRef = doc(db, 'artifacts', APP_ID, 'users', user.uid, 'usage', 'forge_limits');
     const unsub = onSnapshot(usageRef, (snap) => {
-      if (snap.exists()) {
-        const data = snap.data();
-        const now = Date.now();
-        if (now - (data.lastReset || 0) > REFRESH_INTERVAL_MS) {
-          setDailyCount(0);
-        } else {
-          setDailyCount(data.count || 0);
-        }
-      } else {
-        setDailyCount(0);
-      }
+      if (snap.exists()) { const data = snap.data(); const now = Date.now(); if (now - (data.lastReset || 0) > REFRESH_INTERVAL_MS) setDailyCount(0); else setDailyCount(data.count || 0); }
+      else setDailyCount(0);
       setIsSyncing(false);
-    }, (err) => {
-      console.error("Quota Sync Error", err);
-      setIsSyncing(false);
-    });
+    }, (err) => { console.error("Quota Sync Error", err); setIsSyncing(false); });
     return () => unsub();
   }, [user]);
 
@@ -4575,70 +1478,32 @@ const ForgeItApp = () => {
   const handleTraitSelect = (catId, trait) => {
     setSelections(prev => {
       const next = { ...prev, [catId]: trait };
-      if (catId === 'super' && trait.id !== 'none') {
-        next.head = PFP_TRAITS.head[0];
-        next.shirts = PFP_TRAITS.shirts[0];
-        next.item = PFP_TRAITS.item[0];
-        next.glasses = PFP_TRAITS.glasses[0];
-        next.expression = PFP_TRAITS.expression[0];
-        next.mask = PFP_TRAITS.mask[0];
-        setCloneImage(null);
-      } 
-      else if (['head', 'shirts', 'item', 'glasses', 'expression', 'mask'].includes(catId) && trait.id !== 'none') {
-        next.super = PFP_TRAITS.super[0];
-        setCloneImage(null);
-      }
+      if (catId === 'super' && trait.id !== 'none') { next.head = PFP_TRAITS.head[0]; next.item = PFP_TRAITS.item[0]; next.glasses = PFP_TRAITS.glasses[0]; next.expression = PFP_TRAITS.expression[0]; setCloneImage(null); }
+      else if (['head','item','glasses','expression'].includes(catId) && trait.id !== 'none') { next.super = PFP_TRAITS.super[0]; setCloneImage(null); }
       setTrustMode(false);
       return next;
     });
   };
 
   const handleRandomize = () => {
-    setIsRandomizing(true);
-    setTrustMode(false);
-    setCloneImage(null);
-    addLog("SHUFFLING_MATRIX...");
-    const iterations = 10;
+    setIsRandomizing(true); setTrustMode(false); setCloneImage(null); addLog("🎲 SHUFFLING_COLONY...");
     let count = 0;
     const interval = setInterval(() => {
       const newSels = {};
-      Object.keys(PFP_TRAITS).forEach(cat => {
-        if (cat === 'super' || cat === 'clone') {
-          newSels[cat] = PFP_TRAITS[cat][0];
-          return;
-        }
-        const items = PFP_TRAITS[cat];
-        newSels[cat] = items[Math.floor(Math.random() * items.length)];
-      });
+      Object.keys(PFP_TRAITS).forEach(cat => { if (cat === 'super' || cat === 'clone') { newSels[cat] = PFP_TRAITS[cat][0]; return; } const items = PFP_TRAITS[cat]; newSels[cat] = items[Math.floor(Math.random() * items.length)]; });
       setSelections(prev => ({...prev, ...newSels}));
       count++;
-      if (count >= iterations) {
-        clearInterval(interval);
-        setIsRandomizing(false);
-        addLog("RANDOM_TRAITS_LOCKED.");
-      }
+      if (count >= 10) { clearInterval(interval); setIsRandomizing(false); addLog("🐧 RANDOM_PENGU_LOCKED."); }
     }, 60);
   };
 
-  const handleTrustIt = () => {
-    setTrustMode(true);
-    setCloneImage(null);
-    addLog("GRANTING_SYSTEM_IMAGINATION...");
-    const defaults = {};
-    Object.keys(PFP_TRAITS).forEach(k => defaults[k] = PFP_TRAITS[k][0]);
-    setSelections(defaults);
-    addLog("TRUST_VIBE_ACTIVE.");
-  };
+  const handleTrustIt = () => { setTrustMode(true); setCloneImage(null); addLog("🐟 GRANTING_PENGU_IMAGINATION..."); const defaults = {}; Object.keys(PFP_TRAITS).forEach(k => defaults[k] = PFP_TRAITS[k][0]); setSelections(defaults); addLog("❄️ TRUST_COLONY_ACTIVE."); };
 
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
       const reader = new FileReader();
-      reader.onloadend = () => {
-        setCloneImage(reader.result.split(',')[1]);
-        setTrustMode(false);
-        addLog("SOURCE_PFP_LOADED. READY_TO_CLONE.");
-      };
+      reader.onloadend = () => { setCloneImage(reader.result.split(',')[1]); setTrustMode(false); addLog("📸 SOURCE_PFP_LOADED. READY_TO_CLONE."); };
       reader.readAsDataURL(file);
     }
   };
@@ -4647,60 +1512,44 @@ const ForgeItApp = () => {
     try {
       const response = await fetch(BASE_CHARACTER_PATH);
       const blob = await response.blob();
-      return new Promise((resolve) => {
-        const reader = new FileReader();
-        reader.onloadend = () => resolve(reader.result.split(',')[1]);
-        reader.readAsDataURL(blob);
-      });
+      return new Promise((resolve) => { const reader = new FileReader(); reader.onloadend = () => resolve(reader.result.split(',')[1]); reader.readAsDataURL(blob); });
     } catch (e) { return null; }
   };
 
   const handleForge = async () => {
     if (isForging) return;
-    if (!user || isSyncing) { setError("SYNCING_QUOTA... WAIT."); return; }
-
-    if (!apiKey) { setError("IDENTIFIER_ERROR: VITE_APP_GEMINI missing."); return; }
+    if (!user || isSyncing) { setError("SYNCING... WAIT."); return; }
+    if (!apiKey) { setError("API_KEY_MISSING: VITE_APP_GEMINI not set."); return; }
 
     setIsForging(true); setGeneratedImg(null); setProgress(0); setError(null);
-    setLogs(["LOCKING_BLUEPRINT...", "PRESERVING_BODY_SHAPE...", "CALCULATING_DECORATIONS..."]);
+    setLogs(["🐧 LOCKING_BLUEPRINT...", "❄️ PRESERVING_PENGU_SHAPE...", "🐟 ADDING_TRAITS..."]);
 
     const progTimer = setInterval(() => setProgress(prev => prev < 95 ? prev + Math.random() * 5 : prev), 600);
 
     try {
       const base64Image = await getBaseCharacter64();
-      if (!base64Image) throw new Error("Character base not found.");
+      if (!base64Image) throw new Error("Pengu base image not found.");
 
       let promptText = "";
-      const contentParts = [
-        { text: "" },
-        { inlineData: { mimeType: "image/png", data: base64Image } }
-      ];
+      const contentParts = [{ text: "" }, { inlineData: { mimeType: "image/png", data: base64Image } }];
 
       if (cloneImage) {
         contentParts.push({ inlineData: { mimeType: "image/png", data: cloneImage } });
-        promptText = `ARTSY CLONE PFP SYSTEM. Map vibe/clothing/items/accessories from Image 2 to Image 1 (paper head guy). DO NOT CHANGE Image 1 body shape or mask or pose. 90s Artsy style. High-contrast IT branding.`;
+        promptText = `PENGUIN PFP CLONE SYSTEM. Take the vibe, clothing, accessories from Image 2 and map them onto the penguin character in Image 1. DO NOT CHANGE the penguin body shape or pose. Keep it cute and cartoonish.`;
       } else if (trustMode) {
-        promptText = `ARTSY FUN CREATIVE DECORATION. Use imagination for silly hats/vests. MAINTAIN exact paper bag mask head and body shape. NO human anatomy. 90s Artsy style. High-contrast IT branding logo.`;
+        promptText = `CREATIVE PENGUIN DECORATION. Use imagination to add funny accessories and outfits to this penguin character. MAINTAIN exact penguin body shape and pose. Make it cute, fun, and unique. Cartoonish art style.`;
       } else if (selections.super.id !== 'none') {
-        promptText = `ARTSY SUPERHERO TRANSFORMATION. KEEP core mask and anatomy silhouette. TRANSFORM: ${selections.super.prompt} by layering details. High-contrast IT logo on chest.`;
+        promptText = `PENGUIN TRANSFORMATION. Keep the core penguin shape and anatomy. TRANSFORM: ${selections.super.prompt}. Keep it cute and cartoonish.`;
       } else {
-        const activeTraits = Object.entries(selections)
-          .filter(([cat, trait]) => trait.id !== 'none' && trait.id !== 'clean' && trait.id !== 'neutral')
-          .map(([cat, trait]) => trait.prompt)
-          .join(', ');
-
-        promptText = `ARTSY PFP FORGE. LAYER SYSTEM. DO NOT CHANGE silhouette/pose. 90s Artsy Anime style. ADD: ${activeTraits}. IT logo branding on shirt/hat.`;
+        const activeTraits = Object.entries(selections).filter(([cat, trait]) => trait.id !== 'none').map(([cat, trait]) => trait.prompt).join(', ');
+        promptText = `PENGUIN PFP FORGE. DO NOT CHANGE the penguin silhouette or pose. ADD these traits: ${activeTraits}. Cute cartoonish style. Keep it charming and adorable.`;
       }
 
       contentParts[0].text = promptText;
 
       const response = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-image:generateContent?key=${apiKey}`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          contents: [{ parts: contentParts }],
-          generationConfig: { responseModalities: ["TEXT", "IMAGE"] }
-        })
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ contents: [{ parts: contentParts }], generationConfig: { responseModalities: ["TEXT", "IMAGE"] } })
       });
 
       if (!response.ok) throw new Error(`API_ERROR: ${response.status}`);
@@ -4712,94 +1561,68 @@ const ForgeItApp = () => {
           const usageRef = doc(db, 'artifacts', APP_ID, 'users', user.uid, 'usage', 'forge_limits');
           const snap = await getDoc(usageRef);
           const now = Date.now();
-          if (snap.exists() && (now - (snap.data().lastReset || 0) < REFRESH_INTERVAL_MS)) {
-             await updateDoc(usageRef, { count: increment(1) });
-          } else {
-             await setDoc(usageRef, { count: 1, lastReset: now }, { merge: true });
-          }
+          if (snap.exists() && (now - (snap.data().lastReset || 0) < REFRESH_INTERVAL_MS)) await updateDoc(usageRef, { count: increment(1) });
+          else await setDoc(usageRef, { count: 1, lastReset: now }, { merge: true });
         } catch (dbErr) { console.warn("Usage Tracker Fail", dbErr); }
 
-        setTimeout(() => {
-          setGeneratedImg(`data:image/png;base64,${base64Result}`);
-          setProgress(100); 
-          addLog("MATERIALIZATION_SUCCESS.");
-          setError(null);
-          setIsForging(false);
-        }, 200);
-      } else { throw new Error("AI_RETURNED_EMPTY_RESPONSE"); }
+        setTimeout(() => { setGeneratedImg(`data:image/png;base64,${base64Result}`); setProgress(100); addLog("🐧 PENGU_MATERIALIZED!"); setError(null); setIsForging(false); }, 200);
+      } else { throw new Error("AI returned empty response."); }
     } catch (err) {
-      setError(err.message);
-      addLog("ERROR: SYSTEM_HALTED");
-      setIsForging(false);
+      setError(err.message); addLog("💀 ERROR: FORGE_HALTED"); setIsForging(false);
     } finally { clearInterval(progTimer); }
   };
 
-  const downloadPFP = () => {
-    if (!generatedImg) return;
-    const link = document.createElement('a');
-    link.href = generatedImg;
-    link.download = `CULT_FORGE_${Date.now()}.png`;
-    link.click();
-  };
+  const downloadPFP = () => { if (!generatedImg) return; const link = document.createElement('a'); link.href = generatedImg; link.download = `PENGU_FORGE_${Date.now()}.png`; link.click(); };
 
   return (
-    <div className="flex flex-col h-full bg-[#050505] text-zinc-300 font-mono overflow-hidden relative selection:bg-emerald-500 selection:text-black">
-      <div className="absolute inset-0 pointer-events-none opacity-[0.03] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,252,0.06))] bg-[length:100%_2px,3px_100%] z-[100]" />
-
-      <header className="h-12 border-b border-emerald-900/40 bg-black flex items-center justify-between px-4 shrink-0 z-[70]">
+    <div className="flex flex-col h-full text-sky-300 font-mono overflow-hidden relative" style={{background:'#050d1a'}}>
+      <header className="h-12 border-b flex items-center justify-between px-4 shrink-0 z-[70]" style={{background:'#030b14', borderColor:'#0369a1'}}>
         <div className="flex items-center gap-2">
-          <div className="p-1 border border-emerald-500/40 rounded-sm bg-black relative"><Cpu size={14} className="text-emerald-400" /></div>
-          <div className="flex flex-col">
-            <h1 className="text-[9px] font-black uppercase tracking-[0.3em] text-white italic leading-none">Forge_IT_Cult</h1>
-            <span className="text-[6px] text-zinc-600 font-bold uppercase mt-1 tracking-tighter">Forge_Engine_v6.1_PROMO</span>
-          </div>
+          <span className="text-2xl">🐧</span>
+          <div><h1 className="text-[9px] font-black uppercase tracking-[0.3em] text-white italic leading-none">Forge_Pengu_Colony</h1><span className="text-[6px] text-sky-700 font-bold uppercase mt-1 tracking-tighter">Forge_Engine_v6.1_PROMO</span></div>
         </div>
-        <div className="px-2 py-1 border border-yellow-500/40 bg-yellow-500/10 text-yellow-500 rounded-sm transition-all flex items-center gap-2 shadow-[0_0_15px_rgba(234,179,8,0.2)]">
-          <div className="flex flex-col items-end">
-            <span className="text-[8px] font-black uppercase tracking-tighter leading-none">GLOBAL_ACCESS_ACTIVE</span>
-            <span className="text-[6px] font-bold opacity-60 mt-0.5 tracking-widest uppercase italic">FORGES: UNLIMITED ♾️</span>
-          </div>
+        <div className="px-2 py-1 border flex items-center gap-2" style={{borderColor:'rgba(254,240,138,0.4)', background:'rgba(254,240,138,0.1)', color:'#FEF08A'}}>
+          <div><span className="text-[8px] font-black uppercase tracking-tighter leading-none block">COLONY_ACCESS_ACTIVE 🐧</span><span className="text-[6px] font-bold opacity-60 tracking-widest uppercase italic block mt-0.5">FORGES: UNLIMITED ♾️</span></div>
           <Crown size={12} className="animate-pulse" />
         </div>
       </header>
 
       <main className="flex-1 flex flex-col md:flex-row min-h-0 relative">
-        <div className="flex-1 flex flex-col border-r border-emerald-900/20 bg-[#080808] relative min-h-0">
-          <div className="flex md:grid md:grid-cols-10 border-b border-emerald-900/40 shrink-0 overflow-x-auto no-scrollbar bg-black/60 sticky top-0 z-40">
+        <div className="flex-1 flex flex-col border-r bg-[#060f1e] relative min-h-0" style={{borderColor:'rgba(3,105,161,0.2)'}}>
+          <div className="flex md:grid border-b shrink-0 overflow-x-auto no-scrollbar sticky top-0 z-40" style={{background:'rgba(3,11,20,0.9)', borderColor:'rgba(3,105,161,0.3)'}}>
             {PFP_CATEGORIES.map(cat => (
-              <button key={cat.id} onClick={() => setActiveCat(cat.id)} className={`p-4 min-w-[65px] flex-1 flex flex-col items-center gap-1.5 transition-all relative group ${activeCat === cat.id ? 'bg-emerald-500/10 text-emerald-400' : 'text-zinc-600'}`}>
-                <cat.icon size={16} className={`${activeCat === cat.id ? 'scale-110' : ''}`} />
+              <button key={cat.id} onClick={() => setActiveCat(cat.id)} className={`p-4 min-w-[65px] flex-1 flex flex-col items-center gap-1.5 transition-all relative ${activeCat === cat.id ? 'text-sky-300' : 'text-sky-800'}`}>
+                <cat.icon size={16} className={activeCat === cat.id ? 'scale-110' : ''}/>
                 <span className="text-[6px] font-black uppercase tracking-widest leading-none mt-1">{cat.label}</span>
-                {activeCat === cat.id && <div className="absolute bottom-0 inset-x-0 h-1 bg-emerald-500 shadow-[0_0_15px_#10b981]" />}
+                {activeCat === cat.id && <div className="absolute bottom-0 inset-x-0 h-1" style={{background:'#7DD3FC', boxShadow:'0 0 15px #7DD3FC'}}/>}
               </button>
             ))}
           </div>
 
-          <div className="flex-1 overflow-y-auto p-3 md:p-5 custom-scrollbar bg-[#050505]">
+          <div className="flex-1 overflow-y-auto p-3 md:p-5 pb-24 md:pb-5" style={{background:'#050d1a'}}>
             {activeCat === 'clone' ? (
-              <div className="flex flex-col items-center justify-center h-full gap-6 text-center animate-in fade-in duration-500">
-                <div className="p-8 border-2 border-dashed border-emerald-500/20 rounded-xl bg-black w-full max-w-sm shadow-[0_0_30px_#10b98111]">
-                  <Camera size={40} className="mx-auto text-emerald-500/40 mb-4" />
-                  <h3 className="text-sm font-black uppercase tracking-widest text-emerald-400 italic">Clone Source PFP</h3>
-                  <p className="text-[8px] text-zinc-500 mt-2 uppercase tracking-tighter leading-relaxed">Map vibes and outfit from your image onto our character blueprint.</p>
+              <div className="flex flex-col items-center justify-center h-full gap-6 text-center">
+                <div className="p-8 border-2 border-dashed w-full max-w-sm" style={{borderColor:'rgba(125,211,252,0.2)', background:'rgba(3,11,20,0.8)'}}>
+                  <span className="text-5xl block mb-4">🐧📸</span>
+                  <h3 className="text-sm font-black uppercase tracking-widest text-sky-300">Clone Source PFP</h3>
+                  <p className="text-[8px] text-sky-700 mt-2 uppercase tracking-tighter leading-relaxed">Upload any image to map its vibes onto your pengu.</p>
                   <input type="file" ref={fileInputRef} onChange={handleFileUpload} accept="image/*" className="hidden" />
-                  <button onClick={() => fileInputRef.current.click()} className="mt-6 w-full py-3 bg-emerald-500 text-black font-black uppercase text-[10px] hover:bg-emerald-400 transition-all flex items-center justify-center gap-2 shadow-lg">
-                    <Upload size={14} /> {cloneImage ? 'CHOOSE_ANOTHER' : 'UPLOAD_IMAGE'}
+                  <button onClick={() => fileInputRef.current.click()} className="mt-6 w-full py-3 font-black uppercase text-[10px] flex items-center justify-center gap-2 text-sky-900 hover:brightness-110 transition-all" style={{background:'#7DD3FC'}}>
+                    <Upload size={14}/>{cloneImage ? 'CHOOSE_ANOTHER' : 'UPLOAD_IMAGE 🐟'}
                   </button>
                 </div>
-                {cloneImage && <div className="p-1 border border-emerald-500/40 bg-black rounded-sm animate-in zoom-in-95"><img src={`data:image/png;base64,${cloneImage}`} className="w-32 h-32 object-cover grayscale opacity-60" /></div>}
+                {cloneImage && <div className="p-1 border" style={{borderColor:'rgba(125,211,252,0.4)'}}><img src={`data:image/png;base64,${cloneImage}`} className="w-32 h-32 object-cover grayscale opacity-60" /></div>}
               </div>
             ) : (
-              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 pb-24 md:pb-0">
+              <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2">
                 {PFP_TRAITS[activeCat]?.map(trait => {
                   const isSelected = selections[activeCat]?.id === trait.id && !trustMode && !cloneImage;
                   return (
                     <button key={trait.id} onClick={() => handleTraitSelect(activeCat, trait)}
-                      className={`group px-3 py-4 border rounded-sm text-center transition-all flex flex-col items-center justify-center relative overflow-hidden active:scale-95 ${
-                        isSelected ? 'bg-emerald-500/10 border-emerald-500 text-emerald-300' : 'bg-white/5 border-white/5 text-zinc-600 hover:border-white/20'
-                      }`}>
-                      <span className="text-[9px] font-black uppercase tracking-tighter leading-none relative z-10">{trait.label}</span>
-                      {isSelected && <div className="absolute bottom-1 right-1 w-1 h-1 bg-emerald-400 rounded-full shadow-[0_0_8px_#10b981] animate-pulse" />}
+                      className={`px-3 py-4 border text-center transition-all flex flex-col items-center justify-center relative active:scale-95 ${isSelected ? 'text-sky-200' : 'text-sky-700 hover:text-sky-400'}`}
+                      style={{background: isSelected ? 'rgba(3,105,161,0.2)' : 'rgba(255,255,255,0.03)', borderColor: isSelected ? '#7DD3FC' : 'rgba(125,211,252,0.1)'}}>
+                      <span className="text-[9px] font-black uppercase tracking-tighter leading-none">{trait.label}</span>
+                      {isSelected && <div className="absolute bottom-1 right-1 w-1 h-1 bg-sky-400 rounded-full animate-pulse" style={{boxShadow:'0 0 8px #7DD3FC'}}/>}
                     </button>
                   );
                 })}
@@ -4807,65 +1630,57 @@ const ForgeItApp = () => {
             )}
           </div>
 
-          <div className="p-2 md:p-4 bg-black border-t border-emerald-900/40 shrink-0 md:relative fixed bottom-0 left-0 right-0 z-[60] backdrop-blur-md flex flex-col gap-2 shadow-[0_-10px_30px_rgba(0,0,0,0.5)]">
+          <div className="p-2 md:p-4 border-t shrink-0 md:relative fixed bottom-0 left-0 right-0 z-[60] flex flex-col gap-2" style={{background:'rgba(3,11,20,0.95)', borderColor:'rgba(3,105,161,0.4)', backdropFilter:'blur(8px)'}}>
             <div className="flex gap-2">
-              <button onClick={handleRandomize} disabled={isForging || isRandomizing || isSyncing}
-                className="flex-1 py-2 border border-emerald-500/20 text-emerald-500/50 hover:text-emerald-400 hover:bg-emerald-500/5 flex items-center justify-center gap-2 text-[8px] font-black uppercase tracking-[0.3em] transition-all">
-                <Shuffle size={14} className={isRandomizing ? 'animate-spin' : ''} /> Randomize
+              <button onClick={handleRandomize} disabled={isForging || isRandomizing || isSyncing} className="flex-1 py-2 border flex items-center justify-center gap-2 text-[8px] font-black uppercase tracking-[0.3em] transition-all hover:text-sky-300" style={{borderColor:'rgba(125,211,252,0.2)', color:'rgba(125,211,252,0.4)'}}>
+                <Shuffle size={14} className={isRandomizing ? 'animate-spin' : ''}/> Randomize
               </button>
-              <button onClick={handleTrustIt} disabled={isForging || isSyncing}
-                className={`flex-1 py-2 border flex items-center justify-center gap-2 text-[8px] font-black uppercase tracking-[0.3em] transition-all ${trustMode ? 'bg-blue-500/10 border-blue-500 text-blue-400 shadow-[0_0_10px_#3b82f633]' : 'border-zinc-800 text-zinc-600 hover:text-white hover:border-white/20'}`}>
-                <Ghost size={14} /> TRUST_IT
+              <button onClick={handleTrustIt} disabled={isForging || isSyncing} className={`flex-1 py-2 border flex items-center justify-center gap-2 text-[8px] font-black uppercase tracking-[0.3em] transition-all ${trustMode ? 'text-sky-300' : 'text-sky-700 hover:text-sky-400'}`} style={{borderColor: trustMode ? '#7DD3FC' : 'rgba(125,211,252,0.1)', background: trustMode ? 'rgba(3,105,161,0.15)' : 'transparent'}}>
+                <Ghost size={14}/> TRUST_PENGU
               </button>
             </div>
-            <button onClick={handleForge} disabled={isForging || isRandomizing || isSyncing}
-              className={`w-full py-4 md:py-5 font-black italic text-base md:text-lg tracking-[0.4em] transition-all relative overflow-hidden group border-b-4 active:translate-y-1 active:border-b-0 ${
-                isForging ? 'bg-zinc-900 text-zinc-700 border-zinc-800' : 'bg-emerald-500 text-black hover:bg-emerald-400 border-emerald-700 shadow-[0_0_40px_rgba(16,185,129,0.3)]'
-              }`}>
+            <button onClick={handleForge} disabled={isForging || isRandomizing || isSyncing} className={`w-full py-4 md:py-5 font-black italic text-base md:text-lg tracking-[0.4em] transition-all relative overflow-hidden border-b-4 active:translate-y-1 active:border-b-0 ${isForging ? 'text-sky-800 cursor-wait' : 'text-sky-900 hover:brightness-110'}`}
+              style={{background: isForging ? '#0c1f33' : '#7DD3FC', borderColor: isForging ? '#0369a1' : '#0369a1', boxShadow: isForging ? 'none' : '0 0 40px rgba(125,211,252,0.3)'}}>
               <span className="relative z-10 flex items-center justify-center gap-3">
-                {isForging ? <RefreshCw className="animate-spin" size={20}/> : <Zap size={20} />}
-                {isForging ? 'FORGING...' : 'FORGE IT'}
+                {isForging ? <RefreshCw className="animate-spin" size={20}/> : <span className="text-2xl">🐧</span>}
+                {isForging ? 'FORGING PENGU...' : 'FORGE PENGU'}
               </span>
             </button>
           </div>
         </div>
 
-        <div className={`w-full md:w-[350px] lg:w-[420px] bg-black flex flex-col border-l border-emerald-900/40 shrink-0 min-h-0
-          ${(isForging || generatedImg) ? 'fixed inset-0 z-[80] md:relative md:inset-auto md:z-0 flex' : 'hidden md:flex'}`}>
-          <div className="flex-1 flex flex-col p-6 items-center justify-center relative overflow-hidden bg-[#020202]">
+        <div className={`w-full md:w-[350px] lg:w-[420px] flex flex-col border-l shrink-0 min-h-0 ${(isForging || generatedImg) ? 'fixed inset-0 z-[80] md:relative md:inset-auto md:z-0 flex' : 'hidden md:flex'}`} style={{background:'#030b14', borderColor:'rgba(3,105,161,0.4)'}}>
+          <div className="flex-1 flex flex-col p-6 items-center justify-center relative overflow-hidden">
             {isForging ? (
-              <div className="flex flex-col items-center gap-6 w-full animate-in fade-in duration-500">
-                <div className="relative w-48 h-48 md:w-72 md:h-72 border border-emerald-500/10 rounded-sm flex items-center justify-center overflow-hidden bg-black shadow-[0_0_60px_rgba(16,185,129,0.08)]">
-                  <Scan size={80} className="text-emerald-500/10 animate-pulse" strokeWidth={0.5} />
-                  <div className="absolute bottom-0 left-0 w-full h-[2px] bg-emerald-500 animate-[scan_2s_linear_infinite]" />
+              <div className="flex flex-col items-center gap-6 w-full">
+                <div className="relative w-48 h-48 md:w-72 md:h-72 border flex items-center justify-center overflow-hidden" style={{borderColor:'rgba(125,211,252,0.1)'}}>
+                  <span className="text-8xl animate-bounce">🐧</span>
+                  <div className="absolute bottom-0 left-0 w-full h-[2px] animate-[scan_2s_linear_infinite]" style={{background:'#7DD3FC'}}/>
                 </div>
                 <div className="w-48 space-y-3">
-                  <div className="flex justify-between text-[8px] font-black text-emerald-500 uppercase tracking-widest italic">
-                    <span>Constructing...</span>
-                    <span>{Math.round(progress)}%</span>
-                  </div>
-                  <div className="h-1 bg-zinc-950 rounded-full border border-zinc-900 overflow-hidden p-[1px]">
-                    <div className="h-full bg-emerald-500 transition-all duration-300 shadow-[0_0_15px_#10b981]" style={{ width: `${progress}%` }} />
+                  <div className="flex justify-between text-[8px] font-black text-sky-400 uppercase tracking-widest italic"><span>Forging pengu...</span><span>{Math.round(progress)}%</span></div>
+                  <div className="h-1 rounded-full overflow-hidden p-[1px]" style={{background:'rgba(0,0,0,0.5)', border:'1px solid #0369a1'}}>
+                    <div className="h-full transition-all duration-300 rounded-full" style={{width:`${progress}%`, background:'#7DD3FC', boxShadow:'0 0 15px #7DD3FC'}}/>
                   </div>
                 </div>
               </div>
             ) : generatedImg ? (
-              <div className="w-full max-w-[280px] space-y-4 animate-in zoom-in-95 duration-1000">
-                <div className="relative group p-1 bg-zinc-950 border border-white/10 shadow-[0_0_60px_rgba(0,0,0,1)] overflow-hidden">
-                  <img src={generatedImg} className="w-full aspect-square object-cover relative z-10" />
-                  <div className="absolute top-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-all duration-300">
-                     <button onClick={downloadPFP} className="p-3 bg-white text-black hover:bg-emerald-400 shadow-2xl active:scale-90"><Download size={20} /></button>
+              <div className="w-full max-w-[280px] space-y-4">
+                <div className="relative group p-1 overflow-hidden" style={{background:'rgba(3,11,20,0.8)', border:'1px solid rgba(125,211,252,0.2)'}}>
+                  <img src={generatedImg} className="w-full aspect-square object-cover" />
+                  <div className="absolute top-4 right-4 z-20 opacity-0 group-hover:opacity-100 transition-all">
+                    <button onClick={downloadPFP} className="p-3 hover:brightness-110 text-sky-900" style={{background:'#7DD3FC'}}><Download size={20}/></button>
                   </div>
                 </div>
-                <button onClick={downloadPFP} className="w-full py-4 bg-white text-black font-black uppercase text-[11px] hover:bg-emerald-400 shadow-xl flex items-center justify-center gap-3 tracking-[0.2em] transition-all"><Download size={16}/> Save_to_Cult</button>
-                <button onClick={() => setGeneratedImg(null)} className="w-full py-2 text-[9px] font-black uppercase text-zinc-700 hover:text-white transition-all flex items-center justify-center gap-2 group">
-                  <X size={12} className="group-hover:rotate-90 transition-transform" /> Purge_Matrix
+                <button onClick={downloadPFP} className="w-full py-4 font-black uppercase text-[11px] flex items-center justify-center gap-3 tracking-[0.2em] transition-all hover:brightness-110 text-sky-900" style={{background:'#7DD3FC'}}><Download size={16}/> Save Pengu 🐧</button>
+                <button onClick={() => setGeneratedImg(null)} className="w-full py-2 text-[9px] font-black uppercase text-sky-700 hover:text-sky-400 transition-all flex items-center justify-center gap-2 group">
+                  <X size={12} className="group-hover:rotate-90 transition-transform"/> Forge Another
                 </button>
               </div>
             ) : (
-              <div className="flex flex-col items-center gap-8 opacity-5">
-                <div className="p-20 border border-dashed border-emerald-900/50 rounded-full"><Palette size={80} strokeWidth={0.3} /></div>
-                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white italic tracking-[0.5em]">Matrix_Idle</p>
+              <div className="flex flex-col items-center gap-8 opacity-10">
+                <span className="text-[120px] leading-none">🐧</span>
+                <p className="text-[10px] font-black uppercase tracking-[0.4em] text-white italic">Colony_Idle</p>
               </div>
             )}
           </div>
@@ -4873,364 +1688,35 @@ const ForgeItApp = () => {
       </main>
 
       {error && (
-        <div className="fixed bottom-24 md:bottom-10 right-4 left-4 md:left-auto md:w-[400px] bg-red-950/90 border-l-4 border-red-500 p-5 flex items-start gap-4 text-white z-[200] backdrop-blur-xl animate-in slide-in-from-right-10 shadow-2xl">
-          <AlertTriangle size={24} className="shrink-0 text-red-500" />
-          <div className="flex-1 space-y-1"><p className="text-[11px] font-black uppercase leading-none tracking-widest italic">Protocol_Interrupt</p><p className="text-[9px] opacity-70 font-bold uppercase mt-2 leading-tight">{error}</p></div>
-          <button onClick={() => setError(null)} className="p-1 hover:bg-white/10 rounded-full transition-colors"><X size={18}/></button>
+        <div className="fixed bottom-24 md:bottom-10 right-4 left-4 md:left-auto md:w-[400px] border-l-4 p-5 flex items-start gap-4 text-white z-[200] backdrop-blur-xl animate-in slide-in-from-right-10" style={{background:'rgba(153,27,27,0.9)', borderColor:'#ef4444'}}>
+          <span className="text-2xl">🐧</span>
+          <div className="flex-1 space-y-1"><p className="text-[11px] font-black uppercase leading-none tracking-widest">Colony_Error</p><p className="text-[9px] opacity-70 font-bold uppercase mt-2 leading-tight">{error}</p></div>
+          <button onClick={() => setError(null)} className="p-1 hover:bg-white/10 rounded transition-colors"><X size={18}/></button>
         </div>
       )}
-
-      <style>{`
-        @keyframes scan { 0% { transform: translateY(-100%); } 100% { transform: translateY(800%); } }
-        @keyframes blueprint-scan { 0% { transform: translateY(0); opacity: 0.1; } 50% { opacity: 0.6; } 100% { transform: translateY(150px); opacity: 0.1; } }
-        .custom-scrollbar::-webkit-scrollbar { width: 3px; height: 3px; background: transparent; }
-        .custom-scrollbar::-webkit-scrollbar-thumb { background: #111; }
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-      `}</style>
+      <style>{`@keyframes scan { 0% { transform: translateY(-100%); } 100% { transform: translateY(800%); } } .no-scrollbar::-webkit-scrollbar { display: none; }`}</style>
     </div>
   );
 };
 
-
-
-// --- MAIN OS COMPONENT ---
-export default function UltimateOS() {
-  const os_gen_id = () => Math.random().toString(36).substr(2, 9);
-  const os_copy = (text) => {
-    const el = document.createElement('textarea');
-    el.value = text;
-    document.body.appendChild(el);
-    el.select();
-    document.execCommand('copy');
-    document.body.removeChild(el);
-  };
-
-  const [windows, setWindows] = useState([]);
-  const [maxZ, setMaxZ] = useState(100); 
-  const [activeWindowId, setActiveWindowId] = useState(null);
-  const [booted, setBooted] = useState(false);
-  const [isStartOpen, setIsStartOpen] = useState(false); 
-  const [systemAlert, setSystemAlert] = useState(null);
-  const [caCopied, setCaCopied] = useState(false);
-  
-  const { wallet, connect, connecting, balance: solBalance, refresh: refreshSol } = useWallet();
-  const dexData = useDexData(CA_ADDRESS, wallet);
-  const hasAccess = dexData.balance >= ACCESS_THRESHOLD;
-  const isForgeVip = dexData.balance >= 2500000;
-
-  const showAlert = (msg) => {
-    setSystemAlert(msg);
-    setTimeout(() => setSystemAlert(null), 3000);
-  };
-
-  useEffect(() => { 
-    const timer = setTimeout(() => { setBooted(true); }, 2500); 
-    return () => clearTimeout(timer);
-  }, []);
-
-  const openApp = (type) => {
-    const id = os_gen_id();
-    const titles = { 
-      paint: 'Paint IT', 
-      terminal: 'Terminal IT', 
-      tunes: 'Tune IT', 
-      rugsweeper: 'Stack IT', 
-      notepad: 'Write IT', 
-      memes: 'Memes', 
-      trollbox: 'Trollbox IT', 
-      mememind: 'Meme Mind IT', 
-      mergeit: 'Merge IT', 
-      wallet: 'Wallet IT', 
-      forgeit: 'Forge IT' 
-    };
-    const isMobile = window.innerWidth < 768;
-    
-    const isPhoneApp = ['rugsweeper', 'trollbox', 'mememind', 'mergeit', 'wallet'].includes(type);
-    const isWideApp = ['paint', 'memes', 'forgeit'].includes(type);
-    
-    const defaultW = isWideApp ? 740 : (isPhoneApp ? 340 : 500);
-    const defaultH = isWideApp ? 540 : (isPhoneApp ? 580 : 400);
-
-    const newWin = { 
-      id, type, title: titles[type] || 'App', 
-      x: isMobile ? 10 : 50 + (windows.length * 20), 
-      y: isMobile ? 20 : 50 + (windows.length * 20), 
-      w: isMobile ? window.innerWidth - 20 : defaultW, 
-      h: isMobile ? window.innerHeight - 150 : defaultH, 
-      z: maxZ+1, isMaximized: false, isMinimized: false 
-    };
-    setWindows(prev => [...prev, newWin]);
-    setActiveWindowId(id);
-    setMaxZ(prev => prev + 1);
-    setIsStartOpen(false);
-  };
-
-  const closeWindow = (id) => setWindows(prev => prev.filter(w => w.id !== id));
-  const focusWindow = (id) => { 
-    setActiveWindowId(id); 
-    setWindows(prev => prev.map(w => w.id === id ? { ...w, z: maxZ + 1 } : w)); 
-    setMaxZ(prev => prev + 1); 
-  };
-  const toggleMax = (id) => setWindows(prev => prev.map(w => w.id === id ? { ...w, isMaximized: !w.isMaximized } : w));
-  const minimizeWindow = (id) => {
-    setWindows(prev => prev.map(w => w.id === id ? { ...w, isMinimized: true } : w));
-    if (activeWindowId === id) setActiveWindowId(null);
-  };
-  const restoreWindow = (id) => {
-    setWindows(prev => prev.map(w => w.id === id ? { ...w, isMinimized: false } : w));
-    focusWindow(id);
-  };
-  const moveWindow = (id, x, y) => {
-      const safeX = Math.max(-100, Math.min(window.innerWidth - 50, x));
-      const safeY = Math.max(0, Math.min(window.innerHeight - 50, y));
-      setWindows(prev => prev.map(w => w.id === id ? { ...w, x: safeX, y: safeY } : w));
-  };
-  const handleTaskbarClick = (id) => {
-    const win = windows.find(w => w.id === id);
-    if (!win) return;
-    if (win.isMinimized) restoreWindow(id);
-    else if (activeWindowId === id) minimizeWindow(id);
-    else focusWindow(id);
-  };
-  const handleCopyCA = () => { os_copy(CA_ADDRESS); setCaCopied(true); setTimeout(() => setCaCopied(false), 2000); };
-  const isAnyWindowMaximized = windows.some(w => w.isMaximized && !w.isMinimized);
-
-  if (!booted) return (
-    <div className="w-full h-screen bg-black text-green-500 font-mono flex flex-col items-center justify-center relative overflow-hidden text-center p-6">
-      <div className="absolute inset-0 bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,252,0.06))] bg-[length:100%_4px,3px_100%] pointer-events-none z-10"></div>
-      <h1 className="text-4xl font-bold mb-4 animate-pulse italic tracking-[0.3em]">OS_IT</h1>
-      <div className="w-64 h-4 border-2 border-green-500 p-0.5"><div className="h-full bg-green-500 animate-[widthLoad_2s_ease-out_forwards]" style={{width: '0%'}}></div></div>
-      <div className="mt-4 text-[10px] uppercase tracking-[0.3em] opacity-40">Synchronizing Nodes...</div>
-      <style>{`@keyframes widthLoad { from { width: 0%; } to { width: 100%; } }`}</style>
-    </div>
-  );
-
-  return (
-    <div className="w-full h-screen relative overflow-hidden font-sans select-none text-black">
-      <div className="absolute inset-0 z-0 bg-cover bg-center bg-[#008080]" style={{ backgroundImage: `url(${ASSETS.wallpaper})` }}></div>
-      
-      {systemAlert && (
-        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100000] bg-white border-4 border-red-600 p-4 shadow-[10px_10px_0px_rgba(0,0,0,0.5)] animate-bounce flex items-center gap-3">
-          <AlertTriangle className="text-red-600" size={24} />
-          <span className="font-mono font-black text-red-600 text-xs uppercase">{systemAlert}</span>
-        </div>
-      )}
-
-      {/* Desktop Icons */}
-      <div className="absolute top-0 left-0 p-4 z-20 h-[calc(100vh-40px)] w-full pointer-events-none flex flex-col flex-wrap content-start items-start gap-4 overflow-hidden">
-        {[ 
-          {id:'terminal', icon:Terminal, label:'Terminal'}, 
-          {id:'mememind', icon:Lightbulb, label:'Meme Mind'}, 
-          {id:'forgeit', icon:Sparkles, label:'Forge IT'},
-          {id:'mergeit', icon:Joystick, label:'Merge IT'}, 
-          {id:'rugsweeper', icon:Gamepad2, label:'Stack IT'}, 
-          {id:'paint', icon:Paintbrush, label:'Paint IT'}, 
-          {id:'tunes', icon:Music, label:'Tune IT'}, 
-          {id:'notepad', icon:FileText, label:'Write IT'}, 
-          {id:'trollbox', icon:MessageSquare, label:'Trollbox', hasAlert: true}, 
-          {id:'memes', icon:Folder, label:'Memes'}, 
-          {id:'wallet', icon:Wallet, label:'Wallet'} 
-        ].map(app => (
-          <DesktopIcon 
-            key={app.id} 
-            icon={app.icon} 
-            label={app.label} 
-            onClick={() => openApp(app.id)} 
-            hasAlert={app.hasAlert} 
-          />
-        ))}
-      </div>
-
-      <SystemResourceMonitor wallet={wallet} balance={dexData.balance} hasAccess={hasAccess} />
-      
-      {typeof Shippy !== 'undefined' && <Shippy hidden={isAnyWindowMaximized} dexData={dexData} />}
-
-      {/* Main Window Manager */}
-      {windows.map(win => (
-        <DraggableWindow 
-          key={win.id} win={win} isActive={win.id === activeWindowId} 
-          onFocus={() => focusWindow(win.id)} onClose={() => closeWindow(win.id)} 
-          onMaximize={() => toggleMax(win.id)} onMinimize={() => minimizeWindow(win.id)} 
-          onMove={moveWindow}
-        >
-          {win.type === 'forgeit' && typeof ForgeItApp !== 'undefined' && <ForgeItApp isVip={isForgeVip} tokenBalance={dexData.balance} />}
-          {win.type === 'paint' && typeof PaintApp !== 'undefined' && <PaintApp isHolder={hasAccess} />}
-          {win.type === 'terminal' && typeof TerminalApp !== 'undefined' && <TerminalApp dexData={dexData} />}
-          {win.type === 'tunes' && typeof AmpTunesApp !== 'undefined' && <AmpTunesApp isHolder={hasAccess} onLocked={() => showAlert("HOLD IT TO SKIP TRACKS")} />}
-          {win.type === 'rugsweeper' && typeof RugSweeperApp !== 'undefined' && <RugSweeperApp />}
-          {win.type === 'notepad' && typeof NotepadApp !== 'undefined' && <NotepadApp />}
-          {win.type === 'trollbox' && typeof ChatApp !== 'undefined' && <ChatApp dexData={dexData} wallet={wallet} onLocked={() => showAlert("HOLD IT TO CHAT")} />}
-          {win.type === 'memes' && typeof MemesApp !== 'undefined' && <MemesApp />}
-          {win.type === 'mememind' && typeof MemeMindApp !== 'undefined' && <MemeMindApp />}
-          {win.type === 'mergeit' && typeof MergeItApp !== 'undefined' && <MergeItApp />}
-          
-          {win.type === 'wallet' && (
-            <div className="p-4 bg-black h-full font-mono flex flex-col gap-4 text-emerald-500 overflow-y-auto relative selection:bg-emerald-500 selection:text-black no-scrollbar">
-              <div className="absolute inset-0 pointer-events-none opacity-[0.07] bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,252,0.06))] bg-[length:100%_2px,3px_100%] z-20" />
-              
-              <div className="flex justify-between items-center border-b border-emerald-900/50 pb-2 z-10">
-                <div className="flex items-center gap-2">
-                  <Activity size={14} className="animate-pulse text-emerald-400" />
-                  <span className="text-[10px] font-black uppercase tracking-widest text-emerald-700">Wallet Monitor</span>
-                </div>
-                <div className={`px-2 py-0.5 rounded-sm text-[8px] font-black uppercase ${wallet ? 'bg-emerald-500/20 text-emerald-400' : 'bg-red-500/20 text-red-400 animate-pulse'}`}>
-                  {wallet ? 'Connected' : 'Disconnected'}
-                </div>
-              </div>
-
-              <div className="grid grid-cols-1 gap-3 z-10">
-                <div className="bg-[#050505] border border-emerald-900/30 p-4 relative group hover:border-emerald-500/50 transition-all duration-300">
-                  <div className="absolute top-2 right-2 opacity-10 group-hover:opacity-30 transition-opacity"><Zap size={12} /></div>
-                  <span className="text-[9px] font-bold text-emerald-800 uppercase tracking-tighter block mb-1">Your SOL</span>
-                  <div className="flex justify-between items-baseline">
-                    <span className="text-3xl font-black text-white drop-shadow-[0_0_8px_rgba(255,255,255,0.25)]">{(solBalance || 0).toFixed(4)}</span>
-                    <span className="text-xs font-black text-emerald-600 ml-2">SOL</span>
-                  </div>
-                </div>
-
-                <div className="bg-[#050505] border border-blue-900/30 p-4 relative group hover:border-blue-500/50 transition-all duration-300">
-                  <div className="absolute top-2 right-2 opacity-10 group-hover:opacity-30 transition-opacity"><Crown size={12} /></div>
-                  <span className="text-[9px] font-bold text-blue-800 uppercase tracking-tighter block mb-1">Your IT</span>
-                  <div className="flex justify-between items-baseline">
-                    <span className="text-2xl font-black text-blue-400 drop-shadow-[0_0_10px_rgba(59,130,246,0.3)]">{(dexData.balance || 0).toLocaleString()}</span>
-                    <span className="text-xs font-black text-blue-600 ml-2">IT</span>
-                  </div>
-                  {!hasAccess && (
-                    <div className="mt-3 h-1 w-full bg-blue-950/50 rounded-full overflow-hidden">
-                      <div 
-                        className="h-full bg-blue-500 transition-all duration-1000" 
-                        style={{ width: `${Math.min(100, (dexData.balance / ACCESS_THRESHOLD) * 100)}%` }} 
-                      />
-                    </div>
-                  )}
-                </div>
-              </div>
-
-              <div className={`p-3 border-2 transition-all z-10 flex items-center gap-4 ${hasAccess ? 'border-emerald-500/50 bg-emerald-950/10' : 'border-yellow-600/50 bg-yellow-900/10 animate-pulse'}`}>
-                <div className="shrink-0 p-2 bg-black/40 border border-current rounded-sm">
-                  {hasAccess ? <ShieldCheck className="text-emerald-400" size={24} /> : <Lock className="text-yellow-500" size={24} />}
-                </div>
-                <div className="flex flex-col">
-                  <span className={`text-[11px] font-black uppercase tracking-[0.1em] ${hasAccess ? 'text-emerald-400' : 'text-yellow-500'}`}>
-                    {hasAccess ? 'VIP Access Unlocked' : 'Access Locked'}
-                  </span>
-                  <span className="text-[8px] text-white/50 uppercase leading-tight mt-0.5">
-                    {hasAccess ? 'You are a verified holder. Enjoy the perks!' : 'Hold 500k $IT to unlock all features.'}
-                  </span>
-                </div>
-              </div>
-
-              <div className="mt-auto flex flex-col gap-2 pb-2 z-10">
-                <button 
-                  onClick={connect} 
-                  disabled={connecting}
-                  className={`w-full py-4 font-black text-[11px] tracking-[0.2em] uppercase transition-all flex items-center justify-center gap-3 border-2 active:scale-[0.98] shadow-lg
-                    ${wallet 
-                      ? 'bg-red-950/20 border-red-900 text-red-500 hover:bg-red-900/40 hover:text-red-400' 
-                      : 'bg-emerald-950/20 border-emerald-900 text-emerald-400 hover:bg-emerald-900/40 hover:text-emerald-300'}`}
-                >
-                  {connecting ? <RefreshCw className="animate-spin" size={14}/> : (wallet ? <LogOut size={16}/> : <Wallet size={16}/>)}
-                  {connecting ? 'Connecting...' : (wallet ? 'Disconnect IT' : 'Connect IT')}
-                </button>
-                
-                {wallet && (
-                  <div className="flex flex-col gap-1 p-2 bg-emerald-950/5 border border-emerald-900/20">
-                    <span className="text-[7px] text-emerald-900 font-black uppercase block text-center">Your Wallet</span>
-                    <span className="text-[8px] text-emerald-600/80 font-mono text-center break-all px-2">{wallet}</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </DraggableWindow>
-      ))}
-
-      <div id="start-menu-container"><StartMenu isOpen={isStartOpen} onClose={() => setIsStartOpen(false)} onOpenApp={openApp} /></div>
-
-      {/* Taskbar */}
-      <div className="absolute bottom-0 left-0 w-full h-10 bg-[#c0c0c0] border-t-2 border-white flex items-center px-1 z-[9998] shadow-2xl">
-        <button id="start-button" onClick={() => setIsStartOpen(!isStartOpen)} className={`flex items-center gap-1 px-3 py-1 h-8 border-2 font-bold italic text-sm mr-2 text-black ${isStartOpen ? 'border-gray-600 bg-[#a0a0a0] border-t-black border-l-black shadow-inner' : 'border-white border-b-gray-600 border-r-gray-600 shadow-sm hover:bg-gray-100'}`}><Globe size={16} /> START</button>
-        
-        <div className="flex-1 flex gap-1 overflow-x-auto no-scrollbar px-2">
-          {windows.map(win => (
-            <button 
-              key={win.id} 
-              onClick={() => handleTaskbarClick(win.id)} 
-              className={`min-w-[80px] max-w-[120px] h-8 truncate px-2 border-2 text-[10px] text-black flex items-center ${win.id === activeWindowId && !win.isMinimized ? 'bg-white border-black font-bold shadow-inner' : 'border-white bg-[#c0c0c0]'}`}
-            >
-              {win.title}
-            </button>
-          ))}
-        </div>
-
-        {/* --- SYSTEM TRAY (Restored Wallet Button) --- */}
-        <div className="flex items-center gap-2 px-2 py-1 border-2 border-gray-500 bg-[#c0c0c0] border-t-gray-700 border-l-gray-700 ml-auto h-8 shadow-inner">
-          <button 
-            className={`h-6 text-[10px] font-mono px-2 border border-gray-600 shadow-sm transition-all active:shadow-inner ${caCopied ? 'bg-green-200 text-green-800 border-green-700' : 'bg-[#d0d0d0] text-black'}`} 
-            onClick={handleCopyCA}
-          >
-            {caCopied ? 'COPIED!' : 'CA_KEY'}
-          </button>
-
-          <button 
-            onClick={connect} 
-            disabled={connecting}
-            className={`
-              flex items-center justify-center gap-2 h-6 px-2 border border-gray-600 bg-[#d0d0d0] shadow-sm font-bold 
-              active:shadow-inner text-black hover:bg-white transition-colors
-              ${connecting ? 'opacity-50 cursor-wait' : ''}
-            `}
-          >
-            {connecting ? (
-              <RefreshCw size={12} className="animate-spin text-blue-600" />
-            ) : (
-              <Wallet 
-                size={12} 
-                className={wallet ? "text-emerald-600" : "text-black"} 
-                strokeWidth={2.5}
-              />
-            )}
-            <span className="text-[10px] hidden sm:inline-block">
-              {wallet ? `${wallet.slice(0, 4)}..` : "LINK_IT"}
-            </span>
-          </button>
-
-          <span className="text-[10px] font-bold hidden md:block ml-2 opacity-60 font-mono tracking-tighter text-black select-none">
-            {new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
-          </span>
-        </div>
-      </div>
-
-      <style>{`
-        .no-scrollbar::-webkit-scrollbar { display: none; }
-        .win-scroll-container::-webkit-scrollbar { width: 14px; background: #c0c0c0; border-left: 1px solid #808080; }
-        .win-scroll-container::-webkit-scrollbar-thumb { background: #c0c0c0; border: 2px solid; border-color: white #808080 #808080 white; }
-        .win-scroll-container::-webkit-scrollbar-button { background: #c0c0c0; border: 1px solid; border-color: white #808080 #808080 white; width: 14px; height: 14px; }
-      `}</style>
-    </div>
-  );
-}
-
-const DesktopIcon = ({ icon: Icon, label, onClick, hasAlert }) => (
-  <div 
-    onClick={(e) => {
-      e.stopPropagation(); 
-      onClick();
-    }} 
-    className="flex flex-col items-center gap-1 w-20 cursor-pointer pointer-events-auto p-1 group z-30"
-  >
+// --- DESKTOP ICON ---
+const DesktopIcon = ({ icon: Icon, label, onClick, hasAlert, emoji }) => (
+  <div onClick={e => { e.stopPropagation(); onClick(); }} className="flex flex-col items-center gap-1 w-20 cursor-pointer pointer-events-auto p-1 group z-30">
     <div className="relative">
-      <Icon size={32} className="text-white drop-shadow-[0_2px_2px_rgba(0,0,0,0.8)] transition-transform group-active:scale-90" strokeWidth={1.5} />
-      {hasAlert && (
-        <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-600 border-2 border-white rounded-full z-[100] shadow-[0_0_10px_rgba(220,38,38,0.8)] animate-pulse" />
+      {emoji ? (
+        <span className="text-4xl drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] transition-transform group-active:scale-90 group-hover:scale-110 block">{emoji}</span>
+      ) : (
+        <Icon size={32} className="text-white drop-shadow-[0_2px_4px_rgba(0,0,0,0.8)] transition-transform group-active:scale-90 group-hover:scale-110" strokeWidth={1.5}/>
       )}
+      {hasAlert && <div className="absolute -top-1 -right-1 w-3.5 h-3.5 bg-red-500 border-2 border-white rounded-full z-[100] shadow-lg animate-pulse"/>}
     </div>
-    <span className="text-white text-[10px] text-center font-bold drop-shadow-[0_1px_2px_rgba(0,0,0,1)] bg-[#035a23] px-1 rounded truncate w-full group-hover:bg-[#047a30] transition-colors">
+    <span className="text-white text-[10px] text-center font-bold drop-shadow-[0_1px_2px_rgba(0,0,0,1)] px-1 rounded truncate w-full group-hover:brightness-125 transition-all" style={{background:'rgba(3,105,161,0.75)'}}>
       {label}
     </span>
   </div>
 );
 
+// --- WINDOW FRAME ---
 const DraggableWindow = ({ win, isActive, children, onFocus, onClose, onMaximize, onMinimize, onMove }) => {
   const [isDragging, setIsDragging] = useState(false);
   const [offset, setOffset] = useState({ x: 0, y: 0 });
@@ -5239,50 +1725,251 @@ const DraggableWindow = ({ win, isActive, children, onFocus, onClose, onMaximize
     if (win.isMaximized) return;
     onFocus();
     const element = document.getElementById(`win-${win.id}`);
-    if(!element) return;
+    if (!element) return;
     const rect = element.getBoundingClientRect();
-    setIsDragging(true); 
+    setIsDragging(true);
     setOffset({ x: clientX - rect.left, y: clientY - rect.top });
   };
 
   useEffect(() => {
-    const handleMouseMove = (e) => { 
-      if (!isDragging || win.isMaximized) return; 
-      onMove(win.id, (e.clientX || e.touches?.[0]?.clientX) - offset.x, (e.clientY || e.touches?.[0]?.clientY) - offset.y); 
-    };
+    const handleMouseMove = (e) => { if (!isDragging || win.isMaximized) return; onMove(win.id, (e.clientX || e.touches?.[0]?.clientX) - offset.x, (e.clientY || e.touches?.[0]?.clientY) - offset.y); };
     const stopDrag = () => setIsDragging(false);
-    if (isDragging) { 
-      window.addEventListener('mousemove', handleMouseMove); 
-      window.addEventListener('mouseup', stopDrag);
-      window.addEventListener('touchmove', handleMouseMove);
-      window.addEventListener('touchend', stopDrag);
-    }
-    return () => { 
-      window.removeEventListener('mousemove', handleMouseMove); 
-      window.removeEventListener('mouseup', stopDrag);
-      window.removeEventListener('touchmove', handleMouseMove);
-      window.removeEventListener('touchend', stopDrag);
-    };
+    if (isDragging) { window.addEventListener('mousemove', handleMouseMove); window.addEventListener('mouseup', stopDrag); window.addEventListener('touchmove', handleMouseMove); window.addEventListener('touchend', stopDrag); }
+    return () => { window.removeEventListener('mousemove', handleMouseMove); window.removeEventListener('mouseup', stopDrag); window.removeEventListener('touchmove', handleMouseMove); window.removeEventListener('touchend', stopDrag); };
   }, [isDragging, win.isMaximized, offset, win.id, onMove]);
 
   return (
-    <div 
-      id={`win-${win.id}`} 
-      onMouseDown={(e) => {
-        if (e.target.closest('.overflow-auto') || e.target.closest('button')) return;
-        startDrag(e.clientX, e.clientY);
-      }} 
-      className="absolute flex flex-col shadow-2xl transition-[left,top,width,height] duration-75" 
-      style={{ 
-        zIndex: win.z, 
-        display: win.isMinimized ? 'none' : 'flex', 
-        left: win.isMaximized ? 0 : win.x, 
-        top: win.isMaximized ? 0 : win.y, 
-        width: win.isMaximized ? '100%' : win.w, 
-        height: win.isMaximized ? 'calc(100% - 40px)' : win.h 
-      }}
-    >
-        <WindowFrame {...win} isActive={isActive} onClose={onClose} onMaximize={onMaximize} onMinimize={onMinimize} onFocus={onFocus}>{children}</WindowFrame>
+    <div id={`win-${win.id}`} onMouseDown={e => { if (e.target.closest('.overflow-auto') || e.target.closest('button')) return; startDrag(e.clientX, e.clientY); }}
+      className="absolute flex flex-col shadow-2xl"
+      style={{ zIndex: win.z, display: win.isMinimized ? 'none' : 'flex', left: win.isMaximized ? 0 : win.x, top: win.isMaximized ? 0 : win.y, width: win.isMaximized ? '100%' : win.w, height: win.isMaximized ? 'calc(100% - 40px)' : win.h }}>
+      <WindowFrame {...win} isActive={isActive} onClose={onClose} onMaximize={onMaximize} onMinimize={onMinimize} onFocus={onFocus}>{children}</WindowFrame>
     </div>
   );
 };
+
+// --- MAIN OS ---
+export default function UltimateOS() {
+  const os_gen_id = () => Math.random().toString(36).substr(2, 9);
+  const os_copy = (text) => { const el = document.createElement('textarea'); el.value = text; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el); };
+
+  const [windows, setWindows] = useState([]);
+  const [maxZ, setMaxZ] = useState(100); 
+  const [activeWindowId, setActiveWindowId] = useState(null);
+  const [booted, setBooted] = useState(false);
+  const [isStartOpen, setIsStartOpen] = useState(false); 
+  const [systemAlert, setSystemAlert] = useState(null);
+  const [caCopied, setCaCopied] = useState(false);
+  const [snowflakes] = useState(() => Array.from({length: 12}, (_, i) => ({ id: i, left: `${Math.random() * 100}%`, top: `${Math.random() * 80}%`, size: `${Math.random() * 14 + 10}px`, delay: `${Math.random() * 3}s` })));
+  
+  const { wallet, connect, connecting, balance: solBalance } = useWallet();
+  const dexData = useDexData(CA_ADDRESS, wallet);
+  const hasAccess = dexData.balance >= ACCESS_THRESHOLD;
+
+  const showAlert = (msg) => { setSystemAlert(msg); setTimeout(() => setSystemAlert(null), 3000); };
+
+  useEffect(() => { const timer = setTimeout(() => setBooted(true), 3000); return () => clearTimeout(timer); }, []);
+
+  const openApp = (type) => {
+    const id = os_gen_id();
+    const titles = { paint: '🎨 Paint Pengu', terminal: '💻 Terminal', tunes: '🎵 Tunes', rugsweeper: '🐧 Stack Pengu', notepad: '📝 Write Stuff', memes: '🐟 Meme Stash', trollbox: '💬 Colony Chat', mememind: '🧠 Meme Brain', mergeit: '🧊 Slide Pengu', wallet: '💰 Wallet', forgeit: '⚡ Forge Pengu' };
+    const isMobile = window.innerWidth < 768;
+    const isPhoneApp = ['rugsweeper','trollbox','mememind','mergeit','wallet'].includes(type);
+    const isWideApp = ['paint','memes','forgeit'].includes(type);
+    const defaultW = isWideApp ? 740 : (isPhoneApp ? 340 : 500);
+    const defaultH = isWideApp ? 540 : (isPhoneApp ? 580 : 400);
+    const newWin = { id, type, title: titles[type] || 'App', x: isMobile ? 10 : 50 + (windows.length * 20), y: isMobile ? 20 : 50 + (windows.length * 20), w: isMobile ? window.innerWidth - 20 : defaultW, h: isMobile ? window.innerHeight - 150 : defaultH, z: maxZ+1, isMaximized: false, isMinimized: false };
+    setWindows(prev => [...prev, newWin]);
+    setActiveWindowId(id);
+    setMaxZ(prev => prev + 1);
+    setIsStartOpen(false);
+  };
+
+  const closeWindow = (id) => setWindows(prev => prev.filter(w => w.id !== id));
+  const focusWindow = (id) => { setActiveWindowId(id); setWindows(prev => prev.map(w => w.id === id ? { ...w, z: maxZ + 1 } : w)); setMaxZ(prev => prev + 1); };
+  const toggleMax = (id) => setWindows(prev => prev.map(w => w.id === id ? { ...w, isMaximized: !w.isMaximized } : w));
+  const minimizeWindow = (id) => { setWindows(prev => prev.map(w => w.id === id ? { ...w, isMinimized: true } : w)); if (activeWindowId === id) setActiveWindowId(null); };
+  const restoreWindow = (id) => { setWindows(prev => prev.map(w => w.id === id ? { ...w, isMinimized: false } : w)); focusWindow(id); };
+  const moveWindow = (id, x, y) => { const safeX = Math.max(-100, Math.min(window.innerWidth - 50, x)); const safeY = Math.max(0, Math.min(window.innerHeight - 50, y)); setWindows(prev => prev.map(w => w.id === id ? { ...w, x: safeX, y: safeY } : w)); };
+  const handleTaskbarClick = (id) => { const win = windows.find(w => w.id === id); if (!win) return; if (win.isMinimized) restoreWindow(id); else if (activeWindowId === id) minimizeWindow(id); else focusWindow(id); };
+  const handleCopyCA = () => { os_copy(CA_ADDRESS); setCaCopied(true); setTimeout(() => setCaCopied(false), 2000); };
+  const isAnyWindowMaximized = windows.some(w => w.isMaximized && !w.isMinimized);
+
+  // --- BOOT SCREEN ---
+  if (!booted) return (
+    <div className="w-full h-screen flex flex-col items-center justify-center relative overflow-hidden p-6" style={{background:'linear-gradient(135deg, #0369a1 0%, #075985 50%, #0c4a6e 100%)'}}>
+      {/* Snowflakes */}
+      {snowflakes.map(s => (
+        <div key={s.id} className="absolute text-sky-200/40 animate-bounce pointer-events-none" style={{left:s.left, top:s.top, fontSize:s.size, animationDelay:s.delay}}>❄</div>
+      ))}
+      
+      {/* Boot content */}
+      <div className="relative z-10 flex flex-col items-center text-center">
+        <div className="text-8xl mb-6 animate-bounce" style={{filter:'drop-shadow(0 0 30px rgba(125,211,252,0.6))'}}>🐧</div>
+        <h1 className="text-5xl font-black text-white mb-2 italic tracking-[0.2em]" style={{fontFamily:"'Fredoka One', 'Comic Sans MS', cursive", textShadow:'0 0 30px rgba(125,211,252,0.5)'}}>PENGU OS</h1>
+        <p className="text-sky-200 text-sm mb-8 tracking-[0.3em] uppercase font-bold opacity-70">Waddling into existence...</p>
+        
+        <div className="w-64 h-4 border-2 p-0.5 rounded-full" style={{borderColor:'rgba(186,230,253,0.5)'}}>
+          <div className="h-full rounded-full" style={{background:'#7DD3FC', animation:'widthLoad 2.5s ease-out forwards', width:'0%', boxShadow:'0 0 10px #7DD3FC'}}></div>
+        </div>
+        <div className="mt-4 text-[10px] uppercase tracking-[0.3em] text-sky-300/60">Freezing the blockchain...</div>
+      </div>
+      
+      <style>{`@keyframes widthLoad { from { width: 0%; } to { width: 100%; } }`}</style>
+    </div>
+  );
+
+  return (
+    <div className="w-full h-screen relative overflow-hidden font-sans select-none text-black">
+      {/* Wallpaper */}
+      <div className="absolute inset-0 z-0 bg-cover bg-center" style={{backgroundImage: `url(${ASSETS.wallpaper})`, backgroundColor:'#0369a1'}}></div>
+      
+      {/* Very subtle snow overlay */}
+      <div className="absolute inset-0 z-[1] pointer-events-none">
+        {snowflakes.map(s => (
+          <div key={s.id} className="absolute text-sky-100/20 animate-bounce" style={{left:s.left, top:s.top, fontSize:s.size, animationDelay:s.delay}}>❄</div>
+        ))}
+      </div>
+
+      {systemAlert && (
+        <div className="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[100000] border-4 p-4 shadow-2xl animate-bounce flex items-center gap-3" style={{background:'#e8f4fd', borderColor:'#0369a1'}}>
+          <span className="text-2xl">🐧</span>
+          <span className="font-mono font-black text-sky-800 text-xs uppercase">{systemAlert}</span>
+        </div>
+      )}
+
+      {/* Desktop Icons */}
+      <div className="absolute top-0 left-0 p-4 z-20 h-[calc(100vh-40px)] w-full pointer-events-none flex flex-col flex-wrap content-start items-start gap-4 overflow-hidden">
+        {[
+          { id: 'terminal', emoji: '💻', label: 'Terminal' },
+          { id: 'mememind', emoji: '🧠', label: 'Meme Brain' },
+          { id: 'forgeit', emoji: '⚡', label: 'Forge Pengu' },
+          { id: 'mergeit', emoji: '🧊', label: 'Slide Pengu' },
+          { id: 'rugsweeper', emoji: '🐧', label: 'Stack Pengu' },
+          { id: 'paint', emoji: '🎨', label: 'Paint Pengu' },
+          { id: 'tunes', emoji: '🎵', label: 'Tunes' },
+          { id: 'notepad', emoji: '📝', label: 'Write Stuff' },
+          { id: 'trollbox', emoji: '💬', label: 'Colony Chat', hasAlert: true },
+          { id: 'memes', emoji: '🐟', label: 'Meme Stash' },
+          { id: 'wallet', emoji: '💰', label: 'Wallet' },
+        ].map(a => (
+          <DesktopIcon key={a.id} icon={Terminal} emoji={a.emoji} label={a.label} onClick={() => openApp(a.id)} hasAlert={a.hasAlert} />
+        ))}
+      </div>
+
+      <SystemResourceMonitor wallet={wallet} balance={dexData.balance} hasAccess={hasAccess} />
+      <Shippy hidden={isAnyWindowMaximized} dexData={dexData} />
+
+      {/* Windows */}
+      {windows.map(win => (
+        <DraggableWindow key={win.id} win={win} isActive={win.id === activeWindowId}
+          onFocus={() => focusWindow(win.id)} onClose={() => closeWindow(win.id)}
+          onMaximize={() => toggleMax(win.id)} onMinimize={() => minimizeWindow(win.id)} onMove={moveWindow}>
+          {win.type === 'forgeit' && <ForgeItApp />}
+          {win.type === 'paint' && <PaintApp />}
+          {win.type === 'memes' && <MemesApp />}
+          {win.type === 'notepad' && <NotepadApp />}
+          {win.type === 'mergeit' && <MergeItApp />}
+
+          {win.type === 'wallet' && (
+            <div className="p-4 h-full flex flex-col gap-4 overflow-y-auto" style={{background:'#050d1a', fontFamily:'monospace', color:'#7DD3FC'}}>
+              <div className="flex justify-between items-center border-b pb-2" style={{borderColor:'rgba(3,105,161,0.4)'}}>
+                <div className="flex items-center gap-2"><span className="text-xl">🐧</span><span className="text-[10px] font-black uppercase tracking-widest text-sky-600">Wallet Monitor</span></div>
+                <div className={`px-2 py-0.5 text-[8px] font-black uppercase rounded-sm ${wallet ? 'text-sky-300' : 'text-red-400 animate-pulse'}`} style={{background: wallet ? 'rgba(3,105,161,0.3)' : 'rgba(239,68,68,0.1)', border:'1px solid currentColor'}}>
+                  {wallet ? '🟢 Connected' : '🔴 Disconnected'}
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 gap-3">
+                <div className="p-4 border" style={{background:'rgba(3,11,20,0.8)', borderColor:'rgba(3,105,161,0.3)'}}>
+                  <span className="text-[9px] font-bold text-sky-800 uppercase block mb-1">Your SOL ☀️</span>
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-3xl font-black text-white">{(solBalance || 0).toFixed(4)}</span>
+                    <span className="text-xs font-black text-sky-600">SOL</span>
+                  </div>
+                </div>
+                <div className="p-4 border" style={{background:'rgba(3,11,20,0.8)', borderColor:'rgba(125,211,252,0.3)'}}>
+                  <span className="text-[9px] font-bold text-sky-700 uppercase block mb-1">Your PENGU 🐧</span>
+                  <div className="flex justify-between items-baseline">
+                    <span className="text-2xl font-black text-sky-300">{(dexData.balance || 0).toLocaleString()}</span>
+                    <span className="text-xs font-black text-sky-600">PENGU</span>
+                  </div>
+                  {!hasAccess && (
+                    <div className="mt-3 h-1 w-full overflow-hidden rounded-full" style={{background:'rgba(3,105,161,0.2)'}}>
+                      <div className="h-full transition-all duration-1000 rounded-full" style={{width:`${Math.min(100, (dexData.balance/ACCESS_THRESHOLD)*100)}%`, background:'#7DD3FC'}}/>
+                    </div>
+                  )}
+                </div>
+              </div>
+
+              <div className={`p-3 border-2 flex items-center gap-4 ${hasAccess ? '' : 'animate-pulse'}`} style={{borderColor: hasAccess ? '#7DD3FC' : '#FEF08A', background: hasAccess ? 'rgba(3,105,161,0.1)' : 'rgba(254,240,138,0.05)'}}>
+                <span className="text-3xl">{hasAccess ? '🐧' : '🔒'}</span>
+                <div>
+                  <span className={`text-[11px] font-black uppercase tracking-[0.1em] block ${hasAccess ? 'text-sky-300' : 'text-yellow-400'}`}>{hasAccess ? 'Colony Member ✓' : 'Access Locked'}</span>
+                  <span className="text-[8px] text-sky-700 uppercase leading-tight">{hasAccess ? 'welcome to the colony, fren!' : 'hold 500k PENGU to join the colony.'}</span>
+                </div>
+              </div>
+
+              <div className="mt-auto flex flex-col gap-2 pb-2">
+                <button onClick={connect} disabled={connecting} className={`w-full py-4 font-black text-[11px] tracking-[0.2em] uppercase transition-all flex items-center justify-center gap-3 border-2 active:scale-[0.98] ${wallet ? 'text-red-400' : 'text-sky-300'}`}
+                  style={{background: wallet ? 'rgba(239,68,68,0.1)' : 'rgba(3,105,161,0.2)', borderColor: wallet ? 'rgba(239,68,68,0.4)' : '#7DD3FC'}}>
+                  {connecting ? <RefreshCw className="animate-spin" size={14}/> : <span>{wallet ? '🔌' : '🔗'}</span>}
+                  {connecting ? 'Connecting...' : (wallet ? 'Disconnect' : 'Connect Wallet 🐧')}
+                </button>
+                {wallet && <div className="p-2 border text-center" style={{borderColor:'rgba(3,105,161,0.2)'}}>
+                  <span className="text-[7px] text-sky-700 font-black uppercase block">Your Address</span>
+                  <span className="text-[8px] text-sky-500 font-mono break-all">{wallet}</span>
+                </div>}
+              </div>
+            </div>
+          )}
+        </DraggableWindow>
+      ))}
+
+      {/* Start Menu */}
+      <div id="start-menu-container">
+        <StartMenu isOpen={isStartOpen} onClose={() => setIsStartOpen(false)} onOpenApp={openApp} />
+      </div>
+
+      {/* Taskbar */}
+      <div className="absolute bottom-0 left-0 w-full h-10 flex items-center px-1 z-[9998] shadow-2xl" style={{background:'#e8f4fd', borderTop:'2px solid #BAE6FD'}}>
+        <button onClick={() => setIsStartOpen(!isStartOpen)} className={`flex items-center gap-2 px-3 py-1 h-8 border-2 font-bold italic text-sm mr-2 transition-all ${isStartOpen ? 'translate-y-0.5' : ''}`}
+          style={{background: isStartOpen ? '#dbeafe' : '#e8f4fd', color:'#0369a1', borderColor: isStartOpen ? '#0369a1 #BAE6FD #BAE6FD #0369a1' : '#BAE6FD #0369a1 #0369a1 #BAE6FD', fontFamily:"'Fredoka One', cursive"}}>
+          <span>🐧</span> START
+        </button>
+        
+        <div className="flex-1 flex gap-1 overflow-x-auto no-scrollbar px-2">
+          {windows.map(win => (
+            <button key={win.id} onClick={() => handleTaskbarClick(win.id)}
+              className={`min-w-[80px] max-w-[120px] h-8 truncate px-2 border-2 text-[10px] text-sky-800 flex items-center transition-all`}
+              style={{background: win.id === activeWindowId && !win.isMinimized ? 'white' : '#e8f4fd', borderColor: win.id === activeWindowId && !win.isMinimized ? '#0369a1 #BAE6FD #BAE6FD #0369a1' : '#BAE6FD #0369a1 #0369a1 #BAE6FD', fontWeight: win.id === activeWindowId ? 'bold' : 'normal'}}>
+              {win.title}
+            </button>
+          ))}
+        </div>
+
+        {/* System Tray */}
+        <div className="flex items-center gap-2 px-2 py-1 border-2 ml-auto h-8" style={{background:'#dbeafe', borderColor:'#0369a1 #BAE6FD #BAE6FD #0369a1'}}>
+          <button className={`h-6 text-[10px] font-mono px-2 border transition-all ${caCopied ? 'text-sky-700 font-black' : 'text-sky-600'}`}
+            style={{background: caCopied ? '#BAE6FD' : '#e8f4fd', borderColor:'#7DD3FC'}}
+            onClick={handleCopyCA}>{caCopied ? '🐧 COPIED!' : 'CA_KEY'}</button>
+
+          <button onClick={connect} disabled={connecting}
+            className="flex items-center justify-center gap-2 h-6 px-2 border font-bold text-sky-700 hover:bg-sky-100 transition-colors"
+            style={{background:'#e8f4fd', borderColor:'#7DD3FC'}}>
+            {connecting ? <RefreshCw size={12} className="animate-spin text-sky-500"/> : <span>{wallet ? '🟢' : '🔌'}</span>}
+            <span className="text-[10px] hidden sm:inline-block">{wallet ? `${wallet.slice(0,4)}..` : "LINK"}</span>
+          </button>
+
+          <span className="text-[10px] font-bold hidden md:block ml-2 text-sky-600 opacity-60 font-mono tracking-tighter select-none">
+            {new Date().toLocaleTimeString([], {hour:'2-digit', minute:'2-digit'})}
+          </span>
+        </div>
+      </div>
+
+      <style>{`
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        * { box-sizing: border-box; }
+      `}</style>
+    </div>
+  );
+}
