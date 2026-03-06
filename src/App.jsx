@@ -275,15 +275,11 @@ const StartMenu = ({ isOpen, onClose, onOpenApp }) => {
           <div className="px-2 py-1 text-sky-500 font-bold text-[10px] uppercase">🧊 Programs</div>
           {[
             { id: 'terminal', icon: Terminal, label: 'Terminal' },
-            { id: 'mememind', icon: Lightbulb, label: 'Meme Brain' }, 
             { id: 'forgeit', icon: Sparkles, label: 'Forge Pengu' },
             { id: 'mergeit', icon: Joystick, label: 'Slide Pengu' },      
             { id: 'paint', icon: Paintbrush, label: 'Paint Pengu' },
             { id: 'memes', icon: Folder, label: 'Meme Stash' },
-            { id: 'tunes', icon: Music, label: 'Tunes' },
-            { id: 'rugsweeper', icon: Gamepad2, label: 'Stack Pengu' },
             { id: 'notepad', icon: FileText, label: 'Write Stuff' },
-            { id: 'trollbox', icon: MessageSquare, label: 'Colony Chat' },
           ].map(a => (
             <div key={a.id} className="hover:bg-sky-500 hover:text-white cursor-pointer px-2 py-2 flex items-center gap-2 rounded-sm transition-colors" onClick={() => { onOpenApp(a.id); onClose(); }}>
               <a.icon size={16} /> <span>{a.label}</span>
@@ -1841,14 +1837,10 @@ export default function UltimateOS() {
       <div className="absolute top-0 left-0 p-4 z-20 h-[calc(100vh-40px)] w-full pointer-events-none flex flex-col flex-wrap content-start items-start gap-4 overflow-hidden">
         {[
           { id: 'terminal', emoji: '💻', label: 'Terminal' },
-          { id: 'mememind', emoji: '🧠', label: 'Meme Brain' },
           { id: 'forgeit', emoji: '⚡', label: 'Forge Pengu' },
           { id: 'mergeit', emoji: '🧊', label: 'Slide Pengu' },
-          { id: 'rugsweeper', emoji: '🐧', label: 'Stack Pengu' },
           { id: 'paint', emoji: '🎨', label: 'Paint Pengu' },
-          { id: 'tunes', emoji: '🎵', label: 'Tunes' },
           { id: 'notepad', emoji: '📝', label: 'Write Stuff' },
-          { id: 'trollbox', emoji: '💬', label: 'Colony Chat', hasAlert: true },
           { id: 'memes', emoji: '🐟', label: 'Meme Stash' },
           { id: 'wallet', emoji: '💰', label: 'Wallet' },
         ].map(a => (
