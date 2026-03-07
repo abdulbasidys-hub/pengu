@@ -1380,49 +1380,33 @@ const PfpCultApp = () => {
 
       const promptText = `Task: Character style transfer.
 
-You are given two images.
+Image 1 is the base Pedgy character.
+Image 2 is the style reference.
 
-Image 1: Base Pedgy character
-Image 2: Style reference
+Rules
 
-Character Preservation (Very Important)
+Keep the Pedgy from Image 1 exactly the same:
 
-Use the Pedgy from Image 1 as the base character.
-Keep exactly the same:
-body shape
-pose
-drawing style
-eyes and mouth placement
-Do not redraw, improve, or alter the character design.
-
-Style Extraction
+same body shape
+same pose
+same drawing style
+same eyes and mouth placement
+Do not redraw or modify the character itself.
 
 From Image 2, extract:
 clothing
 accessories
 colors
-visual aesthetic
+overall aesthetic
+Apply those elements to the Pedgy character.
+You may add accessories like glasses, hats, masks, or jewelry if they appear in Image 2.
 
-Clothing Application
-Dress the Pedgy using the clothing and accessories from Image 2.
-
-Important:
-Do not overlay or paste the clothing image onto the character.
-
-Instead:
-recreate the clothing so it fits Pedgy’s body
+for clohing. 
 adapt the clothing to Pedgy’s proportions
 make it look like the outfit was designed and tailored for Pedgy
-integrate the clothing naturally with the character
-The outfit should look illustrated as part of the character, not pasted on top.
 
-Face Rule
-Do not change Pedgy’s eyes or mouth.
-However, face accessories from Image 2 (glasses, masks, hats, etc.) may be added.
-
-Goal
-The final result should look like the original Pedgy character wearing the outfit and style from Image 2, professionally illustrated so the clothing blends naturally with the character.
-`;
+Goal:
+The final image should look like the original Pedgy wearing the outfit and style from Image 2.`;
 
       const contentParts = [
         { text: promptText },
