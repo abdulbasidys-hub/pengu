@@ -1378,50 +1378,14 @@ const PfpCultApp = () => {
       const base64Image = await getBaseCharacter64();
       if (!base64Image) throw new Error("pedgy base image not found at main.jpg");
 
-      const promptText = `You are given two images.
-
-Image 1: The base Pedgy character.
-This is the final character that must remain unchanged.
-
-Important rules:
-
-Do not change Pedgy’s body shape.
-
-Do not change Pedgy’s pose.
-
-Do not redraw or improve the character.
-
-Do not change Pedgy’s drawing style.
-
-Do not change the eyes or mouth.
-
-Keep the eyes exactly where they are, even if the placement looks unusual.
-
-Image 2: A source image uploaded by the user.
-
-From Image 2, extract:
-
-clothing
-
-accessories
-
-colors
-
-visual style
-
-vibe or aesthetic
-
-Apply these elements to the Pedgy character in Image 1.
-
-Goal:
-Dress Pedgy using the clothing, accessories, and style from Image 2 so it looks like Pedgy belongs in that world.
-
-Face rule:
-Do not change Pedgy’s eyes or mouth.
-However, face accessories (such as glasses, masks, hats, etc.) may be added if they appear in Image 2.
-
-Final requirement:
-The result must still clearly be the original Pedgy character, only styled with elements from Image 2. Think of it like an NFT base character that receives outfits and accessories but the base design never changes.
+      const promptText = `pedgyIN PFP CULT SYSTEM. You are given two images:
+Image 1: The base pedgy character — a cute cartoon pedgyin. This is the OUTPUT character. DO NOT change its body shape, pose, or pedgyin identity, I REPEAT, YOU CANT CHANGE ITS POSE DRAWING STYLE OR SHAPE OR TRY TO IMPROVE IT. LEACE IT AS IT IS.
+Image 2: A source image uploaded by the user. Extract the style, clothing, accessories, colors, vibe, and aesthetic from this source image.
+Apply everything extracted from Image 2 onto the pedgy in Image 1. Dress it up. Give it the same accessories. Recreate the energy. Make it feel like the pedgy joined that world.
+The result should still look like pedgy, just styled after the source image.
+NOTE: do not try to change the eyes or mouth of the pedgy to match the source image, but if a person is wearing a glass or somthing covering/on the face then you can put on the accessory.  
+note 2: PEDGY'S EYES PLACEMENT IS A LITTLE BIT OFF AND RETARDED, DONT TRY TO MAKE SENSE OF IT AND ADJUST WHERE IT IS PLACED, LITERALLY LEAVE THE EYES WHERE YOU SEE THEM, AND DONT TRY TO MAKE YOUR OWN NEW EYE. dont make a new mouth either. 
+final note: this is like nft creation, the base form is the base nft form, and we addtweak/introduce nothing to it, and the source image is what we take its dress and accesories and vibes on to the base image. also you gotta be professional in how you put this dress and accessories around our base character, it has to blend in professionally,  
 `;
 
       const contentParts = [
