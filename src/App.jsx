@@ -1394,16 +1394,12 @@ same eyes and mouth placement
 Do not redraw or modify the character itself.
 
 From Image 2, extract:
-clothing
+clothing: adapt the clothing to Pedgy’s proportion, make it proportionally blend 
 accessories
 colors
 overall aesthetic
 Apply those elements to the Pedgy character.
 You may add accessories like glasses, hats, masks, or jewelry if they appear in Image 2.
-
-for clohing. 
-adapt the clothing to Pedgy’s proportions
-make it look like the outfit was designed and tailored for Pedgy
 
 Goal:
 The final image should look like the original Pedgy wearing the outfit and style from Image 2.`;
