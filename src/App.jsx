@@ -1385,7 +1385,7 @@ Apply everything extracted from Image 2 onto the pedgy in Image 1. Dress it up. 
 The result should still look like pedgy, just styled after the source image.
 NOTE: do not try to change the eyes or mouth of the pedgy to match the source image, but if a person is wearing a glass or somthing covering/on the face then you can put on the accessory.  
 note 2: PEDGY'S EYES PLACEMENT IS A LITTLE BIT OFF AND RETARDED, DONT TRY TO MAKE SENSE OF IT AND ADJUST WHERE IT IS PLACED, LITERALLY LEAVE THE EYES WHERE YOU SEE THEM, AND DONT TRY TO MAKE YOUR OWN NEW EYE. dont make a new mouth either. 
-final note: this is like nft creation, the base form is the base nft form, and we addtweak/introduce nothing to it, and the source image is what we take its dress and accesories and vibes on to the base image. 
+final note: this is like nft creation, the base form is the base nft form, and we addtweak/introduce nothing to it, and the source image is what we take its dress and accesories and vibes on to the base image. also you gotta be professional in how you put this dress and accessories around our base character, it has to blend in professionally,  
 `;
 
       const contentParts = [
